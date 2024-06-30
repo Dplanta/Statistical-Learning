@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
   word_document:
@@ -14,13 +14,25 @@ output:
     # number_sections: true
 ---
 
+
+```{r setup, include = FALSE}
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+```
+
+
 \
 
 # Introduction
 
 ## Objective of the project
 
-With these project we want to investigate whether the salaries of the NBA players are fair or not, in proportion to their last year's performances. *AGGIUNGERE DETTAGLI E SPIEGARE IN SINTESI IL WEB SCRAPING REALIZZATO*
+Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
+The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. 
+Finally, we will compare actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
+
+*AGGIUNGERE DETTAGLI E SPIEGARE IN SINTESI IL WEB SCRAPING REALIZZATO*
 
 ## Steps followed
 
@@ -40,22 +52,75 @@ We now explain in depth each step.
 
 # Data collection
 
-## Web scraping
+We performed a web scraping operation from the [Official NBA Stats](https://www.nba.com/stats) website, from which we collected most of the stats. Additionally, we downloaded data about the salaries from [Hoopshype](https://hoopshype.com/) and other stats of interest from [Basketball reference](https://www.basketball-reference.com). 
+All data concerns the 2023-2024 NBA Regular Season.
 
-We performed a web scraping operation from the [Official NBA Stats](https://www.nba.com/stats) website, from which we collected the stats of the players. *AGGIUNGERE DETTAGLI, LE ROBE DEI 48 MINUTI ETC ETC, qui c'è davvero molto da scrivere da quanto ho capito ed è uno dei punti forti del progetto*
+*perchè data regular season e non playoff*
+
+## Glossary
+
+-	PLAYER NAME: players’ name
+-	SALARY: salary earned by a player for 2023-2024 season (collected from hoopshype)
+-	AGE: players’ age
+-	POS: “Position”, states the playing position of a player
+
+TRADITIONAL STATS (collected from NBA.com)
+
+-	GP: “Games played”, the number of games played by a player during the 2023-2024 regular season
+-	FG_PCT: “Field Goal Percentage”, The percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA)
+-	FG3_PCT: “3 Points “Field Goal Percentage”, The percentage of 3pt field goal attempts that a player makes. 
+-	FT_PCT: “Free throws Percentage”, the percentage of free throws attempts that a player makes
+-	OREB: “Offensive Rebounds”, The number of rebounds a player or team has collected while they were on offense
+-	DREB: “Defensive Rebounds”, The number of rebounds a player or team has collected while they were on defense
+-	REB: “Rebounds”; A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense
+-	AST: “Assists”, The number of assists -- passes that lead directly to a made basket -- by a player
+-	TOV: “Turnovers”; A turnover occurs when the player or team on offense loses the ball to the defense
+-	STL: “Steals”, Number of times a defensive player or team takes the ball from a player on offense, causing a turnover
+-	BLK: “Blocks”, A block occurs when an offensive player attempts a shot, and the defense player tips the ball, blocking their chance to score
+-	BLKA: “Blocks Against”, The number of shots attempted by a player or team that are blocked by a defender
+-	PF: “Personal fouls”, The number of personal fouls a player or team committed
+-	PFD: “Personal fouls drawn”, The number of personal fouls that are drawn by a player or team
+-	PTS: “Points”, the number of points scored by a player
+-	MIN: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season
+-	MIN_G: “Minutes played per game”
+
+ADVANCED STATS (collected from NBA.com)
+
+-	OFF_RATING: “Offensive Rating”, Measures a team's points scored per 100 possessions. On a player level this statistic is team points scored per 100 possessions while they are on court. Formula: 100*((Points)/(POSS)
+-	DEF_RATING: “Defensive Rating”, The number of points allowed per 100 possessions by a team. For a player, it is the number of points per 100 possessions that the team allows while that individual player is on the court. Formula: 100*((Opp Points)/(Opp POSS))
+-	NET_RATING: “Net Rating”, Measures a team's point differential per 100 possessions. On player level this statistic is the team's point differential per 100 possessions while they are on court. Formula: OFFRTG - DEFRTG
+-	AST_TO: “Assist to Turnover Ratio”, The number of assists for a player or team compared to the number of turnovers they have committed
+-	TS_PCT: “True Shooting Percentage”, A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals. Formula: Points/ [2*(Field Goals Attempted+0.44*Free Throws Attempted)]
+-	USG_PCT: “Usage Percentage”, The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS
+-	PIE: “Player Impact Estimate”, PIE measures a player's overall statistical contribution against the total statistics in games they play in. PIE yields results which are comparable to other advanced statistics (e.g. PER) using a simple formula. Formula: (PTS + FGM + FTM - FGA - FTA + DREB + (.5 * OREB) + AST + STL + (.5 * BLK) - PF - TO) / (GmPTS + GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL + (.5 * GmBLK) - GmPF - GmTO)
+
+The stats below are collected from Basketball reference:
+
+-	WS: “Win Shares”; an estimate of the number of wins contributed by a player.
+-	BPM: “Box Plus/Minus”; a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team
+-	VORP: “Value Over Replacement Player”; a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
+
+BPM and VORP are calculated per 100 possessions; MIN is a total stat for the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes. (vedi WS)
+
+
+
+*AGGIUNGERE DETTAGLI, LE ROBE DEI 48 MINUTI ETC ETC, qui c'è davvero molto da scrivere da quanto ho capito ed è uno dei punti forti del progetto*
 
 ## Data integration
 
 *Spiegare tutta la roba di come si sono unite le tabelle, aggiustato i dati come i nomi etc etc*
 
+
+
 ```{r useful-code, include=FALSE}
+
 library(readxl)
-data_salary <- read_excel("NBA_players_salaries_HH.xlsx")
-data_traditional_per48 <- read.csv("RS_traditional_per48.csv")
-data_traditional_tot <- read.csv("RS_traditional_TOTALS.csv")
-data_advanced <- read.csv("RS_advanced_per48.csv")
-data_miscellaneous <- read.csv("RS_miscellaneous_per48.csv")
-data_vorp <- read_excel("vorp.xlsx")
+data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
+data_traditional_per48 <- read.csv("./data/RS_traditional_per48.csv")
+data_traditional_tot <- read.csv("./data/RS_traditional_TOTALS.csv")
+data_advanced <- read.csv("./data/RS_advanced_per48.csv")
+data_miscellaneous <- read.csv("./data/RS_miscellaneous_per48.csv")
+data_vorp <- read_excel("./data/vorp.xlsx")
 MIN_G <- data_traditional_tot$MIN/data_traditional_tot$GP
 data_traditional_tot <- cbind(data_traditional_tot, MIN_G)
 data_salary <- data_salary[, c(2, 3)]

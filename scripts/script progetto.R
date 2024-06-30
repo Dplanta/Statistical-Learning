@@ -3,12 +3,12 @@ library(readxl)
 
 
 # Upload datasets
-data_salary <- read_excel("NBA_players_salaries_HH.xlsx")
-data_traditional_per48 <- read.csv("RS_traditional_per48.csv")
-data_traditional_tot <- read.csv("RS_traditional_TOTALS.csv")
-data_advanced <- read.csv("RS_advanced_per48.csv")
-data_miscellaneous <- read.csv("RS_miscellaneous_per48.csv")
-data_vorp <- read_excel("vorp.xlsx")
+data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
+data_traditional_per48 <- read.csv("./data/RS_traditional_per48.csv")
+data_traditional_tot <- read.csv("./data/RS_traditional_TOTALS.csv")
+data_advanced <- read.csv("./data/RS_advanced_per48.csv")
+data_miscellaneous <- read.csv("./data/RS_miscellaneous_per48.csv")
+data_vorp <- read_excel("./data/vorp.xlsx")
 
 
 # creating a new column in data_traditional_tot: MIN_G (minutes played per game)
@@ -153,7 +153,7 @@ pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=pane
 ## a stepwise regression to remove the less significative variables.
 ## After that, we'll use ridge regression in order to reduce the effect of multicollinearity. Then,
 ## we'll compare the performances of the models. Lastly, we'll 
-## compare models'results with the actual salaries earned by the players during the 2023/2024 season. 
+## compare models' results with the actual salaries earned by the players during the 2023/2024 season. 
 
 ## LINEAR REGRESSION MODEL
 
