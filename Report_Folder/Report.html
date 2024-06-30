@@ -362,13 +362,13 @@ D’Alterio Grazioli, Gabriele Fugagnoli</h4>
 <li><a href="#objective-of-the-project" id="toc-objective-of-the-project">Objective of the project</a></li>
 <li><a href="#steps-followed" id="toc-steps-followed">Steps
 followed</a></li>
-</ul></li>
 <li><a href="#data-collection" id="toc-data-collection">Data
 collection</a>
 <ul>
 <li><a href="#glossary" id="toc-glossary">Glossary</a></li>
-<li><a href="#data-integration" id="toc-data-integration">Data
-integration</a></li>
+</ul></li>
+<li><a href="#data-integration-and-cleaning" id="toc-data-integration-and-cleaning">Data integration and
+cleaning</a></li>
 <li><a href="#data-exploration" id="toc-data-exploration">Data
 exploration</a></li>
 </ul></li>
@@ -408,16 +408,51 @@ REALIZZATO</em></p>
 <p><br />
 </p>
 </div>
-</div>
-<div id="data-collection" class="section level1">
-<h1>Data collection</h1>
+<div id="data-collection" class="section level2">
+<h2>Data collection</h2>
 <p>We performed a web scraping operation from the <a href="https://www.nba.com/stats">Official NBA Stats</a> website, from
 which we collected most of the stats. Additionally, we downloaded data
 about the salaries from <a href="https://hoopshype.com/">Hoopshype</a>
 and other stats of interest from <a href="https://www.basketball-reference.com">Basketball reference</a>.
 All data concerns the 2023-2024 NBA Regular Season.</p>
-<div id="glossary" class="section level2">
-<h2>Glossary</h2>
+<div id="why-consider-only-regular-season-data" class="section level4">
+<h4>Why consider only Regular Season data?</h4>
+<p>Considering only data about Regular Season without considering
+players performance during playoffs limits a bit the potential of our
+analysis. On one hand, it’s reasonable to infer that player performance
+during playoffs should have an important weight in determining his
+salary. On the other hand, considering playoffs in the analysis carries
+different issues. There are teams (and consequently players) that go
+further than others: 14 out of 30 teams can’t qualify for the playoffs.
+For the teams which qualify, playoff stats are calculated on a number of
+games that could differ greatly between different teams (e.g. if a team
+loses in the first round, it plays from 4 to 7 games. If a team reaches
+the finals, it plays from 16 to 28 games). During Regular Season every
+team plays a fixed number of games, 82. Additionally, coaches usually
+rotate players at their disposal in a different way during playoffs: for
+instance, during regular season approximately 10-12 players for each
+team take part in the game; during playoffs it is not uncommon to
+observe only 7-8 players that come into play for each team. Furthermore,
+usually in a playoff game the best players are more involved compared to
+Regular season games. It means that, first of all, they play several
+more minutes. Moreover, they have the ball in their hands for a lot of
+time and consequently their stats grow a lot; hence, it could happen
+that a few players record a large part of the entire team’s statistics.
+Considering this, including playoffs data in the analysis could lead to
+an overestimation of performance of 2-3 players and to an
+underestimation of the performance of the rest of the team.</p>
+<p>All in all, is undeniable that playoffs are a fundamental part of the
+season. It is also obvious that if a player has more responsabilities in
+that phase he probably deserves a higher salary. But we think that for
+the purposes of analysis, the addition of statistics collected on a
+small sample of matches, different for practically every team, with
+highly polarised data between the various players may lead to biases if
+not handled properly. We think that considering only the regular season,
+although leading to a limited analysis, may be sufficient to grasp the
+main relationships between salaries and performance.</p>
+</div>
+<div id="glossary" class="section level3">
+<h3>Glossary</h3>
 <ul>
 <li>PLAYER NAME: players’ name</li>
 <li>SALARY: salary earned by a player for 2023-2024 season (collected
@@ -496,8 +531,11 @@ GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL +
 </ul>
 <p>The stats below are collected from Basketball reference:</p>
 <ul>
-<li>WS: “Win Shares”; an estimate of the number of wins contributed by a
-player.</li>
+<li>WS: “Win Shares”; Win Shares is a player statistic which attempts to
+divvy up credit for team success to the individuals on the team. It is
+calculated using player, team and league-wide statistics and the sum of
+player win shares on a given team will be roughly equal to that team’s
+win total for the season (more details here <a href="https://www.basketball-reference.com/about/ws.html" class="uri">https://www.basketball-reference.com/about/ws.html</a>).</li>
 <li>BPM: “Box Plus/Minus”; a box score estimate of the points per 100
 possessions that a player contributed above a league-average player,
 translated to an average team</li>
@@ -507,15 +545,16 @@ replacement-level (-2.0) player, translated to an average team and
 prorated to an 82-game season. Multiply by 2.70 to convert to wins over
 replacement.</li>
 </ul>
-<p>BPM and VORP are calculated per 100 possessions; MIN is a total stat
-for the whole regular season, MIN_G is calculated per game. The other
-stats are considered per 48 minutes. (vedi WS)</p>
+<p>BPM and VORP are calculated per 100 possessions; MIN and WS are
+calculated over the whole regular season, MIN_G is calculated per game.
+The other stats are considered per 48 minutes.</p>
 <p><em>AGGIUNGERE DETTAGLI, LE ROBE DEI 48 MINUTI ETC ETC, qui c’è
 davvero molto da scrivere da quanto ho capito ed è uno dei punti forti
 del progetto</em></p>
 </div>
-<div id="data-integration" class="section level2">
-<h2>Data integration</h2>
+</div>
+<div id="data-integration-and-cleaning" class="section level2">
+<h2>Data integration and cleaning</h2>
 <p><em>Spiegare tutta la roba di come si sono unite le tabelle,
 aggiustato i dati come i nomi etc etc</em></p>
 <pre class="r"><code>data_st &lt;- merge(data_salary, data_traditional_per48, by = &quot;PLAYER_NAME&quot;, all = TRUE)

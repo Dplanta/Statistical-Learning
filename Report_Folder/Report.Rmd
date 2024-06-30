@@ -50,14 +50,22 @@ We now explain in depth each step.
 
 \
 
-# Data collection
+## Data collection
 
 We performed a web scraping operation from the [Official NBA Stats](https://www.nba.com/stats) website, from which we collected most of the stats. Additionally, we downloaded data about the salaries from [Hoopshype](https://hoopshype.com/) and other stats of interest from [Basketball reference](https://www.basketball-reference.com). 
-All data concerns the 2023-2024 NBA Regular Season.
+All data concerns the 2023-2024 NBA Regular Season. 
 
-*perchè data regular season e non playoff*
+#### Why consider only Regular Season data?
 
-## Glossary
+Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues. 
+There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82. 
+Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that a few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
+
+All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsabilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarised data between the various players may lead to biases if not handled properly. 
+We think that considering only the regular season, although leading to a limited analysis, may be sufficient to grasp the main relationships between salaries and performance.
+
+
+### Glossary
 
 -	PLAYER NAME: players’ name
 -	SALARY: salary earned by a player for 2023-2024 season (collected from hoopshype)
@@ -96,17 +104,17 @@ ADVANCED STATS (collected from NBA.com)
 
 The stats below are collected from Basketball reference:
 
--	WS: “Win Shares”; an estimate of the number of wins contributed by a player.
+-	WS: “Win Shares”; Win Shares is a player statistic which attempts to divvy up credit for team success to the individuals on the team. It is calculated using player, team and league-wide statistics and the sum of player win shares on a given team will be roughly equal to that team’s win total for the season (more details here https://www.basketball-reference.com/about/ws.html).
 -	BPM: “Box Plus/Minus”; a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team
 -	VORP: “Value Over Replacement Player”; a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
 
-BPM and VORP are calculated per 100 possessions; MIN is a total stat for the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes. (vedi WS)
+BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
 
 
 *AGGIUNGERE DETTAGLI, LE ROBE DEI 48 MINUTI ETC ETC, qui c'è davvero molto da scrivere da quanto ho capito ed è uno dei punti forti del progetto*
 
-## Data integration
+## Data integration and cleaning
 
 *Spiegare tutta la roba di come si sono unite le tabelle, aggiustato i dati come i nomi etc etc*
 
