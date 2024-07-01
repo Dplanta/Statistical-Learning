@@ -53,12 +53,10 @@ print(NA_number)
 
 
 # removing PFD.x and renaming PFD.y as PFD
-
 final_dataset <- final_dataset[, -17]
 colnames(final_dataset)[colnames(final_dataset) == 'PFD.y'] <- 'PFD'
 
 # renaming the column 2023/2024 in "Salary", removing the "$" sign and changing the data class in numeric
-
 colnames(final_dataset)[colnames(final_dataset) == '2023/24'] <- 'Salary'
 final_dataset$Salary <- as.numeric(gsub("[\\$\\,]", "", final_dataset$Salary))
 class(final_dataset$Salary)
@@ -70,7 +68,6 @@ class(final_dataset$Salary)
 attach(final_dataset)
 
 # only numeric columns for EDA
-
 numeric_cols <- sapply(final_dataset, is.numeric)
 fd_numeric <- final_dataset[, numeric_cols]
 summary(fd_numeric)
@@ -78,32 +75,29 @@ summary(fd_numeric)
 # Variables EDA
 
 # variable Salary (dipendent)
-
-boxplot(Salary)
+boxplot(Salary, main="Boxplot of the salary")
 summary(Salary)
-hist(Salary)
-hist(log(Salary))      ## forma più regolare, ulteriore motivo per usare il logaritmo
+hist(Salary, main="Histogram of the salary")
+hist(log(Salary), , main="Histogram of the logarithmic salary")      # forma più regolare, ulteriore motivo per usare il logaritmo
 
 # Independent variables
-
-boxplot(AGE)
-boxplot(GP)
-boxplot(MIN)
-boxplot(MIN_G, PTS)
-boxplot(OREB, DREB, REB, AST)
-boxplot(TOV, STL, BLK, BLKA, PF, PFD)
-boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT)
-boxplot(OFF_RATING, DEF_RATING)
-boxplot(NET_RATING)
-boxplot(AST_TO)
-boxplot(PIE, USG_PCT)
-boxplot(WS, BPM, VORP)
+boxplot(AGE, names=c("AGE"), show.names=TRUE)
+boxplot(GP, names=c("GP"), show.names=TRUE)
+boxplot(MIN, names=c("MIN"), show.names=TRUE)
+boxplot(MIN_G, PTS, names=c("MIN_G", "PTS"))
+boxplot(OREB, DREB, REB, AST, names=c("OREB", "DREB", "REB", "AST"))
+boxplot(TOV, STL, BLK, BLKA, PF, PFD, names=c("TOV", "STL", "BLK", "BLKA", "PF", "PFD"))
+boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT, names=c("FG_PCT", "FG3_PCT", "FT_PCT", "TS_PCT"))
+boxplot(OFF_RATING, DEF_RATING, names=c("OFF_RATING", "DEF_RATING"))
+boxplot(NET_RATING, names=c("NET_RATING"), show.names=TRUE)
+boxplot(AST_TO, names=c("AST_TO"), show.names=TRUE)
+boxplot(PIE, USG_PCT, names=c("PIE", "USG_PCT"))
+boxplot(WS, BPM, VORP, names=c("WS", "BPM", "VORP"))
 
 
 ### Analyze correlations
 
 # covariance and correlation matrices
-
 cov_mat <- round(cov(fd_numeric),2)
 cor_mat <- round(cor(fd_numeric),2)
 
@@ -115,8 +109,6 @@ corrplot(cor(fd_numeric), method = 'ellipse')
 # FUNCTION "pairs" for matrix plot
 
 # define the functions "panel.hist" and "panel.cor"
-
-
 panel.hist <- function(x, ...)
 {
   usr <- par("usr"); on.exit(par(usr))
@@ -140,7 +132,7 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
 }
 
 # execute pairs function
-
+# dev.new(width=10, height=10)
 pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor)
 pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=panel.smooth)
 
@@ -157,14 +149,12 @@ pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=pane
 ## compare models' results with the actual salaries earned by the players during the 2023/2024 season. 
 
 ## LINEAR REGRESSION MODEL
-
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
 # interpretation 
 
 # Residual analysis 
-
 par(mfrow = c(2, 2))
 plot(lm.mod)
 

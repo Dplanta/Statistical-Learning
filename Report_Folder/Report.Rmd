@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
   word_document:
@@ -54,7 +54,7 @@ We now explain in depth each step.
 We performed a web scraping operation from the [Official NBA Stats](https://www.nba.com/stats) website, from which we collected most of the stats. Additionally, we downloaded data about the salaries from [Hoopshype](https://hoopshype.com/) and other stats of interest from [Basketball reference](https://www.basketball-reference.com). 
 All data concerns the 2023-2024 NBA Regular Season. 
 
-#### Why consider only Regular Season data?
+### Why consider only Regular Season data?
 
 Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues. 
 There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82. 
@@ -66,50 +66,52 @@ We think that considering only the regular season, although leading to a limited
 
 ### Glossary
 
--	PLAYER NAME: players’ name
--	SALARY: salary earned by a player for 2023-2024 season (collected from hoopshype)
--	AGE: players’ age
--	POS: “Position”, states the playing position of a player
+-	**PLAYER NAME**: players’ name
+-	**SALARY**: salary earned by a player for 2023-2024 season (collected from [Hoopshype](https://hoopshype.com/))
+-	**AGE**: players’ age
+-	**POS**: “Position”, states the playing position of a player
 
-TRADITIONAL STATS (collected from NBA.com)
+#### Traditional stats (collected from the [NBA](https://www.nba.com/?47) website)
 
--	GP: “Games played”, the number of games played by a player during the 2023-2024 regular season
--	FG_PCT: “Field Goal Percentage”, The percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA)
--	FG3_PCT: “3 Points “Field Goal Percentage”, The percentage of 3pt field goal attempts that a player makes. 
--	FT_PCT: “Free throws Percentage”, the percentage of free throws attempts that a player makes
--	OREB: “Offensive Rebounds”, The number of rebounds a player or team has collected while they were on offense
--	DREB: “Defensive Rebounds”, The number of rebounds a player or team has collected while they were on defense
--	REB: “Rebounds”; A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense
--	AST: “Assists”, The number of assists -- passes that lead directly to a made basket -- by a player
--	TOV: “Turnovers”; A turnover occurs when the player or team on offense loses the ball to the defense
--	STL: “Steals”, Number of times a defensive player or team takes the ball from a player on offense, causing a turnover
--	BLK: “Blocks”, A block occurs when an offensive player attempts a shot, and the defense player tips the ball, blocking their chance to score
--	BLKA: “Blocks Against”, The number of shots attempted by a player or team that are blocked by a defender
--	PF: “Personal fouls”, The number of personal fouls a player or team committed
--	PFD: “Personal fouls drawn”, The number of personal fouls that are drawn by a player or team
--	PTS: “Points”, the number of points scored by a player
--	MIN: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season
--	MIN_G: “Minutes played per game”
+-	**GP**: “Games played”, the number of games played by a player during the 2023-2024 regular season
+-	**FG_PCT**: “Field Goal Percentage”, The percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA)
+-	**FG3_PCT**: “3 Points “Field Goal Percentage”, The percentage of 3pt field goal attempts that a player makes. 
+-	**FT_PCT**: “Free throws Percentage”, the percentage of free throws attempts that a player makes
+-	**OREB**: “Offensive Rebounds”, The number of rebounds a player or team has collected while they were on offense
+-	**DREB**: “Defensive Rebounds”, The number of rebounds a player or team has collected while they were on defense
+-	**REB**: “Rebounds”; A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense
+-	**AST**: “Assists”, The number of assists -- passes that lead directly to a made basket -- by a player
+-	**TOV**: “Turnovers”; A turnover occurs when the player or team on offense loses the ball to the defense
+-	**STL**: “Steals”, Number of times a defensive player or team takes the ball from a player on offense, causing a turnover
+-	**BLK**: “Blocks”, A block occurs when an offensive player attempts a shot, and the defense player tips the ball, blocking their chance to score
+-	**BLKA**: “Blocks Against”, The number of shots attempted by a player or team that are blocked by a defender
+-	**PF**: “Personal fouls”, The number of personal fouls a player or team committed
+-	**PFD**: “Personal fouls drawn”, The number of personal fouls that are drawn by a player or team
+-	**PTS**: “Points”, the number of points scored by a player
+-	**MIN**: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season
+-	**MIN_G**: “Minutes played per game”
 
-ADVANCED STATS (collected from NBA.com)
+#### Advanced stats (collected from the [NBA](https://www.nba.com/?47) website)
 
--	OFF_RATING: “Offensive Rating”, Measures a team's points scored per 100 possessions. On a player level this statistic is team points scored per 100 possessions while they are on court. Formula: 100*((Points)/(POSS)
--	DEF_RATING: “Defensive Rating”, The number of points allowed per 100 possessions by a team. For a player, it is the number of points per 100 possessions that the team allows while that individual player is on the court. Formula: 100*((Opp Points)/(Opp POSS))
--	NET_RATING: “Net Rating”, Measures a team's point differential per 100 possessions. On player level this statistic is the team's point differential per 100 possessions while they are on court. Formula: OFFRTG - DEFRTG
--	AST_TO: “Assist to Turnover Ratio”, The number of assists for a player or team compared to the number of turnovers they have committed
--	TS_PCT: “True Shooting Percentage”, A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals. Formula: Points/ [2*(Field Goals Attempted+0.44*Free Throws Attempted)]
--	USG_PCT: “Usage Percentage”, The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS
--	PIE: “Player Impact Estimate”, PIE measures a player's overall statistical contribution against the total statistics in games they play in. PIE yields results which are comparable to other advanced statistics (e.g. PER) using a simple formula. Formula: (PTS + FGM + FTM - FGA - FTA + DREB + (.5 * OREB) + AST + STL + (.5 * BLK) - PF - TO) / (GmPTS + GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL + (.5 * GmBLK) - GmPF - GmTO)
+-	**OFF_RATING**: “Offensive Rating”, Measures a team's points scored per 100 possessions. On a player level this statistic is team points scored per 100 possessions while they are on court. Formula: 100*((Points)/(POSS)
+-	**DEF_RATING**: “Defensive Rating”, The number of points allowed per 100 possessions by a team. For a player, it is the number of points per 100 possessions that the team allows while that individual player is on the court. Formula: 100*((Opp Points)/(Opp POSS))
+-	**NET_RATING**: “Net Rating”, Measures a team's point differential per 100 possessions. On player level this statistic is the team's point differential per 100 possessions while they are on court. Formula: OFFRTG - DEFRTG
+-	**AST_TO**: “Assist to Turnover Ratio”, The number of assists for a player or team compared to the number of turnovers they have committed
+-	**TS_PCT**: “True Shooting Percentage”, A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals. Formula: Points/ [2*(Field Goals Attempted+0.44*Free Throws Attempted)]
+-	**USG_PCT**: “Usage Percentage”, The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS
+-	**PIE**: “Player Impact Estimate”, PIE measures a player's overall statistical contribution against the total statistics in games they play in. PIE yields results which are comparable to other advanced statistics (e.g. PER) using a simple formula. Formula: (PTS + FGM + FTM - FGA - FTA + DREB + (.5 * OREB) + AST + STL + (.5 * BLK) - PF - TO) / (GmPTS + GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL + (.5 * GmBLK) - GmPF - GmTO)
 
-The stats below are collected from Basketball reference:
+The stats below are collected from [Basketball Reference](https://www.basketball-reference.com):
 
--	WS: “Win Shares”; Win Shares is a player statistic which attempts to divvy up credit for team success to the individuals on the team. It is calculated using player, team and league-wide statistics and the sum of player win shares on a given team will be roughly equal to that team’s win total for the season (more details here https://www.basketball-reference.com/about/ws.html).
--	BPM: “Box Plus/Minus”; a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team
--	VORP: “Value Over Replacement Player”; a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
+-	**WS**: “Win Shares”; Win Shares is a player statistic which attempts to divvy up credit for team success to the individuals on the team. It is calculated using player, team and league-wide statistics and the sum of player win shares on a given team will be roughly equal to that team’s win total for the season (more details here https://www.basketball-reference.com/about/ws.html).
+-	**BPM**: “Box Plus/Minus”; a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team
+-	**VORP**: “Value Over Replacement Player”; a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
 
 BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
-#### Why statistics per 48 minutes?
+BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
+
+### Why statistics per 48 minutes?
 
 Considering most statistics projected over 48 minutes avoids overestimating performance for players who play, on average, more minutes in a game. In this way we think that the contribution of each player is fairly evaluated and not distorted by the minutes played.
 
@@ -193,7 +195,7 @@ summary(fd_numeric)
 Firstly, an analysis of the variable Salary that will be the dependent variable in the models.
 
 
-```{r variable-salary, echo=FALSE, warning=FALSE}
+```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE}
 
 attach(final_dataset)
 boxplot(Salary)
