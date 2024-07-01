@@ -169,7 +169,54 @@ plot(lm.log)
 
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
-## stepwise regression
+
+###############################
+# EXHAUSTIVE SUBSET SELECTION #
+###############################
+
+regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
+reg.summary <- summary(regfit.full)
+reg.summary$outmat
+reg.summary$rsq
+
+
+par(mfrow=c(2,2))
+
+# residual sum of squares
+plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
+
+# adjusted-R^2 with its largest value
+plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+i <- which.max(reg.summary$adjr2)
+points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
+text(i,reg.summary$adjr2[i], i, pos=1)
+
+# Mallow's Cp with its smallest value
+plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
+i <- which.min(reg.summary$cp)#return the index of the minimum
+points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
+text(i,reg.summary$cp[i], i, pos=3)
+
+# BIC with its smallest value
+plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
+i <- which.min(reg.summary$bic)
+points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
+text(i,reg.summary$bic[i], i, pos=3)
+
+#It seems that selecting 12 or 13 parameters gives us the best balance 
+#between model simplicity and precision. 
+
+#let's get the list of selected parameters:
+
+covariates = 13
+
+selected.model <- reg.summary$which[covariates,]
+selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
+print(selected.parameters)
+
+#######################
+# STEPWISE REGRESSION #
+#######################
 
 lm.step <- step(lm.mod)
 summary(lm.step)  # model with the lowest AIC, interpretation
