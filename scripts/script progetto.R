@@ -180,8 +180,6 @@ plot(lm.log)
 
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
-<<<<<<< HEAD
-
 ###############################
 # EXHAUSTIVE SUBSET SELECTION #
 ###############################
@@ -230,9 +228,6 @@ print(selected.parameters)
 # STEPWISE REGRESSION #
 #######################
 
-=======
-## stepwise regression
->>>>>>> local
 lm.step <- step(lm.mod)
 summary(lm.step)  # model with the lowest AIC, interpretation
 
