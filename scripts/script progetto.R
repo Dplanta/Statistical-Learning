@@ -78,7 +78,15 @@ summary(fd_numeric)
 boxplot(Salary, main="Boxplot of the salary")
 summary(Salary)
 hist(Salary, main="Histogram of the salary")
-hist(log(Salary), , main="Histogram of the logarithmic salary")      # forma più regolare, ulteriore motivo per usare il logaritmo
+boxplot(log(Salary), main="Boxplot of the logarithmic salary")
+hist(log(Salary), main="Histogram of the logarithmic salary")      # forma più regolare, ulteriore motivo per usare il logaritmo
+
+par(mfrow = c(2, 2))
+boxplot(Salary, main="Boxplot of the salary")
+hist(Salary, main="Histogram of the salary")
+boxplot(log(Salary), main="Boxplot of the logarithmic salary")
+hist(log(Salary), main="Histogram of the logarithmic salary")
+
 
 # Independent variables
 boxplot(AGE, names=c("AGE"), show.names=TRUE)
@@ -99,7 +107,9 @@ boxplot(WS, BPM, VORP, names=c("WS", "BPM", "VORP"))
 
 # covariance and correlation matrices
 cov_mat <- round(cov(fd_numeric),2)
+cov_mat
 cor_mat <- round(cor(fd_numeric),2)
+cor_mat
 
 library(corrplot)
 
@@ -142,11 +152,13 @@ pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=pane
 ## MODELS ## 
 ############
 
-## we will start creating a linear model in order to predict the salaries and then we'll perform 
-## a stepwise regression to remove the less significative variables.
-## After that, we'll use ridge regression in order to reduce the effect of multicollinearity. Then,
-## we'll compare the performances of the models. Lastly, we'll 
-## compare models' results with the actual salaries earned by the players during the 2023/2024 season. 
+## we will start creating a linear model in order to predict the salaries and
+## then we'll perform a stepwise regression to remove the less significative
+## variables.
+## After that, we'll use ridge regression in order to reduce the effect of
+## multicollinearity. Then, we'll compare the performances of the models.
+## Lastly, we'll compare models' results with the actual salaries earned by
+## the players during the 2023/2024 season. 
 
 ## LINEAR REGRESSION MODEL
 lm.mod <- lm(Salary~+., data=fd_numeric)
@@ -154,14 +166,13 @@ summary(lm.mod)
 
 # interpretation 
 
-# Residual analysis 
+# Residual analysis
 par(mfrow = c(2, 2))
 plot(lm.mod)
 
 ## QQ plot ok, check linearity residuals vs fitted; check eteroschedasticity scale-location
 
-# trying to transform the response variable 
-
+# trying to transform the response variable
 lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 
@@ -170,7 +181,6 @@ plot(lm.log)
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
 ## stepwise regression
-
 lm.step <- step(lm.mod)
 summary(lm.step)  # model with the lowest AIC, interpretation
 
@@ -187,10 +197,11 @@ lm.step.coeff <- fd_numeric[c("AGE", "FG_PCT", "DREB", "TOV", "BLKA", "PF",
 par(mfrow = c(1,1))
 corrplot(cor(lm.step.coeff), method = 'number')  # we can observe strong correlations (commentare) so...go with ridge
 
-#########################################################
-## for the ridge reg, we can interpret the coefficients of the last model (at least the signs of the better one)
-## but the main idea is to compare the performances (MSE) of the two models and compare them to the real salaries
-#########################################################
+#############################################################################
+## for the ridge reg, we can interpret the coefficients of the last model
+## (at least the signs of the better one) but the main idea is to compare the
+## performances (MSE) of the two models and compare them to the real salaries
+#############################################################################
 
 # let's try to evaluate the performances of the stepwise model
 
@@ -288,7 +299,6 @@ cat("Average R-squared:", avg_rsquared_log, "\n")
 
 ## usando il logaritmo MSE è più alto, dobbiamo valutare quale modello stepsize tenere
 
-
 ## compare models prediction with actual salaries (plot model salaries vs real salaries)
 
 pred_values <- predict(lm.step)
@@ -322,19 +332,15 @@ tab1 <- cbind(matching_sort$PLAYER_NAME,sal_pred_res_sort)
 #############################
 
 ## linear model
-
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
 # design matrix without the first column 
-# because we don not consider the intercept 
-#
-
+# because we do not consider the intercept
 X <- model.matrix(Salary~., data=fd_numeric)
 X <- X[,-1]
 
 # vector of responses
-
 y <- fd_numeric$Salary
 
 
@@ -362,32 +368,28 @@ cv.out <- cv.glmnet(X[train, ], y[train], alpha = 0, nfold=10)
 plot(cv.out)
 
 ## selecting the lambda that minimizes test MSE
-
 best_lambda <- cv.out$lambda.min
 best_lambda
  
 
 # estimated test MSE with bestlambda value
-
 ridge.mod <- glmnet(X[train, ], y[train], alpha=0)
-ridge.pred <- predict(ridge.mod, s=bestlam, newx=X[test,])
+ridge.pred <- predict(ridge.mod, s=best_lambda, newx=X[test,])
 test.mse.ridge <- mean((ridge.pred-y[test])^2)
 test.mse.ridge
 
 ## final model with best lambda on all data
-
 ridge.final <- glmnet(X, y, alpha = 0)
-coef(ridge.final, s=bestlam)
+coef(ridge.final, s=best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-
 plot(ridge.final, xvar="lambda", label=TRUE)
-abline(v=log(bestlam), lty=3, lwd=2)
+abline(v=log(best_lambda), lty=3, lwd=2)
 
 # R2
 
 #use fitted best model to make predictions
-y_predicted <- predict(ridge.final, s = bestlam, newx = X)
+y_predicted <- predict(ridge.final, s = best_lambda, newx = X)
 
 #find SST and SSE
 sst <- sum((y - mean(y))^2)
@@ -400,7 +402,7 @@ R2
 ## R2 better than stepwise regression
 
 # final MSE
-ridge.final.pred <- predict(ridge.final, s=bestlam, X)
+ridge.final.pred <- predict(ridge.final, s=best_lambda, X)
 
 test.mse.ridge <- mean((ridge.final.pred-y)^2)
 test.mse.ridge
@@ -418,16 +420,13 @@ ord_indexes <- order(abs(diffs), decreasing = TRUE)
 big_diffs_ind <- ord_indexes[1:10]
 
 ## predicted salary (ridge)
-
 pred_sal_ridge <- ridge.final.pred[big_diffs_ind]
 
 ## actual salary and player names
-
 fd_ridge <- final_dataset[c(big_diffs_ind), ]
 fd_ridge_cut <- fd_ridge[c('PLAYER_NAME', 'Salary')]
 
 ## final table for ridge regression
-
 tab2 <- cbind(fd_ridge_cut, pred_sal_ridge, fd_ridge_cut$Salary-pred_sal_ridge)
 tab2
 
@@ -438,16 +437,6 @@ tab2
 #### analyze the differences between tab1 and tab2 ####
 
 
-################################
-# RIDGE FOR DIFFERENT POSITIONS #
-################################
-
-final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
-pos <- as.data.frame(cbind(data_vorp$PLAYER_NAME, data_vorp$Pos))
-names(pos) <- c("PLAYER_NAME", "POS")
-
-
-ds_wpos <- merge(final_dataset, pos, by = "PLAYER_NAME")
-ds_wpos
-
-unique(final_dataset$Pos)
+############################################
+# MODELLO MIGLIORE FOR DIFFERENT POSITIONS #
+############################################
