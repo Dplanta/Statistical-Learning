@@ -82,8 +82,9 @@ summary(fd_numeric)
 boxplot(Salary)
 summary(Salary)
 hist(Salary)
+hist(log(Salary))      ## forma più regolare, ulteriore motivo per usare il logaritmo
 
-# Dipendent variables
+# Independent variables
 
 boxplot(AGE)
 boxplot(GP)
@@ -458,3 +459,5 @@ names(pos) <- c("PLAYER_NAME", "POS")
 
 ds_wpos <- merge(final_dataset, pos, by = "PLAYER_NAME")
 ds_wpos
+
+unique(final_dataset$Pos)

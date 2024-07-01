@@ -32,7 +32,6 @@ Our goal is to investigate whether the salaries earned by the NBA players during
 The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. 
 Finally, we will compare actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
 
-*AGGIUNGERE DETTAGLI E SPIEGARE IN SINTESI IL WEB SCRAPING REALIZZATO*
 
 ## Steps followed
 
@@ -59,7 +58,7 @@ All data concerns the 2023-2024 NBA Regular Season.
 
 Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues. 
 There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82. 
-Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that a few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
+Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
 
 All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsabilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarised data between the various players may lead to biases if not handled properly. 
 We think that considering only the regular season, although leading to a limited analysis, may be sufficient to grasp the main relationships between salaries and performance.
@@ -110,14 +109,24 @@ The stats below are collected from Basketball reference:
 
 BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
+#### Why statistics per 48 minutes?
 
+Considering most statistics projected over 48 minutes avoids overestimating performance for players who play, on average, more minutes in a game. In this way we think that the contribution of each player is fairly evaluated and not distorted by the minutes played.
 
-*AGGIUNGERE DETTAGLI, LE ROBE DEI 48 MINUTI ETC ETC, qui c'è davvero molto da scrivere da quanto ho capito ed è uno dei punti forti del progetto*
 
 ## Data integration and cleaning
 
-*Spiegare tutta la roba di come si sono unite le tabelle, aggiustato i dati come i nomi etc etc*
+Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets.
 
+At this stage, the data were cleaned:
+
+- NA removal
+- Matching players' names
+- Transforming the Salary column into a numeric one
+- Removing players who played less than 480 minutes during the entire regular season 
+
+The reason why we selected players with at least 480 minutes played is that we wanted to avoid considering stats taken on a too small amount of minutes.
+After these operation, the final dataset consists of 360 rows and 31 columns.
 
 
 ```{r useful-code, include=FALSE}
@@ -166,6 +175,8 @@ final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
 
 ## Data exploration
 
+Before studying the data with formal models, we got an overview through an exploratory data analysis.
+
 ```{r example-of-dataset, echo=FALSE, warning=FALSE}
 library(knitr)
 kable(final_dataset[1:5, 1:10], format="simple", align = "llcccccccc")
@@ -173,11 +184,93 @@ kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc")
 kable(final_dataset[1:5, 21:31], format="simple", align = "ccccccccccc")
 ```
 
+```{r, include=FALSE, warning=FALSE}
+numeric_cols <- sapply(final_dataset, is.numeric)
+fd_numeric <- final_dataset[, numeric_cols]
+summary(fd_numeric)
+```
+
+Firstly, an analysis of the variable Salary that will be the dependent variable in the models.
 
 
+```{r variable-salary, echo=FALSE, warning=FALSE}
+
+attach(final_dataset)
+boxplot(Salary)
+summary(Salary)
+hist(Salary)
+hist(log(Salary))
+
+```
 
 
+The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. 
+The histogram also highlights the right skewed distribution. The asimmetry could be mitigated by applying a logarithmic transformation to the variable. 
 
+
+```{r boxplots-independent-variables, include=FALSE}
+
+boxplot(AGE)
+boxplot(GP)
+boxplot(MIN)
+boxplot(MIN_G, PTS)
+boxplot(OREB, DREB, REB, AST)
+boxplot(TOV, STL, BLK, BLKA, PF, PFD)
+boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT)
+boxplot(OFF_RATING, DEF_RATING)
+boxplot(NET_RATING)
+boxplot(AST_TO)
+boxplot(PIE, USG_PCT)
+boxplot(WS, BPM, VORP)
+
+```
+
+
+In order to study correlations between the variables that will be the independent ones in the models, we used the functions corrplot and pairs.
+
+```{r corrplot-independent-variables, warning=FALSE}
+
+library(corrplot)
+
+corrplot(cor(fd_numeric), method = 'color')
+#corrplot(cor(fd_numeric), method = 'ellipse')
+
+```
+
+```{r pairs-independent-variables, echo=FALSE}
+# FUNCTION "pairs" for matrix plot
+
+# define the functions "panel.hist" and "panel.cor"
+
+
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+# execute pairs function
+
+#pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor)
+#pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=panel.smooth)
+
+```
 
 
 
