@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
   word_document:
@@ -194,21 +194,19 @@ summary(fd_numeric)
 
 Firstly, an analysis of the variable Salary that will be the dependent variable in the models.
 
-
 ```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE}
 
 attach(final_dataset)
-boxplot(Salary)
-summary(Salary)
-hist(Salary)
-hist(log(Salary))
+par(mfrow = c(2, 2))
+boxplot(Salary, main="Boxplot of the salary")
+hist(Salary, main="Histogram of the salary")
+boxplot(log(Salary), main="Boxplot of the logarithmic salary")
+hist(log(Salary), main="Histogram of the logarithmic salary")
 
 ```
 
-
 The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. 
 The histogram also highlights the right skewed distribution. The asimmetry could be mitigated by applying a logarithmic transformation to the variable. 
-
 
 ```{r boxplots-independent-variables, include=FALSE}
 
@@ -227,7 +225,6 @@ boxplot(WS, BPM, VORP)
 
 ```
 
-
 In order to study correlations between the variables that will be the independent ones in the models, we used the functions corrplot and pairs.
 
 ```{r corrplot-independent-variables, warning=FALSE}
@@ -238,42 +235,3 @@ corrplot(cor(fd_numeric), method = 'color')
 #corrplot(cor(fd_numeric), method = 'ellipse')
 
 ```
-
-```{r pairs-independent-variables, echo=FALSE}
-# FUNCTION "pairs" for matrix plot
-
-# define the functions "panel.hist" and "panel.cor"
-
-
-panel.hist <- function(x, ...)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5) )
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks; nB <- length(breaks)
-  y <- h$counts; y <- y/max(y)
-  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
-}
-
-
-panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- abs(cor(x, y))
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  txt <- paste0(prefix, txt)
-  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-  text(0.5, 0.5, txt, cex = cex.cor * r)
-}
-
-# execute pairs function
-
-#pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor)
-#pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=panel.smooth)
-
-```
-
-
-
-
