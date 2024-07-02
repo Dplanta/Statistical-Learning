@@ -109,7 +109,6 @@ The stats below are collected from [Basketball Reference](https://www.basketball
 
 BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
-BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
 ### Why statistics per 48 minutes?
 
@@ -177,7 +176,7 @@ final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
 
 ## Data exploration
 
-Before studying the data with formal models, we got an overview through an exploratory data analysis.
+Before studying the data with formal models, we got an overview through an exploratory data analysis. For the first part of our analysis we used only numeric variables, so PLAYER_NAME and POS are removed from the dataset at this stage.  
 
 ```{r example-of-dataset, echo=FALSE, warning=FALSE}
 library(knitr)
@@ -225,7 +224,7 @@ boxplot(WS, BPM, VORP)
 
 ```
 
-In order to study correlations between the variables that will be the independent ones in the models, we used the functions corrplot and pairs.
+In order to study correlations between the variables that will be the independent ones in the models, we used the corrplot function.
 
 ```{r corrplot-independent-variables, warning=FALSE}
 
@@ -235,3 +234,13 @@ corrplot(cor(fd_numeric), method = 'color')
 #corrplot(cor(fd_numeric), method = 'ellipse')
 
 ```
+
+Different correlations between the variables emerge from the corrplot. 
+With regard to the variable Salary, it is interesting to notice that Salary is positively correlated with PTS and advanced stats like USG_PCT, BPM and VORP: all of these variables are related to players' shots and point contribution.
+For what concerns the other variables, there are some obvious correlations: for instance, between variables MIN (total minutes played during the regular season) and MIN_G (minutes played per game) and between variables REB, OREB and DREB (all related to rebounds, with the relation REB = OREB + DREB). Additionally, we expected the positive correlation between BPM and VORP because are both related to players point estimation. 
+A strong positive correlation emerges between PTS and USG_PCT. The usage percentage is "The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS". Thus, players with a high USG_PCT often make the last play in an offensive possession (a shot, a free throw or a turnover): it is straightforward that if a player often ends the offensive possession of his team, he has more opportunities to score points.
+For what concerns the negative correlations, the most interesting are the ones between rebounds variables (OREB, DREB, REB), FT_PCT and FG3_PCT. Players that grab a lot of rebounds are usually the tallest ones and these players are not great free throws shooters or 3 point shooters (on average).
+
+
+
+
