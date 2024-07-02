@@ -72,11 +72,10 @@ numeric_cols <- sapply(final_dataset, is.numeric)
 fd_numeric <- final_dataset[, numeric_cols]
 summary(fd_numeric)
 
-# Variables EDA
 
-# variable Salary (dipendent)
-boxplot(Salary, main="Boxplot of the salary")
+# variable Salary (dependent)
 summary(Salary)
+boxplot(Salary, main="Boxplot of the salary")
 hist(Salary, main="Histogram of the salary")
 boxplot(log(Salary), main="Boxplot of the logarithmic salary")
 hist(log(Salary), main="Histogram of the logarithmic salary")      # forma più regolare, ulteriore motivo per usare il logaritmo
@@ -86,6 +85,7 @@ boxplot(Salary, main="Boxplot of the salary")
 hist(Salary, main="Histogram of the salary")
 boxplot(log(Salary), main="Boxplot of the logarithmic salary")
 hist(log(Salary), main="Histogram of the logarithmic salary")
+par(mfrow = c(1, 1))
 
 
 # Independent variables
@@ -103,7 +103,7 @@ boxplot(PIE, USG_PCT, names=c("PIE", "USG_PCT"))
 boxplot(WS, BPM, VORP, names=c("WS", "BPM", "VORP"))
 
 
-### Analyze correlations
+## Analyze correlations
 
 # covariance and correlation matrices
 cov_mat <- round(cov(fd_numeric),2)
@@ -116,37 +116,6 @@ library(corrplot)
 corrplot(cor(fd_numeric), method = 'color')
 corrplot(cor(fd_numeric), method = 'ellipse')
 
-# FUNCTION "pairs" for matrix plot
-
-# define the functions "panel.hist" and "panel.cor"
-panel.hist <- function(x, ...)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5) )
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks; nB <- length(breaks)
-  y <- h$counts; y <- y/max(y)
-  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
-}
-
-
-panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- abs(cor(x, y))
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  txt <- paste0(prefix, txt)
-  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-  text(0.5, 0.5, txt, cex = cex.cor * r)
-}
-
-# execute pairs function
-# dev.new(width=10, height=10)
-pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor)
-pairs(fd_numeric, diag.panel=panel.hist, upper.panel=panel.cor, lower.panel=panel.smooth)
-
-## we can notice a lot of correlations between the variables;
 
 ############
 ## MODELS ## 
@@ -180,13 +149,16 @@ plot(lm.log)
 
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
+
 ###############################
 # EXHAUSTIVE SUBSET SELECTION #
 ###############################
+library(leaps)
 
 regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
 reg.summary <- summary(regfit.full)
 reg.summary$outmat
+reg.summary$which
 reg.summary$rsq
 
 
@@ -212,17 +184,18 @@ plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
 i <- which.min(reg.summary$bic)
 points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
 text(i,reg.summary$bic[i], i, pos=3)
+par(mfrow = c(1,1))
 
-#It seems that selecting 12 or 13 parameters gives us the best balance 
-#between model simplicity and precision. 
+# It seems that selecting 12 or 13 parameters gives us the best balance 
+# between model simplicity and precision. 
 
 #let's get the list of selected parameters:
-
 covariates = 13
 
 selected.model <- reg.summary$which[covariates,]
 selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
 print(selected.parameters)
+
 
 #######################
 # STEPWISE REGRESSION #
@@ -232,17 +205,15 @@ lm.step <- step(lm.mod)
 summary(lm.step)  # model with the lowest AIC, interpretation
 
 lm.step$coefficients
-cor(fd_numeric[c("AGE", "FG_PCT", "DREB", "TOV", "BLKA", "PF", 
-                  "PTS", "OFF_RATING", "DEF_RATING", "NET_RATING", "TS_PCT", "PIE", 
-                  "MIN", "MIN_G", "WS")])
+selected.parameters <- names(coef(lm.step))
+selected.parameters <- selected.parameters[selected.parameters != "(Intercept)"]
+print(selected.parameters)
 
+cor(fd_numeric[selected.parameters])
 
-lm.step.coeff <- fd_numeric[c("AGE", "FG_PCT", "DREB", "TOV", "BLKA", "PF", 
-                              "PTS", "OFF_RATING", "DEF_RATING", "NET_RATING", "TS_PCT", "PIE", 
-                              "MIN", "MIN_G", "WS")]  # interpretation
-
-par(mfrow = c(1,1))
-corrplot(cor(lm.step.coeff), method = 'number')  # we can observe strong correlations (commentare) so...go with ridge
+lm.step.coeff <- fd_numeric[selected.parameters]  # interpretation
+corrplot(cor(lm.step.coeff), method = 'number')
+# we can observe strong correlations (commentare) so...go with ridge
 
 #############################################################################
 ## for the ridge reg, we can interpret the coefficients of the last model
@@ -252,11 +223,9 @@ corrplot(cor(lm.step.coeff), method = 'number')  # we can observe strong correla
 
 # let's try to evaluate the performances of the stepwise model
 
-# Define the number of folds for cross-validation
-num_folds <- 10
-
-# Set the seed for reproducibility
-set.seed(123)
+num_folds <- 10 # number of folds for cross-validation
+set.seed(123) # set the seed for reproducibility
+selected.formula <- as.formula(paste("Salary ~", paste(selected.parameters, collapse = " + ")))
 
 # Initialize vectors to store performance metrics
 mse <- numeric(num_folds)
@@ -270,9 +239,7 @@ for (i in 1:num_folds) {
   test_data <- fd_numeric[test_indices, ]
   
   # Fit the linear regression model on the training data
-  model <- lm(Salary ~ AGE + FG_PCT + DREB + TOV + BLKA + PF + 
-                PTS + OFF_RATING + DEF_RATING + NET_RATING + TS_PCT + PIE + 
-                MIN + MIN, data = train_data)
+  model <- lm(selected.formula, data = train_data)
   
   # Make predictions on the test data
   predictions <- predict(model, newdata = test_data)
@@ -291,28 +258,28 @@ cat("Average MSE:", avg_mse, "\n")
 cat("Average R-squared:", avg_rsquared, "\n")
 
 
-### si può provare ad utilizzare la stepwise sul modello con il logaritmo perchè le assunzioni 
-### del modello lineare sono meglio rispettate; nel for qui sopra, in "calculate performance metrics"
-### bisogna sostituire predictions con e^predictions
+### si può provare ad utilizzare la stepwise sul modello con il logaritmo
+### perchè le assunzioni del modello lineare sono meglio rispettate;
+### nel for qui sopra, in "calculate performance metrics" bisogna sostituire
+### predictions con e^predictions
 
 lm.step.log <- step(lm.log)
-
 summary(lm.step.log)
+
 lm.step.log$coefficients
+selected.parameters <- names(coef(lm.step.log))
+selected.parameters <- selected.parameters[selected.parameters != "(Intercept)"]
+print(selected.parameters)
 
-cor(fd_numeric[c("AGE", "FG_PCT", "BLK", "BLKA", "PTS", 
-                   "OFF_RATING", "DEF_RATING", "NET_RATING", "TS_PCT", "PIE", "MIN_G", 
-                   "WS")])
+cor(fd_numeric[selected.parameters])
 
-# Define the number of folds for cross-validation
 num_folds <- 10
-
-# Set the seed for reproducibility
 set.seed(123)
 
 # Initialize vectors to store performance metrics
 mse_log <- numeric(num_folds)
 rsquared_log <- numeric(num_folds)
+selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
 
 
 # Perform k-fold cross-validation
@@ -323,9 +290,7 @@ for (i in 1:num_folds) {
   test_data <- fd_numeric[test_indices, ]
   
   # Fit the linear regression model on the training data
-  model <- lm(log(Salary) ~ AGE + FG_PCT + BLK + BLKA + PTS + 
-                OFF_RATING + DEF_RATING + NET_RATING + TS_PCT + PIE + MIN_G + 
-                WS, data = train_data)
+  model <- lm(selected.formula, data = train_data)
   
   # Make predictions on the test data
   predictions <- predict(model, newdata = test_data)
@@ -339,7 +304,6 @@ for (i in 1:num_folds) {
 avg_mse_log <- mean(mse_log)
 avg_rsquared_log <- mean(rsquared_log)
 
-
 # Print average performance metrics
 cat("Average MSE:", avg_mse_log, "\n")
 cat("Average R-squared:", avg_rsquared_log, "\n")
@@ -347,7 +311,6 @@ cat("Average R-squared:", avg_rsquared_log, "\n")
 ## usando il logaritmo MSE è più alto, dobbiamo valutare quale modello stepsize tenere
 
 ## compare models prediction with actual salaries (plot model salaries vs real salaries)
-
 pred_values <- predict(lm.step)
 plot(pred_values, Salary)
 
@@ -375,24 +338,20 @@ tab1 <- cbind(matching_sort$PLAYER_NAME,sal_pred_res_sort)
 
 
 #############################
-# RIDGE REGRESSION          #
+#     RIDGE REGRESSION      #
 #############################
+library(glmnet)
 
-## linear model
+# linear model
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
-# design matrix without the first column 
-# because we do not consider the intercept
+# design matrix not considering the intercept
 X <- model.matrix(Salary~., data=fd_numeric)
 X <- X[,-1]
 
 # vector of responses
 y <- fd_numeric$Salary
-
-
-# package for ridge regression
-library(glmnet)
 
 ### Cross validation to select the best lambda ###
 
@@ -406,19 +365,19 @@ test  <- setdiff(1:n, train)
 
 cv.out <- cv.glmnet(X[train, ], y[train], alpha = 0, nfold=10)
 
-# This plots the cross-validation curve (red dotted line) along with upper and lower standard deviation curves
-# along the lambda sequence (error bars). Two special values along the lambda sequence are indicated by the vertical
-# dotted lines. lambda.min is the value of lambda that gives minimum mean cross-validated error, while lambda.1se
-# is the value of lambda that gives the most regularized model such that the cross-validated error is within one
+# This plots the cross-validation curve (red dotted line) along with upper and
+# lower standard deviation curves along the lambda sequence (error bars).
+# Two special values along the lambda sequence are indicated by the vertical
+# dotted lines. lambda.min is the value of lambda that gives minimum mean
+# cross-validated error, while lambda.1se is the value of lambda that gives
+# the most regularized model such that the cross-validated error is within one
 # standard error of the minimum.
-
 plot(cv.out)
 
 ## selecting the lambda that minimizes test MSE
 best_lambda <- cv.out$lambda.min
 best_lambda
  
-
 # estimated test MSE with bestlambda value
 ridge.mod <- glmnet(X[train, ], y[train], alpha=0)
 ridge.pred <- predict(ridge.mod, s=best_lambda, newx=X[test,])
@@ -477,11 +436,54 @@ fd_ridge_cut <- fd_ridge[c('PLAYER_NAME', 'Salary')]
 tab2 <- cbind(fd_ridge_cut, pred_sal_ridge, fd_ridge_cut$Salary-pred_sal_ridge)
 tab2
 
-#### the ridge regression shows better results compared to stepwise regression. One of 
-#### the reasons is the fact that ridge regression works well with collinear variables,
-#### even with a small lambda
+#### the ridge regression shows better results compared to stepwise regression.
+#### One of the reasons is the fact that ridge regression works well with
+#### collinear variables, even with a small lambda.
 
 #### analyze the differences between tab1 and tab2 ####
+
+
+#############################
+#     LASSO REGRESSION      #
+#############################
+
+cv.out <- cv.glmnet(X[train, ], y[train], alpha = 1, nfold=10)
+plot(cv.out)
+
+best_lambda <- cv.out$lambda.min
+best_lambda
+
+# estimated test MSE with bestlambda value
+lasso.mod <- glmnet(X[train, ], y[train], alpha=1)
+lasso.pred <- predict(lasso.mod, s=best_lambda, newx=X[test,])
+test.mse.lasso <- mean((lasso.pred-y[test])^2)
+test.mse.lasso
+
+# final model with best lambda on all data
+lasso.final <- glmnet(X, y, alpha = 1)
+coef(lasso.final, s=best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lasso.final, xvar="lambda", label=TRUE)
+abline(v=log(best_lambda), lty=3, lwd=2)
+
+# use fitted best model to make predictions
+y_predicted <- predict(lasso.final, s = best_lambda, newx = X)
+
+# SST and SSE
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+# R-Squared
+R2 <- 1 - sse/sst
+R2
+# slightly better R2 than ridge
+
+# final MSE
+lasso.final.pred <- predict(lasso.final, s=best_lambda, X)
+test.mse.lasso <- mean((lasso.final.pred-y)^2)
+test.mse.lasso
+# slightly better MSE than ridge
 
 
 ############################################
