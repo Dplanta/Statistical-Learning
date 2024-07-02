@@ -196,6 +196,16 @@ selected.model <- reg.summary$which[covariates,]
 selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
 print(selected.parameters)
 
+selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
+
+lm.exhaustive <- lm(selected.formula, data=fd_numeric)
+summary(lm.exhaustive)
+
+y <- fd_numeric$Salary
+
+lmex.final.pred <- predict(lm.exhaustive)
+test.mse.lmex <- mean((lmex.final.pred-y)^2)
+test.mse.lmex
 
 #######################
 # STEPWISE REGRESSION #
@@ -489,3 +499,4 @@ test.mse.lasso
 ############################################
 # MODELLO MIGLIORE FOR DIFFERENT POSITIONS #
 ############################################
+
