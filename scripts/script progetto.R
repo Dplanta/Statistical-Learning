@@ -204,8 +204,18 @@ summary(lm.exhaustive)
 y <- fd_numeric$Salary
 
 lmex.final.pred <- predict(lm.exhaustive)
-test.mse.lmex <- mean((lmex.final.pred-y)^2)
+test.mse.lmex <- mean((2.718^lmex.final.pred-y)^2)
 test.mse.lmex
+
+
+## MSE slightly worse than stepwise, but it is quite obvious because we have less variables in this model. The MSE
+## is really similar with less variables (R2 too is lower because here we have less variables) so we can remove stepwise
+## regression and keep this one
+
+## we have to analyse the correlation between independent variables in this model: 
+## we expect a lot of correlations, so multicollinearity. For this reason, we will try ridge and lasso that perform good 
+## in case of multicollinearity 
+
 
 #######################
 # STEPWISE REGRESSION #
