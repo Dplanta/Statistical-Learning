@@ -144,7 +144,7 @@ plot(lm.mod)
 # trying to transform the response variable
 lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
-
+par(mfrow = c(2, 2))
 plot(lm.log)
 
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)

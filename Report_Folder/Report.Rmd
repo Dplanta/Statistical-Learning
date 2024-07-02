@@ -204,23 +204,22 @@ hist(log(Salary), main="Histogram of the logarithmic salary")
 
 ```
 
-The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. 
-The histogram also highlights the right skewed distribution. The asimmetry could be mitigated by applying a logarithmic transformation to the variable. 
+The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. 
 
 ```{r boxplots-independent-variables, include=FALSE}
 
-boxplot(AGE)
-boxplot(GP)
-boxplot(MIN)
-boxplot(MIN_G, PTS)
-boxplot(OREB, DREB, REB, AST)
-boxplot(TOV, STL, BLK, BLKA, PF, PFD)
-boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT)
-boxplot(OFF_RATING, DEF_RATING)
-boxplot(NET_RATING)
-boxplot(AST_TO)
-boxplot(PIE, USG_PCT)
-boxplot(WS, BPM, VORP)
+boxplot(AGE, names=c("AGE"), show.names=TRUE)
+boxplot(GP, names=c("GP"), show.names=TRUE)
+boxplot(MIN, names=c("MIN"), show.names=TRUE)
+boxplot(MIN_G, PTS, names=c("MIN_G", "PTS"))
+boxplot(OREB, DREB, REB, AST, names=c("OREB", "DREB", "REB", "AST"))
+boxplot(TOV, STL, BLK, BLKA, PF, PFD, names=c("TOV", "STL", "BLK", "BLKA", "PF", "PFD"))
+boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT, names=c("FG_PCT", "FG3_PCT", "FT_PCT", "TS_PCT"))
+boxplot(OFF_RATING, DEF_RATING, names=c("OFF_RATING", "DEF_RATING"))
+boxplot(NET_RATING, names=c("NET_RATING"), show.names=TRUE)
+boxplot(AST_TO, names=c("AST_TO"), show.names=TRUE)
+boxplot(PIE, USG_PCT, names=c("PIE", "USG_PCT"))
+boxplot(WS, BPM, VORP, names=c("WS", "BPM", "VORP"))
 
 ```
 
@@ -235,6 +234,7 @@ corrplot(cor(fd_numeric), method = 'color')
 
 ```
 
+
 Different correlations between the variables emerge from the corrplot. 
 With regard to the variable Salary, it is interesting to notice that Salary is positively correlated with PTS and advanced stats like USG_PCT, BPM and VORP: all of these variables are related to players' shots and point contribution.
 For what concerns the other variables, there are some obvious correlations: for instance, between variables MIN (total minutes played during the regular season) and MIN_G (minutes played per game) and between variables REB, OREB and DREB (all related to rebounds, with the relation REB = OREB + DREB). Additionally, we expected the positive correlation between BPM and VORP because are both related to players point estimation. 
@@ -242,5 +242,35 @@ A strong positive correlation emerges between PTS and USG_PCT. The usage percent
 For what concerns the negative correlations, the most interesting are the ones between rebounds variables (OREB, DREB, REB), FT_PCT and FG3_PCT. Players that grab a lot of rebounds are usually the tallest ones and these players are not great free throws shooters or 3 point shooters (on average).
 
 
+## MODELS
+
+We started creating a linear regression model in order to predict salaries
+
+```{r linear-regression-model}
+
+lm.mod <- lm(Salary~+., data=fd_numeric)
+summary(lm.mod)
+
+# Residual analysis
+par(mfrow = c(2, 2))
+plot(lm.mod)
+
+```
+
+It emerges that many variables are not significative in determining the response. *For this reason, to avoid a model that is unnecessary complex, we performed a variable selection* (inserire dopo)
+Attraverso l'analisi dei residui notiamo che il primo grafico non è proprio lineare e che il terzo non ha i punti racchiusi in
+due fasce orizzontali (eteroschedasticità). 
+perciò trasformazione logaritmica per appianare 
 
 
+```{r logarithmic-transformation}
+
+lm.log <- lm(log(Salary)~+., data=fd_numeric)
+summary(lm.log)
+par(mfrow = c(2, 2))
+plot(lm.log)
+
+```
+ancora molte variabili non sono significative, ma migliorano il primo grafico (più lineare) e il terzo.
+
+in entrambi i modelli molte variabili non sono significative, quindi subset selection. Partiremo utilizzando il logaritmo perchè abbiamo visto che rende più normale la forma di y, la relazione diventa più lineare(primo grafico) e ci sono meno problemi di eteroschedasticità (terzo grafico)
