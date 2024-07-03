@@ -133,7 +133,11 @@ corrplot(cor(fd_numeric), method = 'ellipse')
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
-# interpretation 
+# MSE
+lm.mod.pred <- predict(lm.mod)
+y <- fd_numeric$Salary
+test.lm.mod <- mean((lm.mod.pred-y)^2)
+test.lm.mod
 
 # Residual analysis
 par(mfrow = c(2, 2))
@@ -146,6 +150,11 @@ lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 par(mfrow = c(2, 2))
 plot(lm.log)
+
+#MSE
+lm.log.pred <- predict(lm.log)
+test.lm.log <- mean((exp(lm.log.pred)-y)^2)
+test.lm.log
 
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
@@ -189,19 +198,24 @@ par(mfrow = c(1,1))
 # balance between model simplicity and precision. 
 
 #let's get the list of selected parameters:
-covariates = 13
+covariates = 12
 
 selected.model <- reg.summary$which[covariates,]
 selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
-print(selected.parameters)
+#print(selected.parameters)
 
 selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
 
 lm.exhaustive <- lm(selected.formula, data=fd_numeric)
 summary(lm.exhaustive)
 
+# residual analysis
+par(mfrow=c(2,2))
+plot(lm.exhaustive)
+
 y <- fd_numeric$Salary
 
+# model performances
 lmex.final.pred <- predict(lm.exhaustive)
 test.mse.lmex <- mean((exp(lmex.final.pred)-y)^2)
 test.mse.lmex
@@ -212,8 +226,8 @@ res <- lm.exhaustive$residuals
 overpaid_indices <- order(res, decreasing=TRUE)[1:10]
 underpaid_indices <- order(res, decreasing=FALSE)[1:10]
 
-over_diff <- res[overpaid_indices]
-under_diff <- res[underpaid_indices]
+#over_diff <- res[overpaid_indices]
+#under_diff <- res[underpaid_indices]
 
 over_salaries <- fd_numeric[overpaid_indices, c("Salary","MIN_G")]
 under_salaries <- fd_numeric[underpaid_indices, c("Salary","MIN_G")]
@@ -226,8 +240,15 @@ fd_over <- final_dataset[overpaid_indices, ][c('PLAYER_NAME', 'Salary')]
 fd_under <- final_dataset[underpaid_indices, ][c('PLAYER_NAME', 'Salary')]
 
 ## final table for ridge regression
-overpaid_tab_ex <- cbind(fd_over, over_pred, over_diff)
-underpaid_tab_ex <- cbind(fd_under, under_pred, under_diff)
+diff_over <- fd_over$Salary-over_pred
+diff_under <- under_pred - fd_under$Salary
+
+overpaid_tab_ex <- cbind(fd_over, over_pred, diff_over)
+underpaid_tab_ex <- cbind(fd_under, under_pred, diff_under)
+
+# correlation between dependent variables
+par(mfrow=c(1,1))
+corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 
 
 ## MSE slightly worse than stepwise, but it is quite obvious because we have
