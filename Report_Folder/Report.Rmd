@@ -389,34 +389,27 @@ The Mean Squared Error of the reduced model is really close to the complete mode
 ```{r overpaid-underpaid_check, echo=FALSE}
 
 ### 10 most overpaid and 10 most underpaid players table ###
-res <- lm.exhaustive$residuals
+res <- y - exp(lmex.final.pred)
 
 overpaid_indices <- order(res, decreasing=TRUE)[1:10]
 underpaid_indices <- order(res, decreasing=FALSE)[1:10]
 
-#over_diff <- res[overpaid_indices]
-#under_diff <- res[underpaid_indices]
-
-over_salaries <- fd_numeric[overpaid_indices, c("Salary","MIN_G")]
-under_salaries <- fd_numeric[underpaid_indices, c("Salary","MIN_G")]
+over_diff <- res[overpaid_indices]
+under_diff <- res[underpaid_indices]
 
 over_pred <- exp(lmex.final.pred)[overpaid_indices]
 under_pred <- exp(lmex.final.pred)[underpaid_indices]
 
 ## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('PLAYER_NAME', 'Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('PLAYER_NAME', 'Salary')]
+fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
+fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
 
-## final table for ridge regression
-diff_over <- fd_over$Salary-over_pred
-diff_under <- under_pred - fd_under$Salary
-
-overpaid_tab_ex <- cbind(fd_over, over_pred, diff_over)
-underpaid_tab_ex <- cbind(fd_under, under_pred, diff_under)
-
-print(overpaid_tab_ex[order(overpaid_tab_ex$diff_over, decreasing = TRUE), ]   )
-print(underpaid_tab_ex[order(underpaid_tab_ex$diff_under, decreasing = TRUE), ]   )
-
+overpaid_tab_ex <- cbind(fd_over, over_pred, over_diff)
+colnames(overpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
+underpaid_tab_ex <- cbind(fd_under, under_pred, -under_diff)
+colnames(underpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
+overpaid_tab_ex
+underpaid_tab_ex
 
 ```
 Here we have a comparison between real salaries and predicted ones. The two tables contain, respectively, the most overpaid players and the most underpaid players according to the model.
