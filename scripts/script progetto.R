@@ -245,17 +245,10 @@ colnames(overpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
 underpaid_tab_ex <- cbind(fd_under, under_pred, -under_diff)
 colnames(underpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
 
-<<<<<<< HEAD
-
-## MSE slightly worse than stepwise, but it is quite obvious because we have
-## less variables in this model. The MSE is really similar with less variables
-## (R2 too is lower because here we have less variables) so we can remove
-## stepwise regression and keep this one
-=======
 # correlation between dependent variables
 par(mfrow=c(1,1))
 corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
->>>>>>> local
+
 
 ## we have to analyse the correlation between independent variables in this
 ## model: we expect a lot of correlations, so multicollinearity.
