@@ -225,7 +225,7 @@ test.mse.lmex <- mean((exp(lmex.final.pred)-y)^2)
 test.mse.lmex
 
 ### 10 most overpaid and 10 most underpaid players table ###
-res <- lm.exhaustive$residuals
+res <- exp(lm.exhaustive$residuals)
 
 overpaid_indices <- order(res, decreasing=TRUE)[1:10]
 underpaid_indices <- order(res, decreasing=FALSE)[1:10]

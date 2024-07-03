@@ -1148,6 +1148,31 @@ complete model one (with the logarithmic transformation of the dependent
 variable), 4.77e+13 against 4.70e+13. Considering that the complete
 model has 28 variables and the reduced one 12, the latter model
 represents quite an improvement.</p>
+</div>
+<div id="real-salaries-vs-salaries-prediction" class="section level4">
+<h4>Real salaries vs salaries prediction</h4>
+<pre><code>##          PLAYER_NAME   Salary over_pred diff_over
+## 127   Darius Garland 34005250  10821355  23183895
+## 139    Deandre Ayton 32459438  12251585  20207853
+## 324     Jordan Poole 27955357  10348315  17607042
+## 314   Jonathan Isaac 17400000   3578956  13821044
+## 430   Markelle Fultz 17000000   5761147  11238853
+## 411     Luke Kennard 14763636   4441841  10321795
+## 269    James Wiseman 12119440   3445968   8673472
+## 520   Richaun Holmes 12046020   4524416   7521604
+## 524 Robert Covington 11692308   4251082   7441226
+## 30     Anthony Black  7245480   2234933   5010547</code></pre>
+<pre><code>##              PLAYER_NAME  Salary under_pred diff_under
+## 533    Russell Westbrook 3835738   18318987   14483249
+## 602         Tyrese Maxey 4343920   18257013   13913093
+## 360      Kelly Oubre Jr. 2891467   15308000   12416533
+## 185          Eric Gordon 3196448   15254675   12058227
+## 72            Cam Thomas 2240160   12260906   10020746
+## 593         Trey Jemison  341017    4752171    4411154
+## 545    Scotty Pippen Jr.  289542    4088383    3798841
+## 585       Toumani Camara 1119563    4390853    3271290
+## 587 Trayce Jackson-Davis 1119563    4368504    3248941
+## 612           Vit Krejci  369971    3029633    2659662</code></pre>
 <p>Due to the presence of correlations between the dependent variables,
 we decided to implement models that perform well when the variables are
 collinear such as Ridge regression and Lasso regression. In the next

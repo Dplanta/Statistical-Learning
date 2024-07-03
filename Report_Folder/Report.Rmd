@@ -408,6 +408,8 @@ test.mse.lmex
 
 The Mean Squared Error of the reduced model is really close to the complete model one (with the logarithmic transformation of the dependent variable), 4.77e+13 against 4.70e+13. Considering that the complete model has 28 variables and the reduced one 12, the latter model represents quite an improvement.
 
+#### Real salaries vs salaries prediction
+
 ```{r overpaid-underpaid_check, echo=FALSE}
 
 ### 10 most overpaid and 10 most underpaid players table ###
@@ -436,7 +438,20 @@ diff_under <- under_pred - fd_under$Salary
 overpaid_tab_ex <- cbind(fd_over, over_pred, diff_over)
 underpaid_tab_ex <- cbind(fd_under, under_pred, diff_under)
 
+print(overpaid_tab_ex[order(overpaid_tab_ex$diff_over, decreasing = TRUE), ]   )
+print(underpaid_tab_ex[order(underpaid_tab_ex$diff_under, decreasing = TRUE), ]   )
+
+
 ```
+Here we have a comparison between real salaries and predicted ones. The two tables contain, respectively, the most overpaid players and the most underpaid players according to the model.
+
+*OVERPAID PLAYERS*
+
+
+
+
+
+
 
 
 
