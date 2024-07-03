@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
   word_document:
@@ -56,56 +56,59 @@ All data concerns the 2023-2024 NBA Regular Season.
 
 ### Why consider only Regular Season data?
 
-Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues. 
-There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82. 
+Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues.
+
+There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82.
+
 Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
 
-All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsabilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarised data between the various players may lead to biases if not handled properly. 
+All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsibilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarized data between the various players may lead to biases if not handled properly.
+
 We think that considering only the regular season, although leading to a limited analysis, may be sufficient to grasp the main relationships between salaries and performance.
 
 
 ### Glossary
 
--	**PLAYER NAME**: players’ name
--	**SALARY**: salary earned by a player for 2023-2024 season (collected from [Hoopshype](https://hoopshype.com/))
--	**AGE**: players’ age
--	**POS**: “Position”, states the playing position of a player
+-	**PLAYER NAME**: name of a player;
+-	**SALARY**: salary earned by a player for 2023-2024 season (collected from [Hoopshype](https://hoopshype.com/));
+-	**AGE**: age of a player;
+-	**POS**: “Position”, the playing position of a player.
 
 #### Traditional stats (collected from the [NBA](https://www.nba.com/?47) website)
 
--	**GP**: “Games played”, the number of games played by a player during the 2023-2024 regular season
--	**FG_PCT**: “Field Goal Percentage”, The percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA)
--	**FG3_PCT**: “3 Points “Field Goal Percentage”, The percentage of 3pt field goal attempts that a player makes. 
--	**FT_PCT**: “Free throws Percentage”, the percentage of free throws attempts that a player makes
--	**OREB**: “Offensive Rebounds”, The number of rebounds a player or team has collected while they were on offense
--	**DREB**: “Defensive Rebounds”, The number of rebounds a player or team has collected while they were on defense
--	**REB**: “Rebounds”; A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense
--	**AST**: “Assists”, The number of assists -- passes that lead directly to a made basket -- by a player
--	**TOV**: “Turnovers”; A turnover occurs when the player or team on offense loses the ball to the defense
--	**STL**: “Steals”, Number of times a defensive player or team takes the ball from a player on offense, causing a turnover
--	**BLK**: “Blocks”, A block occurs when an offensive player attempts a shot, and the defense player tips the ball, blocking their chance to score
+-	**GP**: “Games played”, the number of games played by a player during the 2023-2024 regular season;
+-	**FG_PCT**: “Field Goal Percentage”, the percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA);
+-	**FG3_PCT**: “3 Points “Field Goal Percentage”, the percentage of 3pt field goal attempts that a player makes;
+-	**FT_PCT**: “Free throws Percentage”, the percentage of free throws attempts that a player makes;
+-	**OREB**: “Offensive Rebounds”, the number of rebounds a player or team has collected while they were on offense;
+-	**DREB**: “Defensive Rebounds”, the number of rebounds a player or team has collected while they were on defense;
+-	**REB**: “Rebounds”, a rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player has collected on either offense or defense;
+-	**AST**: “Assists”, the number of assists (passes that lead directly to a made basket) by a player;
+-	**TOV**: “Turnovers”, a turnover occurs when a player on offense loses the ball to the defense;
+-	**STL**: “Steals”, number of times a defensive player takes the ball from a player on offense, causing a turnover;
+-	**BLK**: “Blocks”, a block occurs when an offensive player attempts a shot, and the defense player tips the ball, blocking their chance to score;
 -	**BLKA**: “Blocks Against”, The number of shots attempted by a player or team that are blocked by a defender
--	**PF**: “Personal fouls”, The number of personal fouls a player or team committed
--	**PFD**: “Personal fouls drawn”, The number of personal fouls that are drawn by a player or team
--	**PTS**: “Points”, the number of points scored by a player
--	**MIN**: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season
--	**MIN_G**: “Minutes played per game”
+-	**PF**: “Personal fouls”, the number of personal fouls a player or team committed;
+-	**PFD**: “Personal fouls drawn”, the number of personal fouls that are drawn by a player or team;
+-	**PTS**: “Points”, the number of points scored by a player;
+-	**MIN**: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season;
+-	**MIN_G**: “Minutes played per game”.
 
 #### Advanced stats (collected from the [NBA](https://www.nba.com/?47) website)
 
--	**OFF_RATING**: “Offensive Rating”, Measures a team's points scored per 100 possessions. On a player level this statistic is team points scored per 100 possessions while they are on court. Formula: 100*((Points)/(POSS)
--	**DEF_RATING**: “Defensive Rating”, The number of points allowed per 100 possessions by a team. For a player, it is the number of points per 100 possessions that the team allows while that individual player is on the court. Formula: 100*((Opp Points)/(Opp POSS))
--	**NET_RATING**: “Net Rating”, Measures a team's point differential per 100 possessions. On player level this statistic is the team's point differential per 100 possessions while they are on court. Formula: OFFRTG - DEFRTG
--	**AST_TO**: “Assist to Turnover Ratio”, The number of assists for a player or team compared to the number of turnovers they have committed
--	**TS_PCT**: “True Shooting Percentage”, A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals. Formula: Points/ [2*(Field Goals Attempted+0.44*Free Throws Attempted)]
--	**USG_PCT**: “Usage Percentage”, The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS
--	**PIE**: “Player Impact Estimate”, PIE measures a player's overall statistical contribution against the total statistics in games they play in. PIE yields results which are comparable to other advanced statistics (e.g. PER) using a simple formula. Formula: (PTS + FGM + FTM - FGA - FTA + DREB + (.5 * OREB) + AST + STL + (.5 * BLK) - PF - TO) / (GmPTS + GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL + (.5 * GmBLK) - GmPF - GmTO)
+-	**OFF_RATING**: “Offensive Rating”, measures a team's points points scored per 100 possessions while a player is on the court. Formula: 100*((Points)/(POSS);
+-	**DEF_RATING**: “Defensive Rating”, the number of points per 100 possessions that the team allows while a player is on the court. Formula: 100*((Opp Points)/(Opp POSS));
+-	**NET_RATING**: “Net Rating”, Measures a team's point differential per 100 possessions while a player is on the court. Formula: OFFRTG - DEFRTG;
+-	**AST_TO**: “Assist to Turnover Ratio”, the number of assists for a player compared to the number of turnovers committed;
+-	**TS_PCT**: “True Shooting Percentage”, a shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals. Formula: Points/ [2*(Field Goals Attempted+0.44*Free Throws Attempted)];
+-	**USG_PCT**: “Usage Percentage”, the percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS;
+-	**PIE**: “Player Impact Estimate”, measures a player's overall statistical contribution against the total statistics in games they play in. PIE yields results which are comparable to other advanced statistics (e.g. PER) using a simple formula. Formula: (PTS + FGM + FTM - FGA - FTA + DREB + (.5 * OREB) + AST + STL + (.5 * BLK) - PF - TO) / (GmPTS + GmFGM + GmFTM - GmFGA - GmFTA + GmDREB + (.5 * GmOREB) + GmAST + GmSTL + (.5 * GmBLK) - GmPF - GmTO).
 
 The stats below are collected from [Basketball Reference](https://www.basketball-reference.com):
 
--	**WS**: “Win Shares”; Win Shares is a player statistic which attempts to divvy up credit for team success to the individuals on the team. It is calculated using player, team and league-wide statistics and the sum of player win shares on a given team will be roughly equal to that team’s win total for the season (more details here https://www.basketball-reference.com/about/ws.html).
--	**BPM**: “Box Plus/Minus”; a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team
--	**VORP**: “Value Over Replacement Player”; a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
+-	**WS**: “Win Shares”, attempts to divvy up credit for team success to the individuals on the team. It is calculated using player, team and league-wide statistics and the sum of player win shares on a given team will be roughly equal to that team’s win total for the season (more details on the [Basketball Reference page](https://www.basketball-reference.com/about/ws.html));
+-	**BPM**: “Box Plus/Minus”, a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team;
+-	**VORP**: “Value Over Replacement Player”, a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
 
 BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
@@ -114,23 +117,7 @@ BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over 
 
 Considering most statistics projected over 48 minutes avoids overestimating performance for players who play, on average, more minutes in a game. In this way we think that the contribution of each player is fairly evaluated and not distorted by the minutes played.
 
-
-## Data integration and cleaning
-
-Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets.
-
-At this stage, the data were cleaned:
-
-- NA removal
-- Matching players' names
-- Transforming the Salary column into a numeric one
-- Removing players who played less than 480 minutes during the entire regular season 
-
-The reason why we selected players with at least 480 minutes played is that we wanted to avoid considering stats taken on a too small amount of minutes.
-After these operation, the final dataset consists of 360 rows and 31 columns.
-
-
-```{r useful-code, include=FALSE}
+```{r useful-code1, include=FALSE}
 
 library(readxl)
 data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
@@ -148,92 +135,93 @@ data_advanced <- data_advanced[, c(3, 14, 17, 20, 23, 31, 32, 38)]
 data_miscellaneous <- data_miscellaneous[, c(3, 24)]
 data_vorp <- data_vorp[, c(2, 3, 23, 31, 32)]
 names(data_salary)[names(data_salary) == "Player"] <- "PLAYER_NAME"
+```
+
+## Data integration and cleaning
+
+Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets, removing all the players who played less than 480 minutes during the entire regular season.
+
+```{r datasets-merging}
 data_trad_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]
+
 data_st <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
 data_ast <- merge(data_st, data_advanced, by = "PLAYER_NAME", all = TRUE)
 data_mast <- merge(data_ast, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
 data_mastt <- merge(data_mast, data_trad_tot, by = "PLAYER_NAME", all = TRUE)
 final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
+```
+
+The reason why we selected players with at least 480 minutes played is that we wanted to avoid considering stats taken on a too small amount of minutes.
+After these operation, the final dataset consists of 360 rows and 31 columns.
+
+At this stage, we cleaned the data following these other steps:
+
+- NA removal;
+- Matching players' names;
+- Transforming the Salary column into a numeric one;
+- Putting the players' name as row names for the dataset and thus removing the PLAYER_NAME column.
+
+```{r useful-code2, include=FALSE}
 final_dataset <- final_dataset[!is.na(final_dataset$AGE), ]
 final_dataset <- final_dataset[!is.na(final_dataset$MIN), ]
 final_dataset <- final_dataset[!is.na(final_dataset$VORP), ]
-final_dataset
-NA_number <- colSums(is.na(final_dataset))
-print(NA_number)
 final_dataset <- final_dataset[, -17]
 colnames(final_dataset)[colnames(final_dataset) == 'PFD.y'] <- 'PFD'
 colnames(final_dataset)[colnames(final_dataset) == '2023/24'] <- 'Salary'
 final_dataset$Salary <- as.numeric(gsub("[\\$\\,]", "", final_dataset$Salary))
+rownames(final_dataset) <- final_dataset$PLAYER_NAME
+final_dataset <- final_dataset[, -1]
+attach(final_dataset)
 ```
 
-```{r datasets-merging, eval=FALSE}
-data_st <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
-data_ast <- merge(data_st, data_advanced, by = "PLAYER_NAME", all = TRUE)
-data_mast <- merge(data_ast, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
-data_mastt <- merge(data_mast, data_trad_tot, by = "PLAYER_NAME", all = TRUE)
-final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
-```
 
 ## Data exploration
 
-Before studying the data with formal models, we got an overview through an exploratory data analysis. For the first part of our analysis we used only numeric variables, so PLAYER_NAME and POS are removed from the dataset at this stage.  
+Before studying the data with formal models, we got an overview through an exploratory data analysis. For the first part of our analysis we used only numeric variables, so the categorical parameter 'Pos', which you can see on the table below, was removed from the dataset at this stage.  
 
 ```{r example-of-dataset, echo=FALSE, warning=FALSE}
 library(knitr)
-kable(final_dataset[1:5, 1:10], format="simple", align = "llcccccccc")
+kable(final_dataset[1:5, 1 :10], format="simple", align = "cccccccccc")
 kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc")
-kable(final_dataset[1:5, 21:31], format="simple", align = "ccccccccccc")
-```
-
-```{r, include=FALSE, warning=FALSE}
-numeric_cols <- sapply(final_dataset, is.numeric)
-fd_numeric <- final_dataset[, numeric_cols]
-summary(fd_numeric)
+kable(final_dataset[1:5, 21:30], format="simple", align = "cccccccccc")
 ```
 
 Firstly, an analysis of the variable Salary that will be the dependent variable in the models.
 
 ```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE}
-
-attach(final_dataset)
+numeric_cols <- sapply(final_dataset, is.numeric)
+fd_numeric <- final_dataset[, numeric_cols]
 par(mfrow = c(2, 2))
 boxplot(Salary, main="Boxplot of the salary")
 hist(Salary, main="Histogram of the salary")
-boxplot(log(Salary), main="Boxplot of the logarithmic salary")
-hist(log(Salary), main="Histogram of the logarithmic salary")
-
+boxplot(log(Salary),  main="Logarithmic salary", ylab="Salary in millions")
+hist(log(Salary),  main="Logarithmic salary", xlab="Salary in millions")
+par(mfrow = c(1, 1))
 ```
 
 The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. 
 
 ```{r boxplots-independent-variables, include=FALSE}
-
-boxplot(AGE, names=c("AGE"), show.names=TRUE)
-boxplot(GP, names=c("GP"), show.names=TRUE)
-boxplot(MIN, names=c("MIN"), show.names=TRUE)
-boxplot(MIN_G, PTS, names=c("MIN_G", "PTS"))
-boxplot(OREB, DREB, REB, AST, names=c("OREB", "DREB", "REB", "AST"))
-boxplot(TOV, STL, BLK, BLKA, PF, PFD, names=c("TOV", "STL", "BLK", "BLKA", "PF", "PFD"))
-boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT, names=c("FG_PCT", "FG3_PCT", "FT_PCT", "TS_PCT"))
-boxplot(OFF_RATING, DEF_RATING, names=c("OFF_RATING", "DEF_RATING"))
-boxplot(NET_RATING, names=c("NET_RATING"), show.names=TRUE)
-boxplot(AST_TO, names=c("AST_TO"), show.names=TRUE)
-boxplot(PIE, USG_PCT, names=c("PIE", "USG_PCT"))
-boxplot(WS, BPM, VORP, names=c("WS", "BPM", "VORP"))
-
+boxplot(AGE, main="AGE", names=c("AGE"), show.names=TRUE, ylab="years")
+boxplot(GP, main="Games played", names=c("GP"), show.names=TRUE, ylab="number of GP")
+boxplot(MIN, main="MiN played per season", names=c("MIN"), show.names=TRUE, ylab="minutes played")
+boxplot(MIN_G, PTS, main="MIN played and PTS scored per game", names=c("MIN_G", "PTS"), ylab="units number")
+boxplot(OREB, DREB, REB, AST, main="OREB, DREB, REB, AST per game", names=c("OREB", "DREB", "REB", "AST"), ylab="units number")
+boxplot(TOV, STL, BLK, BLKA, PF, PFD, main="TOV, STL, BLK, BLKA, PF, PFD per game", names=c("TOV", "STL", "BLK", "BLKA", "PF", "PFD"), ylab="units number")
+boxplot(FG_PCT, FG3_PCT, FT_PCT, TS_PCT, main="FG_PCT, FG3_PCT, FT_PCT, TS_PCT", names=c("FG_PCT", "FG3_PCT", "FT_PCT", "TS_PCT"), ylab="percentage")
+boxplot(OFF_RATING, DEF_RATING, main="OFF_RATING, DEF_RATING", names=c("OFF_RATING", "DEF_RATING"), ylab="rating")
+boxplot(NET_RATING, main="NET_RATING", names=c("NET_RATING"), show.names=TRUE, ylab="rating")
+boxplot(AST_TO, main="AST_TO", names=c("AST_TO"), show.names=TRUE, ylab="units number")
+boxplot(PIE, USG_PCT, main="PIE, USG_PCT", names=c("PIE", "USG_PCT"), ylab="percentage")
+boxplot(WS, BPM, VORP, main="WS, BPM, VORP", names=c("WS", "BPM", "VORP"), ylab="score")
 ```
 
-In order to study correlations between the variables that will be the independent ones in the models, we used the corrplot function.
+In order to study correlations between the predictors of the model, we used the corrplot function.
 
-```{r corrplot-independent-variables, warning=FALSE}
-
+```{r corrplot-independent-variables, message=FALSE, warning=FALSE}
 library(corrplot)
-
 corrplot(cor(fd_numeric), method = 'color')
-#corrplot(cor(fd_numeric), method = 'ellipse')
-
 ```
-
 
 Different correlations between the variables emerge from the corrplot. 
 With regard to the variable Salary, it is interesting to notice that Salary is positively correlated with PTS and advanced stats like USG_PCT, BPM and VORP: all of these variables are related to players' shots and point contribution.
@@ -269,16 +257,14 @@ Through the residual analysis it is noticeable that the relationship between fit
 
 
 ```{r logarithmic-transformation, echo=FALSE}
-
 lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 par(mfrow = c(2, 2))
 plot(lm.log)
-#MSE
+
 lm.log.pred <- predict(lm.log)
 test.lm.log <- mean((exp(lm.log.pred)-y)^2)
 test.lm.log
-
 ```
 
 With a logarithmic transformation of the dependent variable, the model shows a slightly lower R-squared (0.62 vs the previous 0.68) and a slightly higher MSE (4.70e+13 vs the previous 4.14e+13). 
@@ -292,7 +278,6 @@ We selected a subset of relevant features starting from the predictors used in t
 To do so, we used The regsubsets function which performs best subset selection by identifying the best model that contains a given number of predictors, where best is quantified using RSS. We set the function to return results up to the best 28-variables model.
 
 ```{r exhaustive-subset-selection, echo=FALSE, include=FALSE}
-
 library(leaps)
 
 regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
@@ -300,52 +285,43 @@ reg.summary <- summary(regfit.full)
 reg.summary$outmat
 reg.summary$which
 reg.summary$rsq
-
-
 ```
 
 To find the best balance between model simplicity and precision, we evaluated the number of parameters to be included in the model through Mallow's Cp, BIC and Adjusted R-squared.
 
 ```{r parameters-selection, echo=FALSE}
-# residual sum of squares
+par(mfrow = c(2, 2))
+
 plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
 
-# adjusted-R^2 with its largest value
 plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
 i <- which.max(reg.summary$adjr2)
 points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
 text(i,reg.summary$adjr2[i], i, pos=1)
 
-# Mallow's Cp with its smallest value
 plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary$cp)#return the index of the minimum
+i <- which.min(reg.summary$cp)
 points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
 text(i,reg.summary$cp[i], i, pos=3)
 
-# BIC with its smallest value
 plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
 i <- which.min(reg.summary$bic)
 points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
 text(i,reg.summary$bic[i], i, pos=3)
 par(mfrow = c(1,1))
-
 ```
 
 Considering Mallow's Cp, the best number of parameters for our model is 12. We obtained the list of parameters from the regsubset function to get the best model with 12 parameters. 
 
 ```{r best_model_12_parameters, echo=FALSE}
-
 covariates = 12
 
 selected.model <- reg.summary$which[covariates,]
-selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
-#print(selected.parameters)
+selected.parameters <- names(selected.model[selected.model])[-1]
 selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
 
 lm.exhaustive <- lm(selected.formula, data=fd_numeric)
 summary(lm.exhaustive)
-
-
 ```
 
 *INTERPRETARE MODELLO*
