@@ -209,6 +209,10 @@ selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters,
 lm.exhaustive <- lm(selected.formula, data=fd_numeric)
 summary(lm.exhaustive)
 
+# correlation between dependent variables
+par(mfrow=c(1,1))
+corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
+
 # residual analysis
 par(mfrow=c(2,2))
 plot(lm.exhaustive)
@@ -245,10 +249,6 @@ diff_under <- under_pred - fd_under$Salary
 
 overpaid_tab_ex <- cbind(fd_over, over_pred, diff_over)
 underpaid_tab_ex <- cbind(fd_under, under_pred, diff_under)
-
-# correlation between dependent variables
-par(mfrow=c(1,1))
-corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 
 
 ## MSE slightly worse than stepwise, but it is quite obvious because we have
