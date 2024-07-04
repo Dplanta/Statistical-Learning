@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
   word_document:
@@ -142,13 +142,13 @@ names(data_salary)[names(data_salary) == "Player"] <- "PLAYER_NAME"
 Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets, removing all the players who played less than 480 minutes during the entire regular season.
 
 ```{r datasets-merging}
-data_trad_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]
+data_traditional_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]
 
-data_st <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
-data_ast <- merge(data_st, data_advanced, by = "PLAYER_NAME", all = TRUE)
-data_mast <- merge(data_ast, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
-data_mastt <- merge(data_mast, data_trad_tot, by = "PLAYER_NAME", all = TRUE)
-final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_advanced, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_traditional_tot, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_vorp, by = "PLAYER_NAME", all = TRUE)
 ```
 
 The reason why we selected players with at least 480 minutes played is that we wanted to avoid considering stats taken on a too small amount of minutes.
@@ -235,20 +235,19 @@ For what concerns the negative correlations, the most interesting are the ones b
 We started creating a linear regression model in order to predict salaries.
 
 ```{r linear-regression-model, echo=FALSE}
-
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
 # Residual analysis
 par(mfrow = c(2, 2))
 plot(lm.mod)
+par(mfrow = c(1, 1))
 
 # MSE
 lm.mod.pred <- predict(lm.mod)
 y <- fd_numeric$Salary
-test.lm.mod <- mean((lm.mod.pred-y)^2)
-test.lm.mod
-
+mse.lm.mod <- mean((lm.mod.pred-y)^2)
+print(paste("MSE of the full linear model = ", format(mse.lm.mod, scientific = TRUE)))
 ```
 
 The complete model has a good adjusted R-squared of 0.68 and a MSE of 4.14e+13.
@@ -263,8 +262,8 @@ par(mfrow = c(2, 2))
 plot(lm.log)
 
 lm.log.pred <- predict(lm.log)
-test.lm.log <- mean((exp(lm.log.pred)-y)^2)
-test.lm.log
+mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
+print(paste("MSE of the full linear model with logarithmic Salary = ", format(mse.lm.log, scientific = TRUE)))
 ```
 
 With a logarithmic transformation of the dependent variable, the model shows a slightly lower adjusted R-squared (0.62 vs the previous 0.68) and a slightly higher MSE (4.70e+13 vs the previous 4.14e+13). 
@@ -275,21 +274,15 @@ In both models many variables are not significative in determining the response:
 ### Variable selection
 
 We selected a subset of relevant features starting from the predictors used in the complete model in order to have a simpler model that is easier to interpret, without redundant variables and less prone to overfitting.
-To do so, we used The regsubsets function which performs best subset selection by identifying the best model that contains a given number of predictors, where best is quantified using RSS. We set the function to return results up to the best 28-variables model.
-
-```{r exhaustive-subset-selection, echo=FALSE, include=FALSE}
-library(leaps)
-
-regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
-reg.summary <- summary(regfit.full)
-reg.summary$outmat
-reg.summary$which
-reg.summary$rsq
-```
+To do so, we used the `regsubsets` function which performs best subset selection by identifying the best model that contains a given number of predictors, according to the RSS metric. We set the function to return results up to the best 28-variables model.
 
 To find the best balance between model simplicity and precision, we evaluated the number of parameters to be included in the model through Mallow's Cp, BIC and Adjusted R-squared.
 
-```{r parameters-selection, echo=FALSE}
+```{r parameters-selection, echo=FALSE, message=FALSE, warning=FALSE}
+library(leaps)
+regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
+reg.summary <- summary(regfit.full)
+
 par(mfrow = c(2, 2))
 
 plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
@@ -308,10 +301,11 @@ plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
 i <- which.min(reg.summary$bic)
 points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
 text(i,reg.summary$bic[i], i, pos=3)
+
 par(mfrow = c(1,1))
 ```
 
-Considering Mallow's Cp, the best number of parameters for our model is 12. We obtained the list of parameters from the regsubset function to get the best model with 12 parameters. 
+Considering Mallow's Cp, the best number of parameters for our model is 12. We obtained the list of parameters from the `regsubset` function to get the best model with 12 parameters. 
 
 ```{r best_model_12_parameters, echo=FALSE}
 covariates = 12
@@ -323,34 +317,29 @@ selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters,
 lm.exhaustive <- lm(selected.formula, data=fd_numeric)
 summary(lm.exhaustive)
 ```
-The reducted model shows a higher adjusted R-squared, 0.63, compared to the complete logarithmic model (0.62). It means that, despite the lower number of variables, this model fits better the data. 
+
+The reduced model shows a slightly higher adjusted R-squared, 0.63, compared to the complete logarithmic model (0.62). It means that, despite the lower number of variables, this model fits better the data.
 Different variables are strongly significant:
 
-- AGE: the positive coefficient associate to the variable show that older players earn, on average, more than younger ones.
-This makes sense because the youngest players in the league, rookies(first year in NBA) and sophmores(second year in NBA),
-usually earn less in the first years due to particular specifications in their contracts.
+- *AGE*: the positive coefficient associated to the variable shows that older players earn, on average, more than youngsters. This makes sense since the youngest players in the league, rookies (first year in NBA) and sophomores (second year in NBA), usually earn less in the first years due to particular specifications in their contracts;
 
-- PTS: quite straightforward: positive coefficient means that the players who scores more points, on average, have higher         salaries.
+- *PTS*: this is quite straightforward. Players who score more points, on average, have higher salaries;
 
-- TS_PCT: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counterintuitive, it means that a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories: The first category is composed by big men which take most of their shots near the basket, thus high percentage shots. The second category is composed by 3-point shooting specialists, because in the metric the weight for a 3 point shoot is higher. The mentioned players are really important into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable that scoring only few shots it's not enough to earn high salaries. 
+- *TS_PCT*: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counterintuitive: a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories. The first one is composed by tall players who take most of their shots near the basket, thus getting a high percentage. The second category is composed by 3-point shooting specialists, because the weight for a 3 point shoot is higher for the metric. These players are crucial into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense if the model assigns a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable to think that scoring only few shots it's not enough to earn a high salary.
 
-- MIN_G: players that play on average more minutes in a game earn, on average, a higher salary.
+- *MIN_G*: players that play on average more minutes in a game earn, on average, a higher salary.
 
+The variable FG_PCT is less significative than TS_PCT, but the coefficient here is positive. Both the stats measure shooting percentages, but FG_PCT does not weight shots and does not consider free throws. In this way, the previous mentioned effect on 3 point shooting specialists is reduced. It is possible to infer that FG_PCT represents better, within this model, the positive impact of good shooting percentages on wages.
 
-The variable FG_PCT is less significative than TS_PCT, but the coefficient here is positive. Both the stats measure shooting percentages, but FG_PCT does not weight shots and does not consider free throws. In this way, the previous mentioned effect on 3 point shooting specialists reduces. It is possible to infer that FG_PCT represents better, within this model, the positive impact of good shooting percentages on wages.
+The variables OFF_RATING, DEF_RATING, NET_RATING, PIE and WS have a level of significance between 0.01 and 0.05. The positive sign of OFF_RATING and WS coefficients and the negative sign of DEF_RATING coefficient are in line with what we expected. OFF_RATING (DEF_RATING) represents the points scored (conceded) by the team when the player is playing, WS measures the player contribution to the team wins. We didn't expected a negative signs for NET_RATING (OFF_RATING - DEF_RATING) and PIE, that measures the player impact in the game. 
 
-With a level of significance between 0.01 and 0.05 the variables OFF_RATING, DEF_RATING, NET_RATING, PIE and WS. The positive sign of OFF_RATING and WS coefficients and the negative sign of DEF_RATING coefficient are in line with what we expected. OFF_RATING (DEF_RATING) represents the points scored (conceded) by the team when the player is playing, WS measures the player contribution to the team wins. We didn't expected a negative signs for NET_RATING (OFF_RATING - DEF_RATING) and PIE, that measures the player impact in the game. 
-For what concerns PIE, the negative sign has different possible explanations: projecting PIE per 48 minutes, it is inflated for players who have a high impact on the game but only for few minutes; It considers a lot of stats, even stats that seem to be not significative in determining salary; PIE difference between high salary players and low salary ones is not proportional to the differences in salaries; it is always difficult consider defensive contribution with this kind of metrics and it is reasonable to think that defensive contribution plays an important role in determining a players salary; PIE does not consider aspects like leadership and IQ that, like defensive contribution, will certainly have an impact on the salaries.
+For what concerns PIE, the negative sign has different possible explanations: projecting PIE per 48 minutes inflates the metric for players who have a high impact on the game but few minutes played. It considers a lot of stats, even stats that seem to be not significative in determining salary; PIE difference between high salary players and low salary ones is not proportional to the differences in salaries. It is always difficult consider defensive contribution with this kind of metric and it is reasonable to think that defensive contribution plays an important role in determining a players salary. Furthermore, PIE does not consider aspects like leadership and IQ that, as defensive contribution, will certainly have an impact on the salaries.
 Anyway, beyond all the possible explanations, these unexpected negative signs likely depend from other variables not included in the model.
 
 #### Correlation between dependent variables
 
 ```{r correlation-independent-variables, echo=FALSE}
-
-# correlation between dependent variables
-par(mfrow=c(1,1))
 corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
-
 ```
 
 There are, also in this case, different correlations between the dependent variables.
@@ -359,68 +348,68 @@ There are, also in this case, different correlations between the dependent varia
 
 
 ```{r residual-analysis, echo=FALSE}
-
-# residual analysis
 par(mfrow=c(2,2))
 plot(lm.exhaustive)
-
+par(mfrow=c(1,1))
 ```
 
-From the plots the assumptions of the linear model seem to be fulfilled. It can be seen that some players are outliers in each graph: these players probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
+The assumptions of the linear model seem to be fulfilled. It can be seen that some players are outliers in each graph: these players probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
 
 
 #### MSE
 
 ```{r model-performance, echo=FALSE}
-
 y <- fd_numeric$Salary
 
-# MSE
 lmex.final.pred <- predict(lm.exhaustive)
 test.mse.lmex <- mean((exp(lmex.final.pred)-y)^2)
-test.mse.lmex
-
+print(paste("MSE of the full linear model with logarithmic Salary = ", format(test.mse.lmex, scientific = TRUE)))
 ```
 
-The Mean Squared Error of the reduced model is really close to the complete model one (with the logarithmic transformation of the dependent variable), 4.77e+13 against 4.70e+13. Considering that the complete model has 28 variables and the reduced one 12, the latter model represents quite an improvement.
+The Mean Squared Error of the reduced model is really close to the one of the complete linear model with the logarithmic transformation of the Salary, 4.77e+13 against 4.70e+13. Considering that the complete model has 28 variables and the reduced one 12, the latter model represents quite an improvement.
 
 #### Real salaries vs salaries prediction
 
 ```{r overpaid-underpaid_check, echo=FALSE}
+create_tables <- function(real_values, pred_values, N) {
+  res <- real_values - pred_values
+  res <- as.vector(res)
+  
+  overpaid_indices <- order(res, decreasing=TRUE)[1:N]
+  underpaid_indices <- order(res, decreasing=FALSE)[1:N]
+  
+  over_diff <- res[overpaid_indices]
+  under_diff <- res[underpaid_indices]
+  
+  over_pred <- pred_values[overpaid_indices]
+  under_pred <- pred_values[underpaid_indices]
+  
+  ## actual salary and player names
+  fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
+  fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
+  
+  overpaid_table <- cbind(fd_over, over_pred, over_diff)
+  colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  underpaid_table <- cbind(fd_under, under_pred, -under_diff)
+  colnames(underpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  
+  return(list(overpaid_table, underpaid_table))
+}
 
-### 10 most overpaid and 10 most underpaid players table ###
-res <- y - exp(lmex.final.pred)
-
-overpaid_indices <- order(res, decreasing=TRUE)[1:10]
-underpaid_indices <- order(res, decreasing=FALSE)[1:10]
-
-over_diff <- res[overpaid_indices]
-under_diff <- res[underpaid_indices]
-
-over_pred <- exp(lmex.final.pred)[overpaid_indices]
-under_pred <- exp(lmex.final.pred)[underpaid_indices]
-
-## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
-
-overpaid_tab_ex <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
-underpaid_tab_ex <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
-overpaid_tab_ex
-underpaid_tab_ex
+lm.ess.tables <- create_tables(y, exp(lmex.final.pred), 10)
+lm.ess.tables[[1]]
+lm.ess.tables[[2]]
 
 ```
 
-Here we have a comparison between real salaries and predicted ones. The tables contain, respectively, the most overpaid players and the most underpaid players according to the model.
+Here we have a comparison between real salaries and predicted ones. The tables contain, respectively, the 10 most overpaid players and the 10 most underpaid players according to the model.
 
 *MOST OVERPAID PLAYERS*
 
-The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed expectations. These facts are enough to explain that Beal 23-24 performance is not in line with his salary.
+The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed the expectations. These facts are enough to explain that Beal 23-24 performance is not in line with his salary.
 Darius Garland signed a big contract (near to the maximum) starting from 23-24 season. After showing superstar potential in 22-23, Cleveland Cavaliers renewed his contract with an important salary increase but Garland's performance decreased in 23-24. He is only 24, the team bet heavily on him taking a weighted risk in order to keep with them a high potential player. This bet didn't paid in 23-24 season.
 Trae Young and Zach Lavine have superstar contracts respectively in Atlanta and Chicago, but they are not carrying their teams as expected. Both players could be traded during this summer.
-Zion Williamson and Michael Porter jr (especially the first one) are young players that in their still short careers have not shown their full potential due to injuries. Their contracts, let's say, consider their potential performance at the top of their form.
+Zion Williamson and Michael Porter Jr. (especially the former) are young players that in their still short careers have not shown their full potential due to injuries. Their contracts, let's say, consider their potential performance at the top of their form.
 Jordan Poole had an exploit in the previous seasons playing with a top team, Golden State Warriors, that somehow justifies his salary. He seemed to be ready to carry a team on his own, he was traded to Washington but his first season was a failure. 
 
 *MOST UNDERPAID PLAYERS*
@@ -429,8 +418,6 @@ Lebron James and Kevin Durant are two of the best players in the league for many
 For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.
 Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says. 
 Russell Westbrook is in the waning phase of his career. On the expiry of his last superstar contract, no team in the league offered him a comparable salary (he earned 47 millions in 2022). Consequently, he accepted a 3.8 millions salary (veteran minimum contract) to play with Los Angeles Clippers. For sure he is no longer a player worth 47 millions, but he is not worth 3.8 millions either. Our model interprets pretty well the situation, stating that Westbrook should earn a 18.3 millions salary: not a superstar one, but not a minimum wage either. 
-
-
 
 Due to the presence of correlations between the independent variables, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performance of these models is better than that of the models seen so far.
 
@@ -441,54 +428,47 @@ Due to the presence of correlations between the independent variables, we decide
 The subset selection methods use least squares to fit a linear model with a subset of the predictors. Instead of controlling model complexity by setting a subset of coefficients beta j to be zero, ridge regression fits a model with all p predictors shrinking the coefficient estimates towards zero. Ridge regression uses quadratic shrinking. 
 
 ```{r ridge-starting, include=FALSE}
-
 library(glmnet)
-
-# linear model
-lm.mod <- lm(Salary~+., data=fd_numeric)
-summary(lm.mod)
-
-# design matrix not considering the intercept
 X <- model.matrix(Salary~., data=fd_numeric)
 X <- X[,-1]
-
-# vector of responses
 y <- fd_numeric$Salary
-
 ```
 
 Lambda is a tuning parameter. In order to determine a good value of lambda, we used cross-validation.  
 
 ```{r lambda-selection, echo=FALSE}
-### Cross validation to select the best lambda ###
+ten_fold_cv <- function(X, y, a) {
+  n <- nrow(X)
+  
+  set.seed(1)
+  train <- sample(1:n, n/2)
+  test  <- setdiff(1:n, train)
+  
+  cv.out <- cv.glmnet(X[train, ], y[train], alpha = a, nfold = 10)
+  
+  # This plots the cross-validation curve (red dotted line) along with upper and
+  # lower standard deviation curves along the lambda sequence (error bars).
+  # Two special values along the lambda sequence are indicated by the vertical
+  # dotted lines. lambda.min is the value of lambda that gives minimum mean
+  # cross-validated error, while lambda.1se is the value of lambda that gives
+  # the most regularized model such that the cross-validated error is within one
+  # standard error of the minimum.
+  plot(cv.out)
+  
+  ## selecting the lambda that minimizes test MSE
+  best_lambda <- cv.out$lambda.min
+  print(paste("The best lambda is = ", round(best_lambda)))
+  
+  # estimated test MSE with bestlambda value
+  mod <- glmnet(X[train, ], y[train], alpha = a)
+  pred <- predict(mod, s = best_lambda, newx = X[test,])
+  mse <- mean((pred-y[test])^2)
+  print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
+  
+  return <- best_lambda
+}
 
-# select n/2 observations for training set
-n <- nrow(X)
-
-set.seed(1)
-train <- sample(1:n, 180)
-test  <- setdiff(1:n, train)
-
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 0, nfold=10)
-
-# This plots the cross-validation curve (red dotted line) along with upper and
-# lower standard deviation curves along the lambda sequence (error bars).
-# Two special values along the lambda sequence are indicated by the vertical
-# dotted lines. lambda.min is the value of lambda that gives minimum mean
-# cross-validated error, while lambda.1se is the value of lambda that gives
-# the most regularized model such that the cross-validated error is within one
-# standard error of the minimum.
-plot(cv.out)
-
-## selecting the lambda that minimizes test MSE
-best_lambda <- cv.out$lambda.min
-best_lambda
- 
-# estimated test MSE with bestlambda value
-ridge.mod <- glmnet(X[train, ], y[train], alpha=0)
-ridge.pred <- predict(ridge.mod, s=best_lambda, newx=X[test,])
-test.mse.ridge <- mean((ridge.pred-y[test])^2)
-test.mse.ridge
+best_lambda <- ten_fold_cv(X, y, 0)
 ```
 In the plot above the red dotted line represents the cross-validation curve (red dotted line) along with upper and lower standard deviation curves along the lambda sequence (error bars). We chose the value of lambda (755675.4) that gives minimum mean cross-validated error.
 The mean squared error on the test set is 5.45e+13.
