@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
   word_document:
