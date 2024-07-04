@@ -513,7 +513,7 @@ mse.ridge
 ## mse better than regression with exhaustive subset search
 
 ```
-Once fitted the model on all data with the best lambda, we evaluated the performance of the model. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves, 4.34e+13 vs 4.77e+13.
+Once fitted the model on all data with the best lambda, we evaluated the performance. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves, 4.34e+13 vs 4.77e+13.
 
 The final step is the comparison between real salaries and predicted ones.
 
@@ -564,10 +564,49 @@ Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they 
 Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salaries than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
 
 
-All in all, ridge regressions has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
+All in all, ridge regression has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
 
 
 ### Lasso regression
 
+A disadvantage of ridge regression is that, unlike subset selection, it includes all p predictors in the final model. The lasso overcomes this disadvantage. Lasso regression, like ridge, shrinks the coefficients estimates towards zero; in this case, there is an absolute value shrinking instead of a quadratic one. When lambda is sufficiently large, some coefficient estimates become exactly equal to zero. Hence, like best subset selection, lasso performs a variable selection. 
 
+```{r lasso-cross-val-and-best-model, echo=FALSE}
+
+best_lambda <- ten_fold_cv(X, y, 1)
+
+# final model with best lambda on all data
+lm.las <- glmnet(X, y, alpha = 1)
+coef(lm.las, s = best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lm.las, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
+```
+
+We again used the cross-validation method and we chose the lambda that guarantees the lower mean cross-validated error.
+Once chosen the best lambda, the final model was fitted with that lambda on all data. The trace plot shows how the coefficient estimates change with increasing lambda.
+
+```{r lasso-evaluation, echo=FALSE}
+
+# use fitted best model to make predictions
+lm.las.pred <- predict(lm.las, s = best_lambda, X)
+
+# SST and SSE
+sst <- sum((y - mean(y))^2)
+sse <- sum((lm.las.pred - y)^2)
+
+# R-Squared
+R2 <- 1 - sse/sst
+R2
+# slightly better R2 than ridge
+
+# final MSE
+lm.las.pred <- predict(lm.las, s=best_lambda, X)
+mse.lm.las <- mean((lm.las.pred-y)^2)
+mse.lm.las
+# slightly better MSE than ridge
+
+```
+Once fitted the model on all data with the best lambda, we evaluated the performance. The R-squared is marginally better than that of the ridge, 0.6942 against 0.6938. The Mean squared error is slightly lower compared to the ridge one, 4.338802e+13 against 4.344009e+13. The performance of these two models is very similar and both outperform the model obtained with the best subset selection.
 

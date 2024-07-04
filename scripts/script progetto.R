@@ -546,3 +546,4 @@ mse.lm.las.g
 lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
+
