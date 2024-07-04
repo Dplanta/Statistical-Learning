@@ -3,10 +3,10 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  pdf_document:
+  html_document:
     toc: true
     # number_sections: true
-  html_document:
+  pdf_document:
     toc: true
     # number_sections: true
   word_document:
@@ -431,5 +431,141 @@ Russell Westbrook is in the waning phase of his career. On the expiry of his las
 
 
 
-Due to the presence of correlations between the dependent variables, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performance of these models is better than that the models seen so far.
+Due to the presence of correlations between the independent variables, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performance of these models is better than that of the models seen so far.
+
+
+
+### Ridge regression
+
+The subset selection methods use least squares to fit a linear model with a subset of the predictors. Instead of controlling model complexity by setting a subset of coefficients beta j to be zero, ridge regression fits a model with all p predictors shrinking the coefficient estimates towards zero. Ridge regression uses quadratic shrinking. 
+
+```{r ridge-starting, include=FALSE}
+
+library(glmnet)
+
+# linear model
+lm.mod <- lm(Salary~+., data=fd_numeric)
+summary(lm.mod)
+
+# design matrix not considering the intercept
+X <- model.matrix(Salary~., data=fd_numeric)
+X <- X[,-1]
+
+# vector of responses
+y <- fd_numeric$Salary
+
+```
+
+Lambda is a tuning parameter. In order to determine a good value of lambda, we used cross-validation.  
+
+```{r lambda-selection, echo=FALSE}
+### Cross validation to select the best lambda ###
+
+# select n/2 observations for training set
+n <- nrow(X)
+
+set.seed(1)
+train <- sample(1:n, 180)
+test  <- setdiff(1:n, train)
+
+cv.out <- cv.glmnet(X[train, ], y[train], alpha = 0, nfold=10)
+
+# This plots the cross-validation curve (red dotted line) along with upper and
+# lower standard deviation curves along the lambda sequence (error bars).
+# Two special values along the lambda sequence are indicated by the vertical
+# dotted lines. lambda.min is the value of lambda that gives minimum mean
+# cross-validated error, while lambda.1se is the value of lambda that gives
+# the most regularized model such that the cross-validated error is within one
+# standard error of the minimum.
+plot(cv.out)
+
+## selecting the lambda that minimizes test MSE
+best_lambda <- cv.out$lambda.min
+best_lambda
+ 
+# estimated test MSE with bestlambda value
+ridge.mod <- glmnet(X[train, ], y[train], alpha=0)
+ridge.pred <- predict(ridge.mod, s=best_lambda, newx=X[test,])
+test.mse.ridge <- mean((ridge.pred-y[test])^2)
+test.mse.ridge
+```
+In the plot above the red dotted line represents the cross-validation curve (red dotted line) along with upper and lower standard deviation curves along the lambda sequence (error bars). We chose the value of lambda (755675.4) that gives minimum mean cross-validated error.
+The mean squared error on the test set is 5.45e+13.
+
+```{r model-with-best-lambda, echo=FALSE}
+
+## final model with best lambda on all data
+ridge.final <- glmnet(X, y, alpha = 0)
+coef(ridge.final, s=best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(ridge.final, xvar="lambda", label=TRUE)
+abline(v=log(best_lambda), lty=3, lwd=2)
+
+
+```
+
+The final model was fitted with the best lambda on all data. The trace plot shows how the coefficients change if lambda increases.
+
+```{r evaluating-performances, echo=FALSE}
+
+# R2
+
+#use fitted best model to make predictions
+y_predicted <- predict(ridge.final, s = best_lambda, newx = X)
+
+#find SST and SSE
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+#find R-Squared
+R2 <- 1 - sse/sst
+R2
+
+## R2 better than regression with exhaustive subset search
+
+# final MSE
+ridge.final.pred <- predict(ridge.final, s=best_lambda, X)
+mse.ridge <- mean((ridge.final.pred-y)^2)
+mse.ridge
+
+## mse better than regression with exhaustive subset search
+
+```
+Once fitted the model on all data with the best lambda, we evaluated the performance of the model. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves, 4.34e+13 vs 4.77e+13.
+
+The final step is the comparison between real salaries and predicted ones.
+
+```{r final-comparison, echo=FALSE}
+
+### 10 most overpaid and 10 most underpaid players table ###
+
+diffs <- y - ridge.final.pred
+diffs <- as.vector(diffs)
+
+overpaid_indices <- order(diffs, decreasing=TRUE)[1:10]
+underpaid_indices <- order(diffs, decreasing=FALSE)[1:10]
+
+over_diff <- diffs[overpaid_indices]
+under_diff <- diffs[underpaid_indices]
+
+over_pred <- ridge.final.pred[overpaid_indices]
+under_pred <- ridge.final.pred[underpaid_indices]
+
+## actual salary and player names
+fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
+fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
+
+## final table for ridge regression
+overpaid_tab_ridge <- cbind(fd_over, over_pred, over_diff)
+colnames(overpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
+underpaid_tab_ridge <- cbind(fd_under, under_pred, -under_diff)
+colnames(underpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
+
+overpaid_tab_ridge 
+underpaid_tab_ridge
+
+```
+
+
 

@@ -324,14 +324,14 @@ sse <- sum((y_predicted - y)^2)
 R2 <- 1 - sse/sst
 R2
 
-## R2 better than stepwise regression
+## R2 better than regression with exhaustive subset search
 
 # final MSE
 ridge.final.pred <- predict(ridge.final, s=best_lambda, X)
 mse.ridge <- mean((ridge.final.pred-y)^2)
 mse.ridge
 
-## mse meglio della exhaustive subset search
+## mse better than regression with exhaustive subset search
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
