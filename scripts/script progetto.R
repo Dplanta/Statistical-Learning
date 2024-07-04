@@ -1,6 +1,5 @@
-# Upload packages
+# Upload readxl to import data from Excel to R
 library(readxl)
-
 
 # Upload datasets
 data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
@@ -10,12 +9,11 @@ data_advanced <- read.csv("./data/RS_advanced_per48.csv")
 data_miscellaneous <- read.csv("./data/RS_miscellaneous_per48.csv")
 data_vorp <- read_excel("./data/vorp.xlsx")
 
-
 # creating a new column in data_traditional_tot: MIN_G (minutes played per game)
 # min/gp
 MIN_G <- data_traditional_tot$MIN/data_traditional_tot$GP
 data_traditional_tot <- cbind(data_traditional_tot, MIN_G)
-
+rm(MIN_G) # remove the variable MIN_G, we won't use it anymore
 
 # Select the features (columns) of interest
 data_salary <- data_salary[, c(2, 3)]
@@ -25,27 +23,21 @@ data_advanced <- data_advanced[, c(3, 14, 17, 20, 23, 31, 32, 38)]
 data_miscellaneous <- data_miscellaneous[, c(3, 24)]
 data_vorp <- data_vorp[, c(2, 3, 23, 31, 32)]
 
-
 # Rename a column to prepare the dataset to do a merge
 names(data_salary)[names(data_salary) == "Player"] <- "PLAYER_NAME"
-data_trad_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]  # considering players with at least 480 minutes played along the season (better measure compared to games played)
-
+data_traditional_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]  # considering players with at least 480 minutes played along the season (better measure compared to games played)
 
 # Merge the datasets applying a full join
-data_st <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
-data_ast <- merge(data_st, data_advanced, by = "PLAYER_NAME", all = TRUE)
-data_mast <- merge(data_ast, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
-data_mastt <- merge(data_mast, data_trad_tot, by = "PLAYER_NAME", all = TRUE)
-final_dataset <- merge(data_mastt, data_vorp, by = "PLAYER_NAME", all = TRUE)
-
+final_dataset <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_advanced, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_miscellaneous, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_traditional_tot, by = "PLAYER_NAME", all = TRUE)
+final_dataset <- merge(final_dataset, data_vorp, by = "PLAYER_NAME", all = TRUE)
 
 # Facing NA values problem
-# data_mast <- data_mast[!is.na(data_mast$2023/24), ]  ## not necessary, names correspond now
-final_dataset <- final_dataset[!is.na(final_dataset$AGE), ]     ## NA's we need to remove because no stats on NBA.com
-final_dataset <- final_dataset[!is.na(final_dataset$MIN), ]
-final_dataset <- final_dataset[!is.na(final_dataset$VORP), ] ## removing NA's for MIN (players with less than 480 minutes played)
-final_dataset
-
+final_dataset <- final_dataset[!is.na(final_dataset$AGE), ] # NA's we need to remove because no stats on NBA.com
+final_dataset <- final_dataset[!is.na(final_dataset$MIN), ] # removing NA's for MIN (players with less than 480 minutes played)
+final_dataset <- final_dataset[!is.na(final_dataset$VORP), ]
 
 # Ensure that there aren't NA values
 colSums(is.na(final_dataset))
@@ -64,6 +56,8 @@ class(final_dataset$Salary)
 rownames(final_dataset) <- final_dataset$PLAYER_NAME
 final_dataset <- final_dataset[, -1]
 
+rm(data_salary, data_advanced, data_miscellaneous, data_traditional_per48, data_traditional_tot, data_vorp)
+
 ###########
 ### EDA ###
 ###########
@@ -80,7 +74,7 @@ summary(Salary)
 boxplot(Salary, main="Boxplot of the salary")
 hist(Salary, main="Histogram of the salary")
 boxplot(log(Salary), main="Boxplot of the logarithmic salary")
-hist(log(Salary), main="Histogram of the logarithmic salary")      # forma più regolare, ulteriore motivo per usare il logaritmo
+hist(log(Salary), main="Histogram of the logarithmic salary") # forma più regolare, ulteriore motivo per usare il logaritmo
 
 par(mfrow = c(2, 2))
 boxplot(Salary, main="Boxplot of the salary")
@@ -144,6 +138,7 @@ mse.lm.mod
 # Residual analysis
 par(mfrow = c(2, 2))
 plot(lm.mod)
+par(mfrow = c(1, 1))
 
 ## QQ plot ok, check linearity residuals vs fitted; check eteroschedasticity scale-location
 
@@ -152,6 +147,7 @@ lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 par(mfrow = c(2, 2))
 plot(lm.log)
+par(mfrow = c(1, 1))
 
 #MSE
 lm.log.pred <- predict(lm.log)
@@ -194,6 +190,7 @@ plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
 i <- which.min(reg.summary$bic)
 points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
 text(i,reg.summary$bic[i], i, pos=3)
+
 par(mfrow = c(1,1))
 
 # It seems that selecting 12 or 13 parameters gives us the best 
@@ -204,49 +201,57 @@ covariates = 12
 
 selected.model <- reg.summary$which[covariates,]
 selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
-#print(selected.parameters)
+print(selected.parameters)
 
 selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
 
-lm.exhaustive <- lm(selected.formula, data=fd_numeric)
-summary(lm.exhaustive)
+lm.ess <- lm(selected.formula, data=fd_numeric)
+summary(lm.ess)
 
 # correlation between dependent variables
-par(mfrow=c(1,1))
 corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 
 # residual analysis
 par(mfrow=c(2,2))
-plot(lm.exhaustive)
+plot(lm.ess)
+par(mfrow=c(1,1))
 
 # model performances
-lmex.final.pred <- predict(lm.exhaustive)
-mse.lmex <- mean((exp(lmex.final.pred)-y)^2)
-mse.lmex
+lm.ess.pred <- predict(lm.ess)
+mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
+mse.lm.ess
 
-### 10 most overpaid and 10 most underpaid players table ###
-res <- y - exp(lmex.final.pred)
+###  function that returns the top_N overpaid and top-N underpaid players tables ###
+create_tables <- function(real_values, pred_values, N) {
+  res <- real_values - pred_values
+  res <- as.vector(res)
+  
+  overpaid_indices <- order(res, decreasing=TRUE)[1:N]
+  underpaid_indices <- order(res, decreasing=FALSE)[1:N]
+  
+  over_diff <- res[overpaid_indices]
+  under_diff <- res[underpaid_indices]
+  
+  over_pred <- pred_values[overpaid_indices]
+  under_pred <- pred_values[underpaid_indices]
+  
+  ## actual salary and player names
+  fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
+  fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
+  
+  overpaid_table <- cbind(fd_over, over_pred, over_diff)
+  colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  underpaid_table <- cbind(fd_under, under_pred, -under_diff)
+  colnames(underpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  
+  return(list(overpaid_table, underpaid_table))
+}
 
-overpaid_indices <- order(res, decreasing=TRUE)[1:10]
-underpaid_indices <- order(res, decreasing=FALSE)[1:10]
-
-over_diff <- res[overpaid_indices]
-under_diff <- res[underpaid_indices]
-
-over_pred <- exp(lmex.final.pred)[overpaid_indices]
-under_pred <- exp(lmex.final.pred)[underpaid_indices]
-
-## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
-
-overpaid_tab_ex <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
-underpaid_tab_ex <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaid_tab_ex) <- c("Salary", "Predicted salary", "Difference")
+lm.ess.tables <- create_tables(y, exp(lm.ess.pred), 10)
+lm.ess.tables[[1]]
+lm.ess.tables[[2]]
 
 # correlation between dependent variables
-par(mfrow=c(1,1))
 corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 
 
@@ -268,131 +273,101 @@ summary(lm.mod)
 # design matrix not considering the intercept
 X <- model.matrix(Salary~., data=fd_numeric)
 X <- X[,-1]
+# y already defined before
 
-# vector of responses
-y <- fd_numeric$Salary
+### Ten Fold Cross Validation function to select the best lambda ###
+ten_fold_cv <- function(X, y, a) {
+  print("### 10-FOLD CROSS-VALIDATION ###")
+  n <- nrow(X)
+  
+  set.seed(1)
+  train <- sample(1:n, n/2)
+  test  <- setdiff(1:n, train)
+  
+  cv.out <- cv.glmnet(X[train, ], y[train], alpha = a, nfold = 10)
+  
+  # This plots the cross-validation curve (red dotted line) along with upper and
+  # lower standard deviation curves along the lambda sequence (error bars).
+  # Two special values along the lambda sequence are indicated by the vertical
+  # dotted lines. lambda.min is the value of lambda that gives minimum mean
+  # cross-validated error, while lambda.1se is the value of lambda that gives
+  # the most regularized model such that the cross-validated error is within one
+  # standard error of the minimum.
+  plot(cv.out)
+  
+  ## selecting the lambda that minimizes test MSE
+  best_lambda <- cv.out$lambda.min
+  print(paste("The best lambda is = ", round(best_lambda)))
+  
+  # estimated test MSE with bestlambda value
+  mod <- glmnet(X[train, ], y[train], alpha = a)
+  pred <- predict(mod, s = best_lambda, newx = X[test,])
+  mse <- mean((pred-y[test])^2)
+  print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
+  
+  return <- best_lambda
+}
 
-### Cross validation to select the best lambda ###
-
-# select n/2 observations for training set
-n <- nrow(X)
-n/2
-
-set.seed(1)
-train <- sample(1:n, 180)
-test  <- setdiff(1:n, train)
-
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 0, nfold=10)
-
-# This plots the cross-validation curve (red dotted line) along with upper and
-# lower standard deviation curves along the lambda sequence (error bars).
-# Two special values along the lambda sequence are indicated by the vertical
-# dotted lines. lambda.min is the value of lambda that gives minimum mean
-# cross-validated error, while lambda.1se is the value of lambda that gives
-# the most regularized model such that the cross-validated error is within one
-# standard error of the minimum.
-plot(cv.out)
-
-## selecting the lambda that minimizes test MSE
-best_lambda <- cv.out$lambda.min
-best_lambda
- 
-# estimated test MSE with bestlambda value
-ridge.mod <- glmnet(X[train, ], y[train], alpha=0)
-ridge.pred <- predict(ridge.mod, s=best_lambda, newx=X[test,])
-test.mse.ridge <- mean((ridge.pred-y[test])^2)
-test.mse.ridge
+best_lambda <- ten_fold_cv(X, y, 0)
 
 ## final model with best lambda on all data
-ridge.final <- glmnet(X, y, alpha = 0)
-coef(ridge.final, s=best_lambda)
+lm.rid <- glmnet(X, y, alpha = 0)
+coef(lm.rid, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(ridge.final, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+plot(lm.rid, xvar = "lambda", label = TRUE)
+abline(v=log(best_lambda), lty = 3, lwd = 2)
 
 # R2
 
 #use fitted best model to make predictions
-y_predicted <- predict(ridge.final, s = best_lambda, newx = X)
+lm.rid.pred <- predict(lm.rid, s = best_lambda, X)
 
 #find SST and SSE
 sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sse <- sum((lm.rid.pred - y)^2)
 
 #find R-Squared
 R2 <- 1 - sse/sst
 R2
-
-## R2 better than regression with exhaustive subset search
+# R2 better than Exhaustive Subset Selection
 
 # final MSE
-ridge.final.pred <- predict(ridge.final, s=best_lambda, X)
-mse.ridge <- mean((ridge.final.pred-y)^2)
-mse.ridge
-
-## mse better than regression with exhaustive subset search
+mse.lm.rid <- mean((lm.rid.pred-y)^2)
+mse.lm.rid
+## mse better than Exhaustive Subset Selection
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
+lm.rid.tables <- create_tables(y, lm.rid.pred, 10)
+lm.rid.tables[[1]]
+lm.rid.tables[[2]]
 
-diffs <- y - ridge.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:10]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:10]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- ridge.final.pred[overpaid_indices]
-under_pred <- ridge.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaid_tab_ridge <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
-underpaid_tab_ridge <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
-
-#### the ridge regression shows better results compared to stepwise regression.
-#### One of the reasons is the fact that ridge regression works well with
-#### collinear variables, even with a small lambda.
+#### the ridge regression shows better results compared to the Exhaustive
+#### Subset Selection. One of the reasons is the fact that ridge regression
+#### works well with collinear variables, even with a small lambda.
 
 
 #############################
 #     LASSO REGRESSION      #
 #############################
 
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 1, nfold=10)
-plot(cv.out)
-
-best_lambda <- cv.out$lambda.min
-best_lambda
-
-# estimated test MSE with bestlambda value
-lasso.mod <- glmnet(X[train, ], y[train], alpha=1)
-lasso.pred <- predict(lasso.mod, s=best_lambda, newx=X[test,])
-test.mse.lasso <- mean((lasso.pred-y[test])^2)
-test.mse.lasso
+best_lambda <- ten_fold_cv(X, y, 1)
 
 # final model with best lambda on all data
-lasso.final <- glmnet(X, y, alpha = 1)
-coef(lasso.final, s=best_lambda)
+lm.las <- glmnet(X, y, alpha = 1)
+coef(lm.las, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(lasso.final, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+plot(lm.las, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 # use fitted best model to make predictions
-y_predicted <- predict(lasso.final, s = best_lambda, newx = X)
+lm.las.pred <- predict(lm.las, s = best_lambda, X)
 
 # SST and SSE
 sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sse <- sum((lm.las.pred - y)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -400,35 +375,16 @@ R2
 # slightly better R2 than ridge
 
 # final MSE
-lasso.final.pred <- predict(lasso.final, s=best_lambda, X)
-mse.lasso <- mean((lasso.final.pred-y)^2)
-mse.lasso
+lm.las.pred <- predict(lm.las, s=best_lambda, X)
+mse.lm.las <- mean((lm.las.pred-y)^2)
+mse.lm.las
 # slightly better MSE than ridge
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
-
-diffs <- y - lasso.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:10]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:10]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- lasso.final.pred[overpaid_indices]
-under_pred <- lasso.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaid_tab_lasso <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaid_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
-underpaid_tab_lasso <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaid_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
+lm.las.tables <- create_tables(y, lm.las.pred, 10)
+lm.las.tables[[1]]
+lm.las.tables[[2]]
 
 
 ############################################
@@ -445,64 +401,44 @@ final_dataset$Pos <- recode_pos(final_dataset$Pos)
 
 # split the dataset based on position
 fd_list <- split(final_dataset, final_dataset$Pos)
-center_fd <- fd_list$C
-forward_fd <- fd_list$F
-guard_fd <- fd_list$G
+fd_center <- fd_list$C
+fd_forward <- fd_list$F
+fd_guard <- fd_list$G
+rm(fd_list)
 
-# remove names and position
-center_fd_numeric <- center_fd[, numeric_cols]
-forward_fd_numeric <- forward_fd[, numeric_cols]
-guard_fd_numeric <- guard_fd[, numeric_cols]
+# remove position
+fd_center <- fd_center[, numeric_cols]
+fd_forward <- fd_forward[, numeric_cols]
+fd_guard <- fd_guard[, numeric_cols]
 
 
 #### LASSO FOR CENTER POSITION
 
-lm.mod <- lm(Salary~+., data=center_fd_numeric)
-summary(lm.mod)
+lm.mod.c <- lm(Salary~+., data=fd_center)
+summary(lm.mod.c)
 
 # design matrix not considering the intercept
-X <- model.matrix(Salary~., data=center_fd_numeric)
-X <- X[,-1]
-
-# vector of responses
-y <- center_fd_numeric$Salary
+X.c <- model.matrix(Salary~., data=fd_center)
+X.c <- X.c[,-1]
+y.c <- fd_center$Salary
 
 ### Cross validation to select the best lambda ###
-
-# select n/2 observations for training set
-n <- nrow(X)
-n/2
-
-set.seed(1)
-train <- sample(1:n, n/2)
-test  <- setdiff(1:n, train)
-
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 1, nfold=10)
-plot(cv.out)
-
-best_lambda <- cv.out$lambda.min
-best_lambda
-
-# estimated test MSE with bestlambda value
-lasso.mod <- glmnet(X[train, ], y[train], alpha=1)
-lasso.pred <- predict(lasso.mod, s=best_lambda, newx=X[test,])
-test.mse.lasso <- mean((lasso.pred-y[test])^2)
-test.mse.lasso
+best_lambda <- ten_fold_cv(X.c, y.c, 1)
 
 # final model with best lambda on all data
-lasso.final <- glmnet(X, y, alpha = 1)
-coef(lasso.final, s=best_lambda)
+lm.las.c <- glmnet(X.c, y.c, alpha = 1)
+coef(lm.las.c, s=best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(lasso.final, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+plot(lm.las.c, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 # use fitted best model to make predictions
-y_predicted <- predict(lasso.final, s = best_lambda, newx = X)
+lm.las.c.pred <- predict(lm.las.c, s = best_lambda, X.c)
 
 # SST and SSE
-sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sst <- sum((y.c - mean(y.c))^2)
+sse <- sum((lm.las.c.pred - y.c)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -510,84 +446,45 @@ R2
 # very high R2
 
 # final MSE
-lasso.final.pred <- predict(lasso.final, s=best_lambda, X)
-mse.lasso <- mean((lasso.final.pred-y)^2)
-mse.lasso
+mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
+mse.lm.las.c
 # better than before
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-
-diffs <- center_fd_numeric$Salary - lasso.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:3]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:3]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- lasso.final.pred[overpaid_indices]
-under_pred <- lasso.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- center_fd[overpaid_indices, ][c('Salary')]
-fd_under <- center_fd[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaidcenters_tab_lasso <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaidcenters_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
-underpaidcenters_tab_lasso <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaidcenters_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, 3)
+lm.las.c.tables[[1]]
+lm.las.c.tables[[2]]
 
 
 #### LASSO FOR FORWARD POSITION
 
-lm.mod <- lm(Salary~+., data=forward_fd_numeric)
-summary(lm.mod)
+lm.mod.f <- lm(Salary~+., data=fd_forward)
+summary(lm.mod.f)
 
 # design matrix not considering the intercept
-X <- model.matrix(Salary~., data=forward_fd_numeric)
-X <- X[,-1]
+X.f <- model.matrix(Salary~., data=fd_forward)
+X.f <- X.f[,-1]
 
 # vector of responses
-y <- forward_fd_numeric$Salary
+y.f <- fd_forward$Salary
 
 ### Cross validation to select the best lambda ###
-
-# select n/2 observations for training set
-n <- nrow(X)
-n/2
-
-set.seed(1)
-train <- sample(1:n, n/2)
-test  <- setdiff(1:n, train)
-
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 1, nfold=10)
-plot(cv.out)
-
-best_lambda <- cv.out$lambda.min
-best_lambda
-
-# estimated test MSE with bestlambda value
-lasso.mod <- glmnet(X[train, ], y[train], alpha=1)
-lasso.pred <- predict(lasso.mod, s=best_lambda, newx=X[test,])
-test.mse.lasso <- mean((lasso.pred-y[test])^2)
-test.mse.lasso
+best_lambda <- ten_fold_cv(X.f, y.f, 1)
 
 # final model with best lambda on all data
-lasso.final <- glmnet(X, y, alpha = 1)
-coef(lasso.final, s=best_lambda)
+lm.las.f <- glmnet(X.f, y.f, alpha = 1)
+coef(lm.las.f, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(lasso.final, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+plot(lm.las.f, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 # use fitted best model to make predictions
-y_predicted <- predict(lasso.final, s = best_lambda, newx = X)
+lm.las.f.pred <- predict(lm.las.f, s = best_lambda, X.f)
 
 # SST and SSE
-sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sst <- sum((y.f - mean(y.f))^2)
+sse <- sum((lm.las.f.pred - y.f)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -595,84 +492,45 @@ R2
 # very high R2
 
 # final MSE
-lasso.final.pred <- predict(lasso.final, s=best_lambda, X)
-mse.lasso <- mean((lasso.final.pred-y)^2)
-mse.lasso
+mse.lm.las.f <- mean((lm.las.f.pred-y.f)^2)
+mse.lm.las.f
 # better than before
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-
-diffs <- forward_fd_numeric$Salary - lasso.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:3]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:3]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- lasso.final.pred[overpaid_indices]
-under_pred <- lasso.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- forward_fd[overpaid_indices, ][c('Salary')]
-fd_under <- forward_fd[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaidforwards_tab_lasso <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaidforwards_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
-underpaidforwards_tab_lasso <- cbind(fd_under, under_pred, under_diff)
-colnames(underpaidforwards_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, 3)
+lm.las.f.tables[[1]]
+lm.las.f.tables[[2]]
 
 
 #### LASSO FOR GUARD POSITION
 
-lm.mod <- lm(Salary~+., data=guard_fd_numeric)
-summary(lm.mod)
+lm.mod.g <- lm(Salary~+., data=fd_guard)
+summary(lm.mod.g)
 
 # design matrix not considering the intercept
-X <- model.matrix(Salary~., data=guard_fd_numeric)
-X <- X[,-1]
+X.g <- model.matrix(Salary~., data=fd_guard)
+X.g <- X.g[,-1]
 
 # vector of responses
-y <- guard_fd_numeric$Salary
+y.g <- fd_guard$Salary
 
 ### Cross validation to select the best lambda ###
-
-# select n/2 observations for training set
-n <- nrow(X)
-n/2
-
-set.seed(1)
-train <- sample(1:n, n/2)
-test  <- setdiff(1:n, train)
-
-cv.out <- cv.glmnet(X[train, ], y[train], alpha = 1, nfold=10)
-plot(cv.out)
-
-best_lambda <- cv.out$lambda.min
-best_lambda
-
-# estimated test MSE with bestlambda value
-lasso.mod <- glmnet(X[train, ], y[train], alpha=1)
-lasso.pred <- predict(lasso.mod, s=best_lambda, newx=X[test,])
-test.mse.lasso <- mean((lasso.pred-y[test])^2)
-test.mse.lasso
+best_lambda <- ten_fold_cv(X.g, y.g, 1)
 
 # final model with best lambda on all data
-lasso.final <- glmnet(X, y, alpha = 1)
-coef(lasso.final, s=best_lambda)
+lm.las.g <- glmnet(X.g, y.g, alpha = 1)
+coef(lm.las.g, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(lasso.final, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+plot(lm.las.g, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 # use fitted best model to make predictions
-y_predicted <- predict(lasso.final, s = best_lambda, newx = X)
+lm.las.g.pred <- predict(lm.las.g, s = best_lambda, X.g)
 
 # SST and SSE
-sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sst <- sum((y.g - mean(y.g))^2)
+sse <- sum((lm.las.g.pred - y.g)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -680,31 +538,11 @@ R2
 # worse R2 than centers and forwards
 
 # final MSE
-lasso.final.pred <- predict(lasso.final, s=best_lambda, X)
-mse.lasso <- mean((lasso.final.pred-y)^2)
-mse.lasso
+mse.lm.las.g <- mean((lm.las.g.pred-y.g)^2)
+mse.lm.las.g
 # worse than centers and forwards
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-
-diffs <- guard_fd_numeric$Salary - lasso.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:3]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:3]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- lasso.final.pred[overpaid_indices]
-under_pred <- lasso.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- guard_fd[overpaid_indices, ][c('Salary')]
-fd_under <- guard_fd[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaidguards_tab_lasso <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaidguards_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
-underpaidguards_tab_lasso <- cbind(fd_under, under_pred, under_diff)
-colnames(underpaidguards_tab_lasso) <- c("Salary", "Predicted salary", "Difference")
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, 3)
+lm.las.g.tables[[1]]
+lm.las.g.tables[[2]]
