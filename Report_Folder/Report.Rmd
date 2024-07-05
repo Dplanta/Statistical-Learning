@@ -414,6 +414,8 @@ kable(lm.ess.tables[[2]], format="simple", caption="The 10 most underpaid player
 ```
 
 Here we have a comparison between real salaries and predicted ones. The tables contain, respectively, the 10 most overpaid players and the 10 most underpaid players according to the model.
+The aim of this comparison is to analyse the major differences between predictions and actual salaries to understand whether, despite a big difference, the model's predictions seem reasonable.
+
 
 **MOST OVERPAID PLAYERS**
 
@@ -443,7 +445,7 @@ Given the presence of correlations between the independent variables, the presen
 
 ### Ridge regression
 
-The subset selection methods use least squares to fit a linear model with a subset of the predictors. Instead of controlling model complexity by setting a subset of coefficients beta j to be zero, ridge regression fits a model with all p predictors shrinking the coefficient estimates towards zero. Ridge regression uses quadratic shrinking. 
+The subset selection methods uses least squares to fit a linear model with a subset of the predictors. Instead of controlling model complexity by setting a subset of coefficients beta j to be zero, ridge regression fits a model with all p predictors shrinking the coefficient estimates towards zero. Ridge regression uses quadratic shrinking. 
 
 ```{r ridge-starting, include=FALSE}
 library(glmnet)
@@ -531,6 +533,7 @@ mse.ridge
 ## mse better than regression with exhaustive subset search
 
 ```
+
 Once fitted the model on all data with the best lambda, we evaluated the performance. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves, 4.34e+13 vs 4.77e+13.
 
 The final step is the comparison between real salaries and predicted ones.
@@ -565,10 +568,11 @@ overpaid_tab_ridge
 underpaid_tab_ridge
 
 ```
+Here we compare real salaries and predicted ones. The tables contain, as before, the 10 most overpaid players and the 10 most underpaid players according to the model. 
 
 *MOST OVERPAID PLAYERS*
 
-Here there are a different similarities between the previous model: Beal, Pool, LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid players. 
+Here there are a different similarities between the previous model: Beal, Poole, LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid players. 
 Klay Thompson, after being a key piece in the Golden State Warriors dinasty, suffered a serious injury few years ago. After that, he was no longer the same player and the salary was, let's say, no longer adequate to his performance. His contract with Golden State ended after the 23-24 season and he recently signed with Dallas Mavericks for 50 millions in 3 years, thus he will earn a salary closer (even lower) to the predicted one.
 Regarding Tobias Harris, this was the last contract year with Philadelphia 76ers. He signed this contract in 2019, team's situation was really different, Harris seemed to be the missing piece to build a contender for the title. After 5 years and a lot of changes, his situation is similar to Thompson's: salary not in line with performance. In fact, he also signed recently with another team (Detroit Pistons) for 52 millions in 2 years, really close to the prediction.
 Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results really overpaid was quite predictable.
@@ -576,8 +580,9 @@ Discussions about Rudy Gobert's value are always controversial. He doesn't shine
 
 *MOST UNDERPAID PLAYERS*
 
-At first glance we can see that ridge regression does not classify players with very high salaries (such as Lebron James and Kevin Durant) as most underpaid. We believe that in this respect the prediction is better than the previous model.
+At first glance we can see that ridge regression does not classify players with very high salaries (such as Lebron James and Kevin Durant) as most underpaid. We believe that in this respect the prediction is better than the previous model one.
 Again, we find Westbrook, Maxey and Oubre jr. in this tier. Oubre's last contract was 30 millions in 2 years with Phoenix Suns, so in line with the predicted one. Last year he signed a small 2.89 million one-year contract with Philadelphia 76ers for several reasons: injury history, lack of performance consistency, market dynamics. Probably he will sign a new contract soon.
+Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction. 
 Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they are clearly over performing considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
 Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salaries than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
 
@@ -604,6 +609,8 @@ abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 We again used the cross-validation method and we chose the lambda that guarantees the lower mean cross-validated error.
 Once chosen the best lambda, the final model was fitted with that lambda on all data. The trace plot shows how the coefficient estimates change with increasing lambda.
+Observing the coefficients, 6 are shrunk to zero. Among them, the coefficients of PIE and NET_RATING that were significant in the best subset selection model.
+
 
 ```{r lasso-evaluation, echo=FALSE}
 
@@ -626,5 +633,41 @@ mse.lm.las
 # slightly better MSE than ridge
 
 ```
+
 Once fitted the model on all data with the best lambda, we evaluated the performance. The R-squared is marginally better than that of the ridge, 0.6942 against 0.6938. The Mean squared error is slightly lower compared to the ridge one, 4.338802e+13 against 4.344009e+13. The performance of these two models is very similar and both outperform the model obtained with the best subset selection.
+
+
+```{r comparison-lasso, echo=FALSE}
+
+### 10 most overpaid and 10 most underpaid players table ###
+lm.las.tables <- create_tables(y, lm.las.pred, 10)
+lm.las.tables[[1]]
+lm.las.tables[[2]]
+
+```
+Here we compare real salaries and the ones predicted with Lasso regression.
+
+
+*MOST OVERPAID PLAYERS*
+
+It is interesting to note that 9 out of 10 players in this table are the same as in the corresponding table for ridge. Also the difference between real salaries and predicted ones is very similar to that of the ridge. The only change is the presence of Trae Young here (he was one the most overpaid players in the best subset selection model) and Rudy Gobert in the ridge. 
+
+
+*MOST UNDERPAID PLAYERS*
+
+Also in this case, 9 out of 10 players are the same as in ridge and the differences are really similar. 
+The only change is the presence of Kevin Love. As Eric Gordon, he is a veteran and he signed for a small salary with Miami Heat.
+
+
+After analysing the three models, it emerges that ridge and lasso regression outperform the model obtained through the best subset selection. Additionally, the predictions for the most underpaid players seem to be more reasonable in ridge and lasso regression. 
+In conclusion, lasso regression results (even only slightly compared to the ridge regression) the model that best fits our data.
+
+
+### Models per position
+
+
+
+
+
+
 
