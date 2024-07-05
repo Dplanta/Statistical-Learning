@@ -407,20 +407,20 @@ fd_guard <- fd_list$G
 rm(fd_list)
 
 # remove position
-fd_center <- fd_center[, numeric_cols]
-fd_forward <- fd_forward[, numeric_cols]
-fd_guard <- fd_guard[, numeric_cols]
-
+fd_center_nopos <- fd_center[, numeric_cols]
+fd_forward_nopos <- fd_forward[, numeric_cols]
+fd_guard_nopos <- fd_guard[, numeric_cols]
+length(fd_center_nopos)
 
 #### LASSO FOR CENTER POSITION
 
-lm.mod.c <- lm(Salary~+., data=fd_center)
+lm.mod.c <- lm(Salary~+., data=fd_center_nopos)
 summary(lm.mod.c)
 
 # design matrix not considering the intercept
-X.c <- model.matrix(Salary~., data=fd_center)
+X.c <- model.matrix(Salary~., data=fd_center_nopos)
 X.c <- X.c[,-1]
-y.c <- fd_center$Salary
+y.c <- fd_center_nopos$Salary
 
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
@@ -451,22 +451,22 @@ mse.lm.las.c
 # better than before
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center, 3)
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center_nopos, 3)
 lm.las.c.tables[[1]]
 lm.las.c.tables[[2]]
 
 
 #### LASSO FOR FORWARD POSITION
 
-lm.mod.f <- lm(Salary~+., data=fd_forward)
+lm.mod.f <- lm(Salary~+., data=fd_forward_nopos)
 summary(lm.mod.f)
 
 # design matrix not considering the intercept
-X.f <- model.matrix(Salary~., data=fd_forward)
+X.f <- model.matrix(Salary~., data=fd_forward_nopos)
 X.f <- X.f[,-1]
 
 # vector of responses
-y.f <- fd_forward$Salary
+y.f <- fd_forward_nopos$Salary
 
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.f, y.f, 1)
@@ -497,22 +497,22 @@ mse.lm.las.f
 # better than before
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward, 3)
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward_nopos, 3)
 lm.las.f.tables[[1]]
 lm.las.f.tables[[2]]
 
 
 #### LASSO FOR GUARD POSITION
 
-lm.mod.g <- lm(Salary~+., data=fd_guard)
+lm.mod.g <- lm(Salary~+., data=fd_guard_nopos)
 summary(lm.mod.g)
 
 # design matrix not considering the intercept
-X.g <- model.matrix(Salary~., data=fd_guard)
+X.g <- model.matrix(Salary~., data=fd_guard_nopos)
 X.g <- X.g[,-1]
 
 # vector of responses
-y.g <- fd_guard$Salary
+y.g <- fd_guard_nopos$Salary
 
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.g, y.g, 1)
@@ -543,6 +543,27 @@ mse.lm.las.g
 # worse than centers and forwards
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard, 3)
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
+
+#########
+# ANOVA # 
+#########
+
+# Is there, on average, a difference between salaries of players with different positions?
+
+fd_guard_df <- as.data.frame(fd_guard)
+fd_forward_df <- as.data.frame(fd_forward)
+fd_center_df <- as.data.frame(fd_center)
+fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
+
+bartlett.test(Salary ~ Pos, data = fd_roles_df)
+
+aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
+summary(aov.roles)
+
+
+
+
+

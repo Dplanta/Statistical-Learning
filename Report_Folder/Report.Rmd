@@ -3,13 +3,13 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
+  html_document:
+    toc: true
+    # number_sections: true
   pdf_document:
     toc: true
     includes:
       in_header: header.tex
-    # number_sections: true
-  html_document:
-    toc: true
     # number_sections: true
   word_document:
     toc: true
@@ -546,7 +546,7 @@ Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in
 
 Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they are clearly overperforming considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
 
-Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salaries than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
+Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salary than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
 
 All in all, Ridge regression has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
 
@@ -611,11 +611,166 @@ After analyzing these three models, it emerges that ridge and lasso regression o
 In conclusion, lasso regression results (even only slightly compared to the ridge regression) the model that best fits our data.
 
 
-### Models per position
+## Salaries analysis by position
+
+In the last part of the study, we wanted to analyse salaries by grouping players with respect to their playing positions. As positions, we considered the classic split of centers, forwards and guards. 
+First of all, we wanted to check whether players earn, on average, the same salary regardless of their role. To do so, we used the ANOVA to compare the means of the different groups.
+Secondly, we implemented 3 lasso regression models to explore the relationship between salaries and performance for each position. The objectives are:
+
+- observe the differences between the coefficients of the role-specific models among themselves and with respect to the lasso general model (the one which considers all the position)
+
+- compare position-specific models' performances between each other and with the lasso general model
+
+- compare the predictions on the most overpaid and most underpaid players between position-specific and general models 
+
+We used lasso regression because it turned out to be the best model in the previous phase.
 
 
 
+### ANOVA
+
+```{r anova, echo=FALSE}
+
+fd_guard_df <- as.data.frame(fd_guard)
+fd_forward_df <- as.data.frame(fd_forward)
+fd_center_df <- as.data.frame(fd_center)
+fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
+
+bartlett.test(Salary ~ Pos, data = fd_roles_df)
+
+aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
+summary(aov.roles)
+
+```
+The ANOVA is a hypothesis test of equal mean in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand the alternative hypothesis states that there is a difference between the average salaries of the different roles. Firstly, we tested the hypotesis of variances homogeneity with the Bartlett test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering the hypothesis of homogeneity of variances satisfied. 
+Proceeding with ANOVA, the test statistic F results equal to 0.009. This quantity indicates that the variability between the positions is quite small compared to the variability within the positions. The p-value is much greater than 0.05 (chosen again as level of significance), so we don't have sufficient evidence to reject the null hypothesis. 
+In conclusion, there is no significant evidence to suggest that average salaries differ significantly between different positions.
+
+
+### Models
+
+In our dataset the division was somewhat different, with 5 positions (PG, SG, PF, SF, C). We considered point guards (PG) and shooting guards (SG) as guards (G), power forwards (PF) and shooting forwards (SF) as forwards (F). The centers (C) are the same.   
+
+```{r creating-split, include=FALSE}
+
+# function to transform PG and SG into G, and PF and SF into F
+recode_pos <- function(x) {
+  ifelse(x %in% c("PG", "SG"), "G", 
+         ifelse(x %in% c("PF", "SF"), "F", x))
+}
+
+final_dataset$Pos <- recode_pos(final_dataset$Pos)
+
+# split the dataset based on position
+fd_list <- split(final_dataset, final_dataset$Pos)
+fd_center <- fd_list$C
+fd_forward <- fd_list$F
+fd_guard <- fd_list$G
+rm(fd_list)
+
+# remove position
+fd_center_nopos <- fd_center[, numeric_cols]
+fd_forward_nopos <- fd_forward[, numeric_cols]
+fd_guard_nopos <- fd_guard[, numeric_cols]
+
+```
+
+
+#### Centers
+
+We now considered only the centers, 29 players. 
+
+```{r lasso-centers-start, include=FALSE}
+
+#### LASSO FOR CENTER POSITION
+
+# linear model for centers
+
+lm.mod.c <- lm(Salary~+., data=fd_center_nopos)
+summary(lm.mod.c)
+
+```
+
+Starting from the complete model, we found the best $\lambda$ through a cross-validation. 
+
+```{r best-lambda-selection, echo=FALSE}
+# design matrix not considering the intercept
+X.c <- model.matrix(Salary~., data=fd_center_nopos)
+X.c <- X.c[,-1]
+y.c <- fd_center_nopos$Salary
+
+### Cross validation to select the best lambda ###
+best_lambda <- ten_fold_cv(X.c, y.c, 1)
+```
+Again, we chose the $\lambda$ value that guarantees the lower mean cross-validated error.
+
+```{r lasso-centers-coefficients-traceplot, echo=FALSE}
+
+# final model with best lambda on all data
+lm.las.c <- glmnet(X.c, y.c, alpha = 1)
+coef(lm.las.c, s=best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lm.las.c, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
+
+```
+
+Once chosen the best $\lambda$, we fitted the model on all data. The Trace plot shows how the coefficient estimates change increasing $\lambda$. 
+It is interesting that, in the particular case of centers, 9 variables are shrunk to zero: the model considers less variables compared to the general lasso model (where only 6 variables were shrunk to zero). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
+
+
+```{r lasso-centers-performance, echo=FALSE}
+
+# use fitted best model to make predictions
+lm.las.c.pred <- predict(lm.las.c, s = best_lambda, X.c)
+
+# SST and SSE
+sst <- sum((y.c - mean(y.c))^2)
+sse <- sum((lm.las.c.pred - y.c)^2)
+
+# R-Squared
+R2 <- 1 - sse/sst
+R2
+# very high R2
+
+# final MSE
+mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
+mse.lm.las.c
+# better than before
+```
+The models' performances are really good: approximately 0.8 R-squared and 2.749367e+13 MSE. By far, the best performances till now.
+It is possible to infer that the relationship between salaries and performance is very well represented from the model; however, it is important to consider that the sample here is quite small, only 29 observations. For this reason, the results must be considered carefully.
+
+
+```{r centers-underpaid-overpaid, echo=FALSE}
+
+### 3 most overpaid and 3 most underpaid centers table ###
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center_nopos, 3)
+lm.las.c.tables[[1]]
+lm.las.c.tables[[2]]
+
+```
+
+Looking at the most underpaid and most overpaid centers it emerges that the differences between actual and predicted salaries are smaller than in the models seen above.
+
+**MOST OVERPAID CENTERS**
+
+Among the overpaid centers we found again Deandre Ayton. 
+Regarding James Wiseman, he was a great prospect but he was really unlucky with injuries. Although he was traded from Golden State Warriors to Detroit Pistons (to a weaker team), he has not yet managed to fulfil its potential. He is still in his rookie contract: like Edwards, his salary is higher compared to average rookie contracts because he was the 2nd pick in 2020 draft. But unlike Edwards, according to the model his performance did not match his salary.
+Is quite surprising to find Jaren Jackson Jr here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
+
+**MOST UNDERPAID CENTERS**
+
+The most underpaid center results to be Alperen Sengun, makes sense for what we said above.
+Al Horford is a veteran, he made an excellent contribution to the Boston Celtics' title victory performing above the expectations.
+Andre Drummond is a great rebounder, capable of consistent performance in terms of statistics. However, he is lacking in aspects of the game that are not considered by the model, such as basketball IQ: maybe that is why he results underpaid according to the model.
 
 
 
+#### Forwards
+
+#### Guards
+
+## Conclusion
 
