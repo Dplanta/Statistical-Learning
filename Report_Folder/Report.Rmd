@@ -3,10 +3,12 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
-    toc: true
-    # number_sections: true
   pdf_document:
+    toc: true
+    includes:
+      in_header: header.tex
+    # number_sections: true
+  html_document:
     toc: true
     # number_sections: true
   word_document:
@@ -118,7 +120,6 @@ BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over 
 Considering most statistics projected over 48 minutes avoids overestimating performance for players who play, on average, more minutes in a game. In this way we think that the contribution of each player is fairly evaluated and not distorted by the minutes played.
 
 ```{r useful-code1, include=FALSE}
-
 library(readxl)
 data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
 data_traditional_per48 <- read.csv("./data/RS_traditional_per48.csv")
@@ -142,6 +143,7 @@ names(data_salary)[names(data_salary) == "Player"] <- "PLAYER_NAME"
 Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets, removing all the players who played less than 480 minutes during the entire regular season.
 
 ```{r datasets-merging}
+
 data_traditional_tot <- data_traditional_tot[data_traditional_tot$MIN > 480, ]
 
 final_dataset <- merge(data_salary, data_traditional_per48, by = "PLAYER_NAME", all = TRUE)
@@ -159,7 +161,7 @@ At this stage, we cleaned the data following these other steps:
 - NA removal;
 - Matching players' names;
 - Transforming the Salary column into a numeric one;
-- Putting the players' name as row names for the dataset and thus removing the PLAYER_NAME column.
+- Putting the players' name as row names for the dataset and thus removing the `PLAYER_NAME` column.
 
 ```{r useful-code2, include=FALSE}
 final_dataset <- final_dataset[!is.na(final_dataset$AGE), ]
@@ -177,18 +179,20 @@ attach(final_dataset)
 
 ## Data exploration
 
-Before studying the data with formal models, we got an overview through an exploratory data analysis. For the first part of our analysis we used only numeric variables, so the categorical parameter 'Pos', which you can see on the table below, was removed from the dataset at this stage.  
+Before studying the data with formal models, we got an overview through an exploratory data analysis. For the first part of our analysis we used only numeric variables, so the categorical parameter `Pos`, which you can see on the table below, was removed from the dataset at this stage.  
 
-```{r example-of-dataset, echo=FALSE, warning=FALSE}
+```{r example-of-dataset, echo=FALSE, warning=FALSE, fig.cap="First 5 rows of the final dataset"}
+
 library(knitr)
 kable(final_dataset[1:5, 1 :10], format="simple", align = "cccccccccc")
 kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc")
 kable(final_dataset[1:5, 21:30], format="simple", align = "cccccccccc")
 ```
 
-Firstly, an analysis of the variable Salary that will be the dependent variable in the models.
+Firstly, we perform an analysis, which can be seen in the Figure \ref{fig:variable-salary}, of the variable Salary, and its logarithmic transformation, that will be the dependent variable in the models.
 
-```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE}
+```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Boxplot and histograms of the dependent variable Salary and of its logarithmic transformation \\label{fig:variable-salary}"}
+
 numeric_cols <- sapply(final_dataset, is.numeric)
 fd_numeric <- final_dataset[, numeric_cols]
 par(mfrow = c(2, 2))
@@ -216,14 +220,15 @@ boxplot(PIE, USG_PCT, main="PIE, USG_PCT", names=c("PIE", "USG_PCT"), ylab="perc
 boxplot(WS, BPM, VORP, main="WS, BPM, VORP", names=c("WS", "BPM", "VORP"), ylab="score")
 ```
 
-In order to study correlations between the predictors of the model, we used the corrplot function.
+In order to study correlations between the predictors of the model, we used the corrplot function (Figure \ref{fig:corrplot-independent-variables}).
 
-```{r corrplot-independent-variables, message=FALSE, warning=FALSE}
+```{r corrplot-independent-variables, message=FALSE, warning=FALSE, fig.cap="Correlation plot of the independent numeric variables \\label{fig:corrplot-independent-variables}", fig.align="center", out.width='80%'}
+
 library(corrplot)
 corrplot(cor(fd_numeric), method = 'color')
 ```
 
-Different correlations between the variables emerge from the corrplot. 
+Different correlations between the variables emerge from the `corrplot`. 
 With regard to the variable Salary, it is interesting to notice that Salary is positively correlated with PTS and advanced stats like USG_PCT, BPM and VORP: all of these variables are related to players' shots and point contribution.
 For what concerns the other variables, there are some obvious correlations: for instance, between variables MIN (total minutes played during the regular season) and MIN_G (minutes played per game) and between variables REB, OREB and DREB (all related to rebounds, with the relation REB = OREB + DREB). Additionally, we expected the positive correlation between BPM and VORP because are both related to players point estimation. 
 A strong positive correlation emerges between PTS and USG_PCT. The usage percentage is "The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS". Thus, players with a high USG_PCT often make the last play in an offensive possession (a shot, a free throw or a turnover): it is straightforward that if a player often ends the offensive possession of his team, he has more opportunities to score points.
@@ -232,9 +237,10 @@ For what concerns the negative correlations, the most interesting are the ones b
 
 ## Models
 
-We started creating a linear regression model in order to predict salaries.
+We started creating a linear regression model in order to predict salaries (Figure \ref{fig:linear-regression-model}).
 
-```{r linear-regression-model, echo=FALSE}
+```{r linear-regression-model, echo=FALSE, fig.cap="Residuals plot of the complete linear model \\label{fig:linear-regression-model}", fig.align="center", out.width='90%'}
+
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
@@ -247,15 +253,15 @@ par(mfrow = c(1, 1))
 lm.mod.pred <- predict(lm.mod)
 y <- fd_numeric$Salary
 mse.lm.mod <- mean((lm.mod.pred-y)^2)
-print(paste("MSE of the full linear model = ", format(mse.lm.mod, scientific = TRUE)))
+print(paste("MSE of the complete linear model = ", format(mse.lm.mod, scientific = TRUE)))
 ```
 
 The complete model has a good adjusted R-squared of 0.68 and a MSE of 4.14e+13.
 It emerges that many variables are not significative in determining the response. 
 Through the residual analysis it is noticeable that the relationship between fitted values and residuals is not exactly linear (1st graph). Additionally, in the third graph the points are not are included in a band of constant amplitude parallel to the x-axis, hence the omoschedasticity assumption can be doubted. 
 
+```{r logarithmic-transformation, echo=FALSE, fig.cap="Residuals plot of the complete linear model with logarithmic Salary \\label{fig:logarithmic-transformation}", fig.align="center", out.width='90%'}
 
-```{r logarithmic-transformation, echo=FALSE}
 lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 par(mfrow = c(2, 2))
@@ -263,11 +269,11 @@ plot(lm.log)
 
 lm.log.pred <- predict(lm.log)
 mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
-print(paste("MSE of the full linear model with logarithmic Salary = ", format(mse.lm.log, scientific = TRUE)))
+print(paste("MSE of the complete linear model with logarithmic Salary = ", format(mse.lm.log, scientific = TRUE)))
 ```
 
-With a logarithmic transformation of the dependent variable, the model shows a slightly lower adjusted R-squared (0.62 vs the previous 0.68) and a slightly higher MSE (4.70e+13 vs the previous 4.14e+13). 
-Applying a logarithmic transformation to the dependent variable, the first graph shows a more linear relationship and the third graph allows to infer a more constant variance in the error terms.
+With a logarithmic transformation of the dependent variable, the model shows a slightly lower adjusted R-squared (0.62) and a slightly higher MSE (4.70e+13). This can be seen in the Figure \ref{fig:logarithmic-transformation}.
+Applying a logarithmic transformation to the dependent variable `Salary`, the first graph shows a more linear relationship and the third graph allows to infer a more constant variance in the error terms.
 In both models many variables are not significative in determining the response: for this reason, to avoid a model that is unnecessary complex, we performed a variable selection. A logarithmic transformation of the dependent variable Salary will be applied because, although it slightly worsens the performance of the model, it makes the salaries distribution closer to normal, it improves the linearity of the model and it reduces residuals eteroschedasticity.
 
 
@@ -278,7 +284,8 @@ To do so, we used the `regsubsets` function which performs best subset selection
 
 To find the best balance between model simplicity and precision, we evaluated the number of parameters to be included in the model through Mallow's Cp, BIC and Adjusted R-squared.
 
-```{r parameters-selection, echo=FALSE, message=FALSE, warning=FALSE}
+```{r parameters-selection, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Evaluation of the number of parameters through RSS, Adjusted R-squared, Mallow's Cp and BIC \\label{fig:parameters-selection}", fig.align='center'}
+
 library(leaps)
 regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
 reg.summary <- summary(regfit.full)
@@ -305,7 +312,7 @@ text(i,reg.summary$bic[i], i, pos=3)
 par(mfrow = c(1,1))
 ```
 
-Considering Mallow's Cp, the best number of parameters for our model is 12. We obtained the list of parameters from the `regsubset` function to get the best model with 12 parameters. 
+Considering Mallow's Cp, the best number of parameters for our model is 12. This result can be seen in the Figure \ref{fig:parameters-selection}. We obtained the list of parameters from the `regsubset` function to get the best model with 12 parameters. 
 
 ```{r best_model_12_parameters, echo=FALSE}
 covariates = 12
@@ -314,20 +321,20 @@ selected.model <- reg.summary$which[covariates,]
 selected.parameters <- names(selected.model[selected.model])[-1]
 selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
 
-lm.exhaustive <- lm(selected.formula, data=fd_numeric)
-summary(lm.exhaustive)
+lm.ess <- lm(selected.formula, data=fd_numeric)
+summary(lm.ess)
 ```
 
 The reduced model shows a slightly higher adjusted R-squared, 0.63, compared to the complete logarithmic model (0.62). It means that, despite the lower number of variables, this model fits better the data.
 Different variables are strongly significant:
 
-- *AGE*: the positive coefficient associated to the variable shows that older players earn, on average, more than youngsters. This makes sense since the youngest players in the league, rookies (first year in NBA) and sophomores (second year in NBA), usually earn less in the first years due to particular specifications in their contracts;
+- **AGE**: the positive coefficient associated to the variable shows that older players earn, on average, more than youngsters. This makes sense since the youngest players in the league, rookies (first year in NBA) and sophomores (second year in NBA), usually earn less in the first years due to particular specifications in their contracts;
 
-- *PTS*: this is quite straightforward. Players who score more points, on average, have higher salaries;
+- **PTS**: this is quite straightforward. Players who score more points, on average, have higher salaries;
 
-- *TS_PCT*: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counterintuitive: a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories. The first one is composed by tall players who take most of their shots near the basket, thus getting a high percentage. The second category is composed by 3-point shooting specialists, because the weight for a 3 point shoot is higher for the metric. These players are crucial into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense if the model assigns a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable to think that scoring only few shots it's not enough to earn a high salary.
+- **TS_PCT**: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counterintuitive: a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories. The first one is composed by tall players who take most of their shots near the basket, thus getting a high percentage. The second category is composed by 3-point shooting specialists, because the weight for a 3 point shoot is higher for the metric. These players are crucial into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense if the model assigns a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable to think that scoring only few shots it's not enough to earn a high salary.
 
-- *MIN_G*: players that play on average more minutes in a game earn, on average, a higher salary.
+- **MIN_G**: players that play on average more minutes in a game earn, on average, a higher salary.
 
 The variable FG_PCT is less significative than TS_PCT, but the coefficient here is positive. Both the stats measure shooting percentages, but FG_PCT does not weight shots and does not consider free throws. In this way, the previous mentioned effect on 3 point shooting specialists is reduced. It is possible to infer that FG_PCT represents better, within this model, the positive impact of good shooting percentages on wages.
 
@@ -338,22 +345,22 @@ Anyway, beyond all the possible explanations, these unexpected negative signs li
 
 #### Correlation between dependent variables
 
-```{r correlation-independent-variables, echo=FALSE}
+```{r correlation-independent-variables, echo=FALSE, fig.cap="Correlation between dependent variables of the reduced model \\label{fig:correlation-independent-variables}", fig.align='center', out.width='80%'}
+
 corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 ```
 
-There are, also in this case, different correlations between the dependent variables.
+It can be seen in the Figure \ref{fig:correlation-independent-variables} that there are, also in this case, different correlations between the dependent variables.
 
 #### Residual analysis
 
-
-```{r residual-analysis, echo=FALSE}
+```{r residual-analysis-ess, echo=FALSE, fig.cap="Residual plot of the reduced model with 12 covariates \\label{fig:residual-analysis-ess}", fig.align='center', out.width='90%'}
 par(mfrow=c(2,2))
-plot(lm.exhaustive)
+plot(lm.ess)
 par(mfrow=c(1,1))
 ```
 
-The assumptions of the linear model seem to be fulfilled. It can be seen that some players are outliers in each graph: these players probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
+From what can be seen in the Figure \ref{fig:residual-analysis-ess}, the assumptions of the linear model seem to be fulfilled. There are some players who are outliers in each graph: they probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
 
 
 #### MSE
@@ -361,17 +368,18 @@ The assumptions of the linear model seem to be fulfilled. It can be seen that so
 ```{r model-performance, echo=FALSE}
 y <- fd_numeric$Salary
 
-lmex.final.pred <- predict(lm.exhaustive)
-test.mse.lmex <- mean((exp(lmex.final.pred)-y)^2)
-print(paste("MSE of the full linear model with logarithmic Salary = ", format(test.mse.lmex, scientific = TRUE)))
+lm.ess.pred <- predict(lm.ess)
+mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
+print(paste("MSE of the full linear model with logarithmic Salary = ", format(mse.lm.ess, scientific = TRUE)))
 ```
 
 The Mean Squared Error of the reduced model is really close to the one of the complete linear model with the logarithmic transformation of the Salary, 4.77e+13 against 4.70e+13. Considering that the complete model has 28 variables and the reduced one 12, the latter model represents quite an improvement.
 
 #### Real salaries vs salaries prediction
 
-```{r overpaid-underpaid_check, echo=FALSE}
-create_tables <- function(real_values, pred_values, N) {
+```{r overpaid-lm.ess, echo=FALSE}
+
+create_tables <- function(real_values, pred_values, df, N) {
   res <- real_values - pred_values
   res <- as.vector(res)
   
@@ -385,8 +393,8 @@ create_tables <- function(real_values, pred_values, N) {
   under_pred <- pred_values[underpaid_indices]
   
   ## actual salary and player names
-  fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-  fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
+  fd_over <- df[overpaid_indices, ][c('Salary')]
+  fd_under <- df[underpaid_indices, ][c('Salary')]
   
   overpaid_table <- cbind(fd_over, over_pred, over_diff)
   colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
@@ -396,28 +404,38 @@ create_tables <- function(real_values, pred_values, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.tables <- create_tables(y, exp(lmex.final.pred), 10)
-lm.ess.tables[[1]]
-lm.ess.tables[[2]]
+lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
+kable(lm.ess.tables[[1]], format="simple", caption="The 10 most overpaid players according to the reduced model")
+```
 
+```{r underpaid-lm.ess, echo=FALSE, fig.cap="The 10 most underpaid players according to the reduced model \\label{fig:underpaid-lm.ess}", fig.align='center'}
+
+kable(lm.ess.tables[[2]], format="simple", caption="The 10 most underpaid players according to the reduced model")
 ```
 
 Here we have a comparison between real salaries and predicted ones. The tables contain, respectively, the 10 most overpaid players and the 10 most underpaid players according to the model.
 
-*MOST OVERPAID PLAYERS*
+**MOST OVERPAID PLAYERS**
 
 The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed the expectations. These facts are enough to explain that Beal 23-24 performance is not in line with his salary.
+
 Darius Garland signed a big contract (near to the maximum) starting from 23-24 season. After showing superstar potential in 22-23, Cleveland Cavaliers renewed his contract with an important salary increase but Garland's performance decreased in 23-24. He is only 24, the team bet heavily on him taking a weighted risk in order to keep with them a high potential player. This bet didn't paid in 23-24 season.
+
 Trae Young and Zach Lavine have superstar contracts respectively in Atlanta and Chicago, but they are not carrying their teams as expected. Both players could be traded during this summer.
+
 Regarding Deandre Ayton, he was an amazing prospect but he repeatedly failed to meet expectations at the most important moments. He signed a big contract in 2022 but his performance were not at the same level as the salary. He was traded to Washington (keeping the same contract) but also this year in a different team he did not fulfil expectations.
+
 Zion Williamson and Michael Porter Jr. (especially the former) are young players that in their still short careers have not shown their full potential due to injuries. Their contracts, let's say, consider their potential performance at the top of their form.
 Jordan Poole had an exploit in the previous seasons playing with a top team, Golden State Warriors, that somehow justifies his salary. He seemed to be ready to carry a team on his own, he was traded to Washington but his first season was a failure. 
 
-*MOST UNDERPAID PLAYERS*
+**MOST UNDERPAID PLAYERS**
 
 Lebron James and Kevin Durant are two of the best players in the league for many years now. Even though, according to our model they should earn much more than the maximum wage. For sure their careers and their performance motivate a high salary, but equally surely they are not underpaid. We think that this overestimation depends in part on the fact that the variable AGE in the model is strongly significant, Lebron James is 39 and Kevin Durant is 35. The same reasoning could apply to Kyrie Irving (32) and especially Demar Derozan (34).
+
 For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.
-Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says. 
+
+Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says.
+
 Russell Westbrook is in the waning phase of his career. On the expiry of his last superstar contract, no team in the league offered him a comparable salary (he earned 47 millions in 2022). Consequently, he accepted a 3.8 millions salary (veteran minimum contract) to play with Los Angeles Clippers. For sure he is no longer a player worth 47 millions, but he is not worth 3.8 millions either. Our model interprets pretty well the situation, stating that Westbrook should earn a 18.3 millions salary: not a superstar one, but not a minimum wage either. 
 
 Given the presence of correlations between the independent variables, the presence of multicollinearity is likely. For this reason, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performance of these models is better than that of the models seen so far.

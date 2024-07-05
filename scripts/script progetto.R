@@ -222,7 +222,7 @@ mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
 mse.lm.ess
 
 ###  function that returns the top_N overpaid and top-N underpaid players tables ###
-create_tables <- function(real_values, pred_values, N) {
+create_tables <- function(real_values, pred_values, df, N) {
   res <- real_values - pred_values
   res <- as.vector(res)
   
@@ -236,8 +236,8 @@ create_tables <- function(real_values, pred_values, N) {
   under_pred <- pred_values[underpaid_indices]
   
   ## actual salary and player names
-  fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-  fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
+  fd_over <- df[overpaid_indices, ][c('Salary')]
+  fd_under <- df[underpaid_indices, ][c('Salary')]
   
   overpaid_table <- cbind(fd_over, over_pred, over_diff)
   colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
@@ -247,7 +247,7 @@ create_tables <- function(real_values, pred_values, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.tables <- create_tables(y, exp(lm.ess.pred), 10)
+lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
 lm.ess.tables[[1]]
 lm.ess.tables[[2]]
 
@@ -339,7 +339,7 @@ mse.lm.rid
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
-lm.rid.tables <- create_tables(y, lm.rid.pred, 10)
+lm.rid.tables <- create_tables(y, lm.rid.pred, final_dataset, 10)
 lm.rid.tables[[1]]
 lm.rid.tables[[2]]
 
@@ -382,7 +382,7 @@ mse.lm.las
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
-lm.las.tables <- create_tables(y, lm.las.pred, 10)
+lm.las.tables <- create_tables(y, lm.las.pred, final_dataset, 10)
 lm.las.tables[[1]]
 lm.las.tables[[2]]
 
@@ -451,7 +451,7 @@ mse.lm.las.c
 # better than before
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, 3)
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center, 3)
 lm.las.c.tables[[1]]
 lm.las.c.tables[[2]]
 
@@ -497,7 +497,7 @@ mse.lm.las.f
 # better than before
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, 3)
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward, 3)
 lm.las.f.tables[[1]]
 lm.las.f.tables[[2]]
 
@@ -543,7 +543,6 @@ mse.lm.las.g
 # worse than centers and forwards
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, 3)
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
-
