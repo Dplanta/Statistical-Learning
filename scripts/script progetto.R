@@ -209,7 +209,7 @@ lm.ess <- lm(selected.formula, data=fd_numeric)
 summary(lm.ess)
 
 # correlation between dependent variables
-corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
+corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'color')
 
 # residual analysis
 par(mfrow=c(2,2))

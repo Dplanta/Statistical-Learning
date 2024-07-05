@@ -185,8 +185,8 @@ Before studying the data with formal models, we got an overview through an explo
 
 library(knitr)
 kable(final_dataset[1:5, 1 :10], format="simple", align = "cccccccccc")
-kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc")
-kable(final_dataset[1:5, 21:30], format="simple", align = "cccccccccc")
+kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc", row.names = FALSE)
+kable(final_dataset[1:5, 21:30], format="simple", align = "cccccccccc", row.names = FALSE)
 ```
 
 Firstly, we perform an analysis, which can be seen in the Figure \ref{fig:variable-salary}, of the variable Salary, and its logarithmic transformation, that will be the dependent variable in the models.
@@ -347,7 +347,7 @@ Anyway, beyond all the possible explanations, these unexpected negative signs li
 
 ```{r correlation-independent-variables, echo=FALSE, fig.cap="Correlation between dependent variables of the reduced model \\label{fig:correlation-independent-variables}", fig.align='center', out.width='80%'}
 
-corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
+corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'color')
 ```
 
 It can be seen in the Figure \ref{fig:correlation-independent-variables} that there are, also in this case, different correlations between the dependent variables.
@@ -405,12 +405,12 @@ create_tables <- function(real_values, pred_values, df, N) {
 }
 
 lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
-kable(lm.ess.tables[[1]], format="simple", caption="The 10 most overpaid players according to the reduced model")
+kable(lm.ess.tables[[1]], format="simple", caption="Ten most overpaid players according to the reduced model")
 ```
 
 ```{r underpaid-lm.ess, echo=FALSE, fig.cap="The 10 most underpaid players according to the reduced model \\label{fig:underpaid-lm.ess}", fig.align='center'}
 
-kable(lm.ess.tables[[2]], format="simple", caption="The 10 most underpaid players according to the reduced model")
+kable(lm.ess.tables[[2]], format="simple", caption="Ten most underpaid players according to the reduced model")
 ```
 
 Here we have a comparison between real salaries and predicted ones. The tables contain, respectively, the 10 most overpaid players and the 10 most underpaid players according to the model.
@@ -440,23 +440,21 @@ Jalen Brunson has shown this year that he is one of the best players in the NBA 
 
 Russell Westbrook is in the waning phase of his career. On the expiry of his last superstar contract, no team in the league offered him a comparable salary (he earned 47 millions in 2022). Consequently, he accepted a 3.8 millions salary (veteran minimum contract) to play with Los Angeles Clippers. For sure he is no longer a player worth 47 millions, but he is not worth 3.8 millions either. Our model interprets pretty well the situation, stating that Westbrook should earn a 18.3 millions salary: not a superstar one, but not a minimum wage either. 
 
-Given the presence of correlations between the independent variables, the presence of multicollinearity is likely. For this reason, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performance of these models is better than that of the models seen so far.
+Given the presence of correlations between the independent variables, the presence of multicollinearity is likely. For this reason, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performances of these models are better than that of the models seen so far.
 
 
 ### Ridge regression
 
-The subset selection methods uses least squares to fit a linear model with a subset of the predictors. Instead of controlling model complexity by setting a subset of coefficients beta j to be zero, ridge regression fits a model with all p predictors shrinking the coefficient estimates towards zero. Ridge regression uses quadratic shrinking. 
+The subset selection method uses least squares to fit a linear model with a subset of the predictors. On the other hand, ridge regression does not select a subset of the coefficients *$\beta_j$* of the model, but it fits a model with all *p* predictors adding a term $\lambda \sum^p_{j=1} \beta^2_j$. This term is called shrinkage penalty, since it has the effect to push the coefficient estimates towards zero. Lambda ($\lambda$) is a tuning parameter that controls the impact of the penalty on the estimates. In order to determine a good value for $\lambda$, we used cross-validation.
 
 ```{r ridge-starting, include=FALSE}
 library(glmnet)
 X <- model.matrix(Salary~., data=fd_numeric)
 X <- X[,-1]
-y <- fd_numeric$Salary
 ```
 
-Lambda is a tuning parameter. In order to determine a good value of lambda, we used cross-validation.  
+```{r ridge-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to the value of $\\lambda$ in the Ridge regression model \\label{fig:ridge-lambda}", fig.align='center', out.width='90%'}
 
-```{r lambda-selection, echo=FALSE}
 ten_fold_cv <- function(X, y, a) {
   n <- nrow(X)
   
@@ -465,14 +463,6 @@ ten_fold_cv <- function(X, y, a) {
   test  <- setdiff(1:n, train)
   
   cv.out <- cv.glmnet(X[train, ], y[train], alpha = a, nfold = 10)
-  
-  # This plots the cross-validation curve (red dotted line) along with upper and
-  # lower standard deviation curves along the lambda sequence (error bars).
-  # Two special values along the lambda sequence are indicated by the vertical
-  # dotted lines. lambda.min is the value of lambda that gives minimum mean
-  # cross-validated error, while lambda.1se is the value of lambda that gives
-  # the most regularized model such that the cross-validated error is within one
-  # standard error of the minimum.
   plot(cv.out)
   
   ## selecting the lambda that minimizes test MSE
@@ -484,182 +474,140 @@ ten_fold_cv <- function(X, y, a) {
   pred <- predict(mod, s = best_lambda, newx = X[test,])
   mse <- mean((pred-y[test])^2)
   print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
-  
   return <- best_lambda
 }
-
 best_lambda <- ten_fold_cv(X, y, 0)
 ```
-In the plot above the red dotted line represents the cross-validation curve (red dotted line) along with upper and lower standard deviation curves along the lambda sequence (error bars). We chose the value of lambda (755675.4) that gives minimum mean cross-validated error.
+
+In the plot of the Figure \ref{fig:ridge-lambda} the red dotted line represents the cross-validation curve along with upper and lower standard deviation curves along the $\lambda$ sequence (error bars). We chose the value of $\lambda$ (755675.4) that gives minimum mean cross-validated error.
 The mean squared error on the test set is 5.45e+13.
 
-```{r model-with-best-lambda, echo=FALSE}
+```{r ridge-with-best-lambda, include=FALSE}
 
-## final model with best lambda on all data
-ridge.final <- glmnet(X, y, alpha = 0)
-coef(ridge.final, s=best_lambda)
+lm.rid <- glmnet(X, y, alpha = 0)
+coef(lm.rid, s=best_lambda)
+```
 
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(ridge.final, xvar="lambda", label=TRUE)
+```{r ridge-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Ridge regression model \\label{fig:ridge-plot}", fig.align='center', out.width='90%'}
+
+plot(lm.rid, xvar="lambda", label=TRUE)
 abline(v=log(best_lambda), lty=3, lwd=2)
-
-
 ```
 
-The final model was fitted with the best lambda on all data. The trace plot shows how the coefficients change if lambda increases.
+The final model was fitted with the best $\lambda$ on all data. The trace plot, in the Figure \ref{fig:ridge-plot}, shows how the coefficients change if $\lambda$ increases.
 
-```{r evaluating-performances, echo=FALSE}
+```{r ridge-performances, echo=FALSE}
 
-# R2
-
-#use fitted best model to make predictions
-y_predicted <- predict(ridge.final, s = best_lambda, newx = X)
-
-#find SST and SSE
+lm.rid.pred <- predict(lm.rid, s = best_lambda, X)
 sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
+sse <- sum((lm.rid.pred - y)^2)
 
-#find R-Squared
 R2 <- 1 - sse/sst
-R2
+print(paste("R-squared = ", R2))
 
-## R2 better than regression with exhaustive subset search
-
-# final MSE
-ridge.final.pred <- predict(ridge.final, s=best_lambda, X)
-mse.ridge <- mean((ridge.final.pred-y)^2)
-mse.ridge
-
-## mse better than regression with exhaustive subset search
-
+mse.lm.rid <- mean((lm.rid.pred-y)^2)
+print(paste("MSE = ", format(mse.lm.rid, scientific = TRUE)))
 ```
 
-Once fitted the model on all data with the best lambda, we evaluated the performance. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves, 4.34e+13 vs 4.77e+13.
+Once fitted the model on all data with the best lambda, we evaluated the performance. The 0.69 R-squared highlights a better fit compared to the previous model (0.64) obtained after a subset selection. Also the MSE improves: we get 4.34e+13 instead of the previous 4.77e+13.
 
 The final step is the comparison between real salaries and predicted ones.
 
-```{r final-comparison, echo=FALSE}
+```{r overpaid-lm.rid, echo=FALSE}
 
-### 10 most overpaid and 10 most underpaid players table ###
-
-diffs <- y - ridge.final.pred
-diffs <- as.vector(diffs)
-
-overpaid_indices <- order(diffs, decreasing=TRUE)[1:10]
-underpaid_indices <- order(diffs, decreasing=FALSE)[1:10]
-
-over_diff <- diffs[overpaid_indices]
-under_diff <- diffs[underpaid_indices]
-
-over_pred <- ridge.final.pred[overpaid_indices]
-under_pred <- ridge.final.pred[underpaid_indices]
-
-## actual salary and player names
-fd_over <- final_dataset[overpaid_indices, ][c('Salary')]
-fd_under <- final_dataset[underpaid_indices, ][c('Salary')]
-
-## final table for ridge regression
-overpaid_tab_ridge <- cbind(fd_over, over_pred, over_diff)
-colnames(overpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
-underpaid_tab_ridge <- cbind(fd_under, under_pred, -under_diff)
-colnames(underpaid_tab_ridge) <- c("Salary", "Predicted salary", "Difference")
-
-overpaid_tab_ridge 
-underpaid_tab_ridge
-
+lm.rid.tables <- create_tables(y, lm.rid.pred, final_dataset, 10)
+kable(lm.rid.tables[[1]], format="simple", caption="Ten most overpaid players according to the Ridge regression model")
 ```
-Here we compare real salaries and predicted ones. The tables contain, as before, the 10 most overpaid players and the 10 most underpaid players according to the model. 
 
-*MOST OVERPAID PLAYERS*
+```{r underapid-lm.rid, echo=FALSE}
 
-Here there are a different similarities between the previous model: Beal, Poole, LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid players. 
+kable(lm.rid.tables[[2]], format="simple", caption="Ten most underpaid players according to the Ridge regression model")
+```
+
+**MOST OVERPAID PLAYERS**
+
+Here there are a different similarities between the previous model: Beal, Poole, LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid players.
+
 Klay Thompson, after being a key piece in the Golden State Warriors dinasty, suffered a serious injury few years ago. After that, he was no longer the same player and the salary was, let's say, no longer adequate to his performance. His contract with Golden State ended after the 23-24 season and he recently signed with Dallas Mavericks for 50 millions in 3 years, thus he will earn a salary closer (even lower) to the predicted one.
+
 Regarding Tobias Harris, this was the last contract year with Philadelphia 76ers. He signed this contract in 2019, team's situation was really different, Harris seemed to be the missing piece to build a contender for the title. After 5 years and a lot of changes, his situation is similar to Thompson's: salary not in line with performance. In fact, he also signed recently with another team (Detroit Pistons) for 52 millions in 2 years, really close to the prediction.
-Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results really overpaid was quite predictable.
-Discussions about Rudy Gobert's value are always controversial. He doesn't shine for his technique, he his a so called hustle player: a great defender (three times best defender of the year) who gives a great contribution in terms of intangibles, aspects that are really difficult to grasp with stats. It is really difficult to assess his value, especially with this type of model.
 
-*MOST UNDERPAID PLAYERS*
+Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results as really overpaid was quite predictable.
 
-At first glance we can see that ridge regression does not classify players with very high salaries (such as Lebron James and Kevin Durant) as most underpaid. We believe that in this respect the prediction is better than the previous model one.
-Again, we find Westbrook, Maxey and Oubre jr. in this tier. Oubre's last contract was 30 millions in 2 years with Phoenix Suns, so in line with the predicted one. Last year he signed a small 2.89 million one-year contract with Philadelphia 76ers for several reasons: injury history, lack of performance consistency, market dynamics. Probably he will sign a new contract soon.
-Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction. 
-Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they are clearly over performing considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
+Discussions about Rudy Gobert's value are always controversial. He doesn't shine for his technique, he is a so called hustle player: a great defender (three times best defender of the year) who gives a great contribution in terms of intangibles aspects that are really difficult to grasp with stats. It is really difficult to assess his value, especially with this type of model.
+
+**MOST UNDERPAID PLAYERS**
+
+At first glance we can see that Ridge regression does not classify players with very high salaries (such as Lebron James and Kevin Durant) as the most underpaid. We believe that in this respect the prediction is better than the previous model one.
+
+Again, we find Westbrook, Maxey and Oubre Jr. in this tier. Oubre's last contract was 30 millions in 2 years with Phoenix Suns, so in line with the predicted one. Last year he signed a small 2.89 million one-year contract with Philadelphia 76ers for several reasons: injury history, lack of performance consistency, market dynamics. Probably he will sign a new contract soon.
+
+Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction.
+
+Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they are clearly overperforming considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
+
 Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salaries than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
 
-
-All in all, ridge regression has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
+All in all, Ridge regression has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
 
 
 ### Lasso regression
 
-A disadvantage of ridge regression is that, unlike subset selection, it includes all p predictors in the final model. The lasso overcomes this disadvantage. Lasso regression, like ridge, shrinks the coefficients estimates towards zero; in this case, there is an absolute value shrinking instead of a quadratic one. When lambda is sufficiently large, some coefficient estimates become exactly equal to zero. Hence, like best subset selection, lasso performs a variable selection. 
+A disadvantage of ridge regression is that, unlike subset selection, it includes all *p* predictors in the final model. Also lasso regression shrinks the coefficients estimates towards zero but it has an absolute value shrinkage penalty instead of a quadratic one: $\lambda \sum^p_{j=1} |\beta_j|$. When $\lambda$ is sufficiently large, some coefficient estimates become exactly equal to zero. Hence, like best subset selection, lasso performs a variable selection.
 
-```{r lasso-cross-val-and-best-model, echo=FALSE}
+```{r lasso-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to the value of $\\lambda$ in the Lasso regression model \\label{fig:lasso-lambda}", fig.align='center', out.width='90%'}
 
 best_lambda <- ten_fold_cv(X, y, 1)
+```
 
-# final model with best lambda on all data
+```{r lasso-with-best-lambda, include = FALSE}
 lm.las <- glmnet(X, y, alpha = 1)
 coef(lm.las, s = best_lambda)
+```
 
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+```{r lasso-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Ridge regression model \\label{fig:lasso-plot}", fig.align='center', out.width='90%'}
 plot(lm.las, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 ```
 
-We again used the cross-validation method and we chose the lambda that guarantees the lower mean cross-validated error.
-Once chosen the best lambda, the final model was fitted with that lambda on all data. The trace plot shows how the coefficient estimates change with increasing lambda.
+We again used the cross-validation method and we chose the $\lambda$ value that guarantees the lower mean cross-validated error, as it can be seen in the Figure \ref{fig:lasso-lambda}.
+Once chosen the best $\lambda$, the final model was fitted with that $\lambda$ on all data. The trace plot, in the Figure \ref{fig:lasso-plot}, shows how the coefficient estimates change with increasing $\lambda$.
 Observing the coefficients, 6 are shrunk to zero. Among them, the coefficients of PIE and NET_RATING that were significant in the best subset selection model.
 
+```{r lasso-performances, echo=FALSE}
 
-```{r lasso-evaluation, echo=FALSE}
-
-# use fitted best model to make predictions
 lm.las.pred <- predict(lm.las, s = best_lambda, X)
-
-# SST and SSE
 sst <- sum((y - mean(y))^2)
 sse <- sum((lm.las.pred - y)^2)
 
-# R-Squared
 R2 <- 1 - sse/sst
-R2
-# slightly better R2 than ridge
+print(paste("MSE = ", R2))
 
-# final MSE
-lm.las.pred <- predict(lm.las, s=best_lambda, X)
 mse.lm.las <- mean((lm.las.pred-y)^2)
-mse.lm.las
-# slightly better MSE than ridge
-
+print(paste("MSE = ", format(mse.lm.las, scientific = TRUE)))
 ```
 
-Once fitted the model on all data with the best lambda, we evaluated the performance. The R-squared is marginally better than that of the ridge, 0.6942 against 0.6938. The Mean squared error is slightly lower compared to the ridge one, 4.338802e+13 against 4.344009e+13. The performance of these two models is very similar and both outperform the model obtained with the best subset selection.
+Once fitted the model on all data with the best $\lambda$, we evaluated the performances The R-squared is marginally better than that of the ridge, 0.6942 against 0.6938. The Mean squared error is slightly lower compared to the ridge one, 4.338802e+13 against 4.344009e+13. The performance of these two models is very similar and both outperform the model obtained with the best subset selection.
 
+```{r overpaid-lm.las, echo=FALSE}
 
-```{r comparison-lasso, echo=FALSE}
-
-### 10 most overpaid and 10 most underpaid players table ###
-lm.las.tables <- create_tables(y, lm.las.pred, 10)
-lm.las.tables[[1]]
-lm.las.tables[[2]]
-
+lm.las.tables <- create_tables(y, lm.las.pred, final_dataset, 10)
+kable(lm.las.tables[[1]], format="simple", caption="Ten most overpaid players according to the Lasso regression model")
 ```
-Here we compare real salaries and the ones predicted with Lasso regression.
 
+```{r underpaid-lm.las, echo=FALSE}
+kable(lm.las.tables[[2]], format="simple", caption="Ten most underpaid players according to the Lasso regression model")
+```
 
-*MOST OVERPAID PLAYERS*
+**MOST OVERPAID PLAYERS**
 
-It is interesting to note that 9 out of 10 players in this table are the same as in the corresponding table for ridge. Also the difference between real salaries and predicted ones is very similar to that of the ridge. The only change is the presence of Trae Young here (he was one the most overpaid players in the best subset selection model) and Rudy Gobert in the ridge. 
+It is interesting to note that 9 out of 10 players in this table are the same as in the corresponding table for ridge. Also the difference between real salaries and predicted ones is very similar to that of the previous model. The only change is the presence of Trae Young here (he was one the most overpaid players in the best subset selection model) instead of Rudy Gobert in the ridge.
 
+**MOST UNDERPAID PLAYERS**
 
-*MOST UNDERPAID PLAYERS*
+Also in this case, 9 out of 10 players are the same as in ridge and the differences are really small. The only change is the presence of Kevin Love. As Eric Gordon, he is a veteran and he signed for a small salary with Miami Heat.
 
-Also in this case, 9 out of 10 players are the same as in ridge and the differences are really similar. 
-The only change is the presence of Kevin Love. As Eric Gordon, he is a veteran and he signed for a small salary with Miami Heat.
-
-
-After analysing the three models, it emerges that ridge and lasso regression outperform the model obtained through the best subset selection. Additionally, the predictions for the most underpaid players seem to be more reasonable in ridge and lasso regression. 
+After analyzing these three models, it emerges that ridge and lasso regression outperform the model obtained through the best subset selection. Additionally, the predictions for the most underpaid players seem to be more reasonable in ridge and lasso regression. 
 In conclusion, lasso regression results (even only slightly compared to the ridge regression) the model that best fits our data.
 
 
