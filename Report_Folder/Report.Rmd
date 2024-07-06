@@ -31,7 +31,7 @@ knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 ## Objective of the project
 
 Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
-The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
+The idea is to explore the relationships between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
 In the end, we analysed the players by separating them by role (considering centers, forwards and guards separately) and constructed specific models for each position. The aim was to study similarities and differences of the specific models among themselves and with respect to the general ones implemented in the previous phase.
 
 
@@ -47,7 +47,6 @@ To perform our analysis we followed these steps:
 
 4.  Interpretation.
 
-We now explain in depth each step.
 
 \
 
