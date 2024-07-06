@@ -31,8 +31,8 @@ knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 ## Objective of the project
 
 Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
-The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. 
-Finally, we will compare actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
+The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
+In the end, we analysed the players by separating them by role (considering centers, forwards and guards separately) and constructed specific models for each position. The aim was to study similarities and differences of the specific models among themselves and with respect to the general ones implemented in the previous phase.
 
 
 ## Steps followed
@@ -235,6 +235,8 @@ A strong positive correlation emerges between PTS and USG_PCT. The usage percent
 For what concerns the negative correlations, the most interesting are the ones between rebounds variables (OREB, DREB, REB), FT_PCT and FG3_PCT. Players that grab a lot of rebounds are usually the tallest ones and these players are not great free throws shooters or 3 point shooters (on average).
 
 
+## Data analysis and interpretation
+
 ## Models
 
 We started creating a linear regression model in order to predict salaries (Figure \ref{fig:linear-regression-model}).
@@ -328,11 +330,11 @@ summary(lm.ess)
 The reduced model shows a slightly higher adjusted R-squared, 0.63, compared to the complete logarithmic model (0.62). It means that, despite the lower number of variables, this model fits better the data.
 Different variables are strongly significant:
 
-- **AGE**: the positive coefficient associated to the variable shows that older players earn, on average, more than youngsters. This makes sense since the youngest players in the league, rookies (first year in NBA) and sophomores (second year in NBA), usually earn less in the first years due to particular specifications in their contracts;
+- **AGE**: the positive coefficient associated to the variable shows that older players earn, on average, more than young ones. This makes sense since the youngest players in the league, rookies (first year in NBA) and sophomores (second year in NBA), usually earn less in the first years due to particular specifications in their contracts. However, there are also many veterans that sign for very low salaries in order to play with better teams and thus have a chance of winning the title. 
 
-- **PTS**: this is quite straightforward. Players who score more points, on average, have higher salaries;
+- **PTS**: this is quite straightforward. Players who score more points, on average, have higher salaries.
 
-- **TS_PCT**: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counterintuitive: a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories. The first one is composed by tall players who take most of their shots near the basket, thus getting a high percentage. The second category is composed by 3-point shooting specialists, because the weight for a 3 point shoot is higher for the metric. These players are crucial into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense if the model assigns a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable to think that scoring only few shots it's not enough to earn a high salary.
+- **TS_PCT**: for what concerns true shooting percentage, the situation is peculiar. TS_PCT weights a player's shooting percentages based on the shot type (3-pointer, 2 pointer or free throw). The negative coefficient seems counter intuitive: a better TS_PCT reflects, on average, a lower salary. A possible explanation is that this metric is high for two players categories. The first one is composed by tall players who take most of their shots near the basket, thus getting a high percentage. The second category is composed by 3-point shooting specialists, because the weight for a 3 point shoot is higher for the metric. These players are crucial into a team, but we can say that they often have a limited role: the former have to score mostly near the basket, the latter from behind the 3-point line. Consequently, it makes sense if the model assigns a lower salary for players with a limited role. Additionally, shooting percentages are also high for players that shoot only few shots in a game; it is reasonable to think that scoring only few shots it's not enough to earn a high salary. Moreover, it is important to highlight that the best players (the ones that should earn more) attract more attention from opposing defenders, so it is normal that they have more fluctuating shooting percentages than previous mentioned specialists.
 
 - **MIN_G**: players that play on average more minutes in a game earn, on average, a higher salary.
 
@@ -419,7 +421,7 @@ The aim of this comparison is to analyse the major differences between predictio
 
 **MOST OVERPAID PLAYERS**
 
-The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed the expectations. These facts are enough to explain that Beal 23-24 performance is not in line with his salary.
+The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed the expectations. These facts are enough to explain that Beal's 23-24 performance is not in line with his salary.
 
 Darius Garland signed a big contract (near to the maximum) starting from 23-24 season. After showing superstar potential in 22-23, Cleveland Cavaliers renewed his contract with an important salary increase but Garland's performance decreased in 23-24. He is only 24, the team bet heavily on him taking a weighted risk in order to keep with them a high potential player. This bet didn't paid in 23-24 season.
 
@@ -544,7 +546,7 @@ Again, we find Westbrook, Maxey and Oubre Jr. in this tier. Oubre's last contrac
 
 Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction.
 
-Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they are clearly overperforming considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
+Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they clearly overperformed considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
 
 Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salary than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
 
@@ -667,6 +669,7 @@ aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
 summary(aov.roles)
 
 ```
+
 The ANOVA is a hypothesis test of equal means in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand, the alternative hypothesis states that at least one average salary is different. Firstly, we tested the hypotesis of variances homogeneity with Bartlett's test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering satisfied the hypothesis of homogeneity of variances. 
 Proceeding with ANOVA, the test statistic F results equal to 0.009. This quantity indicates that the variability of salaries between positions is rather small compared to the variability within positions. The p-value is much greater than 0.05 (chosen again as level of significance), so we don't have sufficient evidence to reject the null hypothesis. 
 In conclusion, there is no significant evidence to suggest that average salaries differ significantly between different positions.
@@ -825,6 +828,7 @@ mse.lm.las.f
 # better than before
 
 ```
+
 The model has a 0.75 R-squared and a 3.520197e+13 MSE. The performance is very good, also considering that this model has only 13 predictors as we mentioned earlier. Also for forwards we can say that the relationship between salaries and player performance is well captured by the model.    
 
 ```{r underpaid-overpaid-forwards, echo=FALSE}
@@ -894,8 +898,9 @@ mse.lm.las.g
 # worse than centers and forwards
 
 ```
+
 As expected, given the low number of predictors, here we have a lower R-squared and a fairly higher MSE compared to models of the other positions.
-Probably, the relationship between salaries and performance for guards is harder to grasp and it is best explained by variables not considered in our model. 
+Probably the relationship between salaries and performance for guards is harder to grasp and it is best explained by variables not considered in our model. 
 
 ```{r lasso-guards-overpaid-underpaid, echo=FALSE}
 
@@ -911,4 +916,31 @@ The only but very interesting difference is that Stephen Curry results very over
 
 
 ## Conclusion
+
+### Models performances summary
+
+```{r final-model-comparison, include=FALSE}
+
+# idea: tabella con modello, numero dei predittori, R2 e MSE 
+
+
+```
+
+
+Summarizing, we started from a linear regression model and we applied a logarithmic transformation to the dependent variable salary. Then, in order to exclude unnecessary or redundant variable and to obtain a simpler model, we performed a variable selection. We got a simpler model (from x to y predictors) with a more than acceptable decrease in performance. However, given the probable presence of multicollinearity between the predictors, we implemented a ridge regression model and a lasso regression model. Indeed, ridge regression showed an improvement in both R-squared and MSE that was further enhanced by the lasso regression. 
+Since lasso regression was the best model in terms of performance, we used it to analyse separately players with different roles. The models for centers and forwards have shown a really good fit with the data. Moreover, the variables considered changed both in number and type compared to the model fitted on all players. For what concerns guards, a very simple model emerged but with significantly worse performance.
+
+### Models' limitations
+
+It is necessary to remember that a lot of factors concur to determine how much a player should earn. 
+Regarding performances, the statistics we used can only give a partial idea of a player's defensive contribution; additionally, it is very difficult to understand how players perform mentally, i.e. to grasp characteristics such as attitude, leadership and basketball IQ. 
+Factors outside the basketball court also greatly influence the determination of salaries: player's potential, player's career, player's fit into the team, market dynamics, and so on. 
+We considered only a Regular Season: to have more complete models one would have to consider more seasons and, as mentioned at the beginning, also consider the playoffs.
+
+### Final comments
+
+In the end, although their obvious limitations, some of our models performed pretty good and provide a good basis for studying the relationship between NBA players' salaries and performance. In particular, Lasso regressions (except in the case of guards) fitted the data quite well with an acceptable mean squared error. As seen progressively, most of the biggest differences between actual salaries and predicted salary were quite reasonable. 
+
+
+
 
