@@ -3,13 +3,13 @@ title: "Titolo del progetto"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
-  html_document:
-    toc: true
-    # number_sections: true
   pdf_document:
     toc: true
     includes:
       in_header: header.tex
+    # number_sections: true
+  html_document:
+    toc: true
     # number_sections: true
   word_document:
     toc: true
@@ -30,7 +30,7 @@ knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 
 ## Objective of the project
 
-Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
+Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular Season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
 The idea is to explore the relationships between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
 In the end, we analysed the players by separating them by role (considering centers, forwards and guards separately) and constructed specific models for each position. The aim was to study similarities and differences of the specific models among themselves and with respect to the general ones implemented in the previous phase.
 
@@ -59,13 +59,13 @@ All data concerns the 2023-2024 NBA Regular Season.
 
 Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues.
 
-There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82.
+There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays 82 games.
 
-Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
+Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during NBA Regular Season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular Season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
 
 All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsibilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarized data between the various players may lead to biases if not handled properly.
 
-We think that considering only the regular season, although leading to a limited analysis, may be sufficient to grasp the main relationships between salaries and performance.
+We think that considering only the Regular Season, although leading to a limited analysis, may be sufficient to grasp the main relationships between salaries and performance.
 
 
 ### Glossary
@@ -77,7 +77,7 @@ We think that considering only the regular season, although leading to a limited
 
 #### Traditional stats (collected from the [NBA](https://www.nba.com/?47) website)
 
--	**GP**: “Games played”, the number of games played by a player during the 2023-2024 regular season;
+-	**GP**: “Games played”, the number of games played by a player during the 2023-2024 Regular Season;
 -	**FG_PCT**: “Field Goal Percentage”, the percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA);
 -	**FG3_PCT**: “3 Points “Field Goal Percentage”, the percentage of 3pt field goal attempts that a player makes;
 -	**FT_PCT**: “Free throws Percentage”, the percentage of free throws attempts that a player makes;
@@ -92,7 +92,7 @@ We think that considering only the regular season, although leading to a limited
 -	**PF**: “Personal fouls”, the number of personal fouls a player or team committed;
 -	**PFD**: “Personal fouls drawn”, the number of personal fouls that are drawn by a player or team;
 -	**PTS**: “Points”, the number of points scored by a player;
--	**MIN**: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular season;
+-	**MIN**: “Minutes played”, number of minutes played by a player during the 2023-2024 Regular Season;
 -	**MIN_G**: “Minutes played per game”.
 
 #### Advanced stats (collected from the [NBA](https://www.nba.com/?47) website)
@@ -111,7 +111,7 @@ The stats below are collected from [Basketball Reference](https://www.basketball
 -	**BPM**: “Box Plus/Minus”, a box score estimate of the points per 100 possessions that a player contributed above a league-average player, translated to an average team;
 -	**VORP**: “Value Over Replacement Player”, a box score estimate of the points per 100 TEAM possessions that a player contributed above a replacement-level (-2.0) player, translated to an average team and prorated to an 82-game season. Multiply by 2.70 to convert to wins over replacement.
 
-BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole regular season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
+BPM and VORP are calculated per 100 possessions; MIN and WS are calculated over the whole Regular Season, MIN_G is calculated per game. The other stats are considered per 48 minutes.
 
 
 ### Why statistics per 48 minutes?
@@ -139,7 +139,7 @@ names(data_salary)[names(data_salary) == "Player"] <- "PLAYER_NAME"
 
 ## Data integration and cleaning
 
-Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets, removing all the players who played less than 480 minutes during the entire regular season.
+Once we had obtained the tables of interest, we selected from each table the statistics useful for analysis (those given in the glossary) and then merged the slices of the various datasets, removing all the players who played less than 480 minutes during the entire Regular Season.
 
 ```{r datasets-merging}
 
@@ -229,7 +229,7 @@ corrplot(cor(fd_numeric), method = 'color')
 
 Different correlations between the variables emerge from the `corrplot`. 
 With regard to the variable Salary, it is interesting to notice that Salary is positively correlated with PTS and advanced stats like USG_PCT, BPM and VORP: all of these variables are related to players' shots and point contribution.
-For what concerns the other variables, there are some obvious correlations: for instance, between variables MIN (total minutes played during the regular season) and MIN_G (minutes played per game) and between variables REB, OREB and DREB (all related to rebounds, with the relation REB = OREB + DREB). Additionally, we expected the positive correlation between BPM and VORP because are both related to players point estimation. 
+For what concerns the other variables, there are some obvious correlations: for instance, between variables MIN (total minutes played during the Regular Season) and MIN_G (minutes played per game) and between variables REB, OREB and DREB (all related to rebounds, with the relation REB = OREB + DREB). Additionally, we expected the positive correlation between BPM and VORP because are both related to players point estimation. 
 A strong positive correlation emerges between PTS and USG_PCT. The usage percentage is "The percentage of team plays used by a player when they are on the floor. Formula: (FGA + Possession Ending FTA + TO) / POSS". Thus, players with a high USG_PCT often make the last play in an offensive possession (a shot, a free throw or a turnover): it is straightforward that if a player often ends the offensive possession of his team, he has more opportunities to score points.
 For what concerns the negative correlations, the most interesting are the ones between rebounds variables (OREB, DREB, REB), FT_PCT and FG3_PCT. Players that grab a lot of rebounds are usually the tallest ones and these players are not great free throws shooters or 3 point shooters (on average).
 
@@ -344,7 +344,7 @@ The variables OFF_RATING, DEF_RATING, NET_RATING, PIE and WS have a level of sig
 For what concerns PIE, the negative sign has different possible explanations: projecting PIE per 48 minutes inflates the metric for players who have a high impact on the game but few minutes played. It considers a lot of stats, even stats that seem to be not significative in determining salary; PIE difference between high salary players and low salary ones is not proportional to the differences in salaries. It is always difficult consider defensive contribution with this kind of metric and it is reasonable to think that defensive contribution plays an important role in determining a players salary. Furthermore, PIE does not consider aspects like leadership and IQ that, as defensive contribution, will certainly have an impact on the salaries.
 Anyway, beyond all the possible explanations, these unexpected negative signs likely depend from other variables not included in the model.
 
-#### Correlation between dependent variables
+#### Correlation between selected variables
 
 ```{r correlation-independent-variables, echo=FALSE, fig.cap="Correlation between dependent variables of the reduced model \\label{fig:correlation-independent-variables}", fig.align='center', out.width='80%'}
 
@@ -378,7 +378,9 @@ The Mean Squared Error of the reduced model is really close to the one of the co
 
 #### Real salaries vs salaries prediction
 
-```{r overpaid-lm.ess, echo=FALSE}
+```{r overpaid-underpaid-lm.ess, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(scales)
 
 create_tables <- function(real_values, pred_values, df, N) {
   res <- real_values - pred_values
@@ -402,15 +404,23 @@ create_tables <- function(real_values, pred_values, df, N) {
   underpaid_table <- cbind(fd_under, under_pred, -under_diff)
   colnames(underpaid_table) <- c("Salary", "Predicted salary", "Difference")
   
+  # format the tables
+  overpaid_table <- as.data.frame(overpaid_table)
+  underpaid_table <- as.data.frame(underpaid_table)
+  
+  overpaid_table$Salary <- dollar_format()(overpaid_table$Salary)
+  overpaid_table$`Predicted salary` <- dollar_format()(overpaid_table$`Predicted salary`)
+  overpaid_table$Difference <- dollar_format()(overpaid_table$Difference)
+  
+  underpaid_table$Salary <- dollar_format()(underpaid_table$Salary)
+  underpaid_table$`Predicted salary` <- dollar_format()(underpaid_table$`Predicted salary`)
+  underpaid_table$Difference <- dollar_format()(underpaid_table$Difference)
+  
   return(list(overpaid_table, underpaid_table))
 }
 
 lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
 kable(lm.ess.tables[[1]], format="simple", caption="Ten most overpaid players according to the reduced model")
-```
-
-```{r underpaid-lm.ess, echo=FALSE, fig.cap="The 10 most underpaid players according to the reduced model \\label{fig:underpaid-lm.ess}", fig.align='center'}
-
 kable(lm.ess.tables[[2]], format="simple", caption="Ten most underpaid players according to the reduced model")
 ```
 
@@ -420,7 +430,7 @@ The aim of this comparison is to analyse the major differences between predictio
 
 **MOST OVERPAID PLAYERS**
 
-The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team disappointed the expectations. These facts are enough to explain that Beal's 23-24 performance is not in line with his salary.
+The most overpaid player results to be Bradley Beal. After some brilliant seasons with Washington Wizards in which he was the league top scorer, he signed in 2022 a maximum contract (251 million $ in 5-years). In Washington he was the best player by far, his statlines in the past years justify the huge contract. In 23-24 he was traded to Phoenix (keeping the same contract) to play with Durant and Booker (two superstars) in a team that was, on the paper, a contender for the title. Beal, being no longer the first offensive option, had a quite different statline compared to the previous years. Additionally, the whole Phoenix Suns team performed worse than expected. These facts are enough to explain that Beal's 23-24 performance is not in line with his salary.
 
 Darius Garland signed a big contract (near to the maximum) starting from 23-24 season. After showing superstar potential in 22-23, Cleveland Cavaliers renewed his contract with an important salary increase but Garland's performance decreased in 23-24. He is only 24, the team bet heavily on him taking a weighted risk in order to keep with them a high potential player. This bet didn't paid in 23-24 season.
 
@@ -433,11 +443,11 @@ Jordan Poole had an exploit in the previous seasons playing with a top team, Gol
 
 **MOST UNDERPAID PLAYERS**
 
-Lebron James and Kevin Durant are two of the best players in the league for many years now. Even though, according to our model they should earn much more than the maximum wage. For sure their careers and their performance motivate a high salary, but equally surely they are not underpaid. We think that this overestimation depends in part on the fact that the variable AGE in the model is strongly significant, Lebron James is 39 and Kevin Durant is 35. The same reasoning could apply to Kyrie Irving (32) and especially Demar Derozan (34).
+Lebron James and Kevin Durant have been two of the best players in the league for many years now. Even though, according to our model they should earn much more than the maximum wage. For sure their careers and their performance motivate a high salary, but equally surely they are not underpaid. We think that this overestimation depends in part on the fact that the variable AGE in the model is strongly significant, Lebron James is 39 and Kevin Durant is 35. The same reasoning could apply to Kyrie Irving (32) and especially Demar Derozan (34).
 
 For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.
 
-Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says.
+Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the past years. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says.
 
 Russell Westbrook is in the waning phase of his career. On the expiry of his last superstar contract, no team in the league offered him a comparable salary (he earned 47 millions in 2022). Consequently, he accepted a 3.8 millions salary (veteran minimum contract) to play with Los Angeles Clippers. For sure he is no longer a player worth 47 millions, but he is not worth 3.8 millions either. Our model interprets pretty well the situation, stating that Westbrook should earn a 18.3 millions salary: not a superstar one, but not a minimum wage either. 
 
@@ -514,14 +524,10 @@ Once fitted the model on all data with the best lambda, we evaluated the perform
 
 The final step is the comparison between real salaries and predicted ones.
 
-```{r overpaid-lm.rid, echo=FALSE}
+```{r overpaid-underpaid-lm.rid, echo=FALSE}
 
 lm.rid.tables <- create_tables(y, lm.rid.pred, final_dataset, 10)
 kable(lm.rid.tables[[1]], format="simple", caption="Ten most overpaid players according to the Ridge regression model")
-```
-
-```{r underapid-lm.rid, echo=FALSE}
-
 kable(lm.rid.tables[[2]], format="simple", caption="Ten most underpaid players according to the Ridge regression model")
 ```
 
@@ -582,7 +588,7 @@ sst <- sum((y - mean(y))^2)
 sse <- sum((lm.las.pred - y)^2)
 
 R2 <- 1 - sse/sst
-print(paste("MSE = ", R2))
+print(paste("R-Squared = ", R2))
 
 mse.lm.las <- mean((lm.las.pred-y)^2)
 print(paste("MSE = ", format(mse.lm.las, scientific = TRUE)))
@@ -590,13 +596,10 @@ print(paste("MSE = ", format(mse.lm.las, scientific = TRUE)))
 
 Once fitted the model on all data with the best $\lambda$, we evaluated the performances The R-squared is marginally better than that of the ridge, 0.6942 against 0.6938. The Mean squared error is slightly lower compared to the ridge one, 4.338802e+13 against 4.344009e+13. The performance of these two models is very similar and both outperform the model obtained with the best subset selection.
 
-```{r overpaid-lm.las, echo=FALSE}
+```{r overpaid-underpaid-lm.las, echo=FALSE}
 
 lm.las.tables <- create_tables(y, lm.las.pred, final_dataset, 10)
 kable(lm.las.tables[[1]], format="simple", caption="Ten most overpaid players according to the Lasso regression model")
-```
-
-```{r underpaid-lm.las, echo=FALSE}
 kable(lm.las.tables[[2]], format="simple", caption="Ten most underpaid players according to the Lasso regression model")
 ```
 
@@ -666,7 +669,6 @@ bartlett.test(Salary ~ Pos, data = fd_roles_df)
 
 aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
 summary(aov.roles)
-
 ```
 
 The ANOVA is a hypothesis test of equal means in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand, the alternative hypothesis states that at least one average salary is different. Firstly, we tested the hypotesis of variances homogeneity with Bartlett's test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering satisfied the hypothesis of homogeneity of variances. 
@@ -683,17 +685,13 @@ We now considered only the centers, 67 players.
 ```{r lasso-centers-start, include=FALSE}
 
 #### LASSO FOR CENTER POSITION
-
-# linear model for centers
-
 lm.mod.c <- lm(Salary~+., data=fd_center_nopos)
 summary(lm.mod.c)
-
 ```
 
 Starting from the complete model, we found the best $\lambda$ through a cross-validation. 
 
-```{r best-lambda-selection, echo=FALSE}
+```{r centers-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to $\\lambda$ in the Lasso regression model for centers \\label{fig:centers-lambda}", fig.align='center', out.width='90%'}
 # design matrix not considering the intercept
 X.c <- model.matrix(Salary~., data=fd_center_nopos)
 X.c <- X.c[,-1]
@@ -703,21 +701,20 @@ y.c <- fd_center_nopos$Salary
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
 ```
 
-We chose the $\lambda$ value that guarantees the lower mean cross-validated error.
+We chose the $\lambda$ value that guarantees the lower mean cross-validated error, as it can be seen in the Figure \ref{fig:centers-lambda}.
 
-```{r lasso-centers-coefficients-traceplot, echo=FALSE}
+```{r centers-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Lasso regression model for centers \\label{fig:centers-plot}", fig.align='center', out.width='90%'}
 
 # final model with best lambda on all data
 lm.las.c <- glmnet(X.c, y.c, alpha = 1)
 coef(lm.las.c, s=best_lambda)
 
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+# Trace plot
 plot(lm.las.c, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
-
 ```
 
-Once chosen the best $\lambda$, we fitted the model on all data. The Trace plot shows how the coefficient estimates change increasing $\lambda$. 
+Once chosen the best $\lambda$, we fitted the model on all data. The Figure \ref{fig:centers-plot} shows how the coefficient estimates change increasing $\lambda$. 
 It is interesting that, in the particular case of centers, 9 variables are shrunk to zero: the model considers less variables compared to the general lasso model (where only 6 variables were shrunk to zero). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
 
 
@@ -732,13 +729,11 @@ sse <- sum((lm.las.c.pred - y.c)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
-R2
-# very high R2
+print(paste("R-Squared = ", R2))
 
 # final MSE
 mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
-mse.lm.las.c
-# better than before
+print(paste("MSE = ", format(mse.lm.las.c, scientific = TRUE)))
 ```
 
 The models' performance is really good: approximately 0.8 R-squared and 2.749367e+13 MSE. By far, the best performance till now.
@@ -749,31 +744,34 @@ It is possible to infer that the relationship between salaries and performance i
 
 ### 3 most overpaid and 3 most underpaid centers table ###
 lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center_nopos, 3)
-lm.las.c.tables[[1]]
-lm.las.c.tables[[2]]
-
+kable(lm.las.c.tables[[1]], format="simple", caption="Three most overpaid centers according to the Lasso regression model by position")
+kable(lm.las.c.tables[[2]], format="simple", caption="Three most underpaid centers according to the Lasso regression model by position")
 ```
 
 Looking at the most underpaid and most overpaid centers it emerges that the differences between actual and predicted salaries are smaller than in the models seen above.
 
 **MOST OVERPAID CENTERS**
 
-Among the overpaid centers we found again Deandre Ayton. 
+Among the overpaid centers we found again Deandre Ayton.
+
 Regarding James Wiseman, he was a great prospect but he was really unlucky with injuries. Although he was traded from Golden State Warriors to Detroit Pistons (to a weaker team), he has not yet managed to fulfil its potential. He is still in his rookie contract: like Edwards, his salary is higher compared to average rookie contracts because he was the 2nd pick in 2020 draft. But unlike Edwards, according to the model his performance did not match his salary.
-It is quite surprising to find Jaren Jackson Jr here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
+
+It is quite surprising to find Jaren Jackson Jr. here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
 
 **MOST UNDERPAID CENTERS**
 
-The most underpaid center results to be Alperen Sengun, makes sense for what we said above.
-Al Horford is a veteran, he made an excellent contribution to the Boston Celtics' title victory performing above the expectations.
-Andre Drummond is a great rebounder, capable of consistent performance in terms of statistics. However, he is lacking in aspects of the game that are not considered by the model, such as basketball IQ: maybe that is why he results underpaid according to the model.
+The most underpaid center results to be Alperen Sengun and it makes sense for what we said above.
+
+Al Horford is a veteran, he contributed excellently to the Boston Celtics' title victory, performing above the expectations.
+
+Andre Drummond is a great rebounder, capable of consistent performances in terms of statistics. However, he is lacking in aspects of the game that are not considered by the model, such as basketball IQ: maybe this is why he results underpaid according to the model.
 
 
 #### Forwards
 
 For what concerns forwards, we have 145 observations in our dataset.
 
-```{r lasso-forwards, echo=FALSE}
+```{r forwards-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to $\\lambda$ in the Lasso regression model for forwards \\label{fig:forwards-lambda}", fig.align='center', out.width='90%'}
 
 lm.mod.f <- lm(Salary~+., data=fd_forward_nopos)
 summary(lm.mod.f)
@@ -790,10 +788,10 @@ best_lambda <- ten_fold_cv(X.f, y.f, 1)
 
 ```
 
-As for centers, we started from the complete model and we chose the best $\lambda$. 
+As for centers, we started from the complete model and we chose the best $\lambda$, as it can be seen in the Figure \ref{fig:forwards-lambda}. 
 
 
-```{r lasso-forwards-model, echo=FALSE}
+```{r forwards-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Lasso regression model for forwards \\label{fig:forwards-plot}", fig.align='center', out.width='90%'}
 
 # final model with best lambda on all data
 lm.las.f <- glmnet(X.f, y.f, alpha = 1)
@@ -802,10 +800,9 @@ coef(lm.las.f, s = best_lambda)
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
 plot(lm.las.f, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
-
 ```
 
-Once chosen the best lambda, we fitted the model on all data. In this specific lasso regression 15 variables are reduced to zero, far more than in the lasso regression for centers (9) and the general lasso regression (6).
+Once chosen the best $\lambda$, we fitted the model on all data. In this specific lasso regression 15 variables are reduced to zero (\ref{fig:forwards-plot}), far more than in the lasso regression for centers (9) and the general lasso regression (6).
 
 ```{r lasso-forward-performance, echo=FALSE}
 
@@ -818,14 +815,11 @@ sse <- sum((lm.las.f.pred - y.f)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
-R2
-# very high R2
+print(paste("R-Squared = ", R2))
 
 # final MSE
 mse.lm.las.f <- mean((lm.las.f.pred-y.f)^2)
-mse.lm.las.f
-# better than before
-
+print(paste("MSE = ", format(mse.lm.las.f, scientific = TRUE)))
 ```
 
 The model has a 0.75 R-squared and a 3.520197e+13 MSE. The performance is very good, also considering that this model has only 13 predictors as we mentioned earlier. Also for forwards we can say that the relationship between salaries and player performance is well captured by the model.    
@@ -834,20 +828,20 @@ The model has a 0.75 R-squared and a 3.520197e+13 MSE. The performance is very g
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
 lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward_nopos, 3)
-lm.las.f.tables[[1]]
-lm.las.f.tables[[2]]
-
+kable(lm.las.f.tables[[1]], format="simple", caption="Three most overpaid forwards according to the Lasso regression model by position")
+kable(lm.las.f.tables[[2]], format="simple", caption="Three most underpaid forwards according to the Lasso regression model by position")
 ```
 
-The 3 most overpaid forwards according to this model are Michael Porter Jr, Tobias Harris and Klay Thompson. They were also among most overpaid players in the overall lasso regression; as we said before, it is reasonable to find these players in this tier. 
-The same applies to Williams, Oubre Jr and Love in terms of the 3 most underpaid forwards.
+The 3 most overpaid forwards according to this model are Michael Porter Jr., Tobias Harris and Klay Thompson, who were also among most overpaid players in the overall Lasso regression. As we said before, it is reasonable to find these players in this tier
+
+The same applies to Williams, Oubre Jr. and Love in terms of the 3 most underpaid forwards.
 
 
 #### Guards
 
 Regarding guards, we consider 148 observations.
 
-```{r lasso-guards, echo=FALSE}
+```{r guards-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to $\\lambda$ in the Lasso regression model for guards \\label{fig:guards-lambda}", fig.align='center', out.width='90%'}
 
 #### LASSO FOR GUARD POSITION
 
@@ -863,6 +857,9 @@ y.g <- fd_guard_nopos$Salary
 
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.g, y.g, 1)
+```
+
+```{r guards-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Lasso regression model for guards \\label{fig:guards-plot}", fig.align='center', out.width='90%'}
 
 # final model with best lambda on all data
 lm.las.g <- glmnet(X.g, y.g, alpha = 1)
@@ -871,11 +868,9 @@ coef(lm.las.g, s = best_lambda)
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
 plot(lm.las.g, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
-
-
 ```
 
-Following the same steps as with the other roles, we obtained a lasso regression model for guards. The result in terms of coefficients is very interesting: 23 variables are shrunk to zero, the model considers only 5 predictors. Given that the guard role tends to be the most difficult to interpret as the creative component plays a major role, we expected a more complex model than those obtained for centers and forwards. Instead, we are faced with a very simple model.
+After selecting the best value of $\lambda$ also in this case (\ref{fig:guards-lambda}), we obtained a lasso regression model for guards. The result in terms of coefficients is very interesting (\ref{fig:guards-plot}): 23 variables are shrunk to zero, the model considers only 5 predictors. Given that the guard role tends to be the most difficult to interpret as the creative component plays a major role, we expected a more complex model than those obtained for centers and forwards. Instead, we are faced with a very simple model.
 
 ```{r lasso-guards-performance, echo=FALSE}
 
@@ -888,30 +883,27 @@ sse <- sum((lm.las.g.pred - y.g)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
-R2
-# worse R2 than centers and forwards
+print(paste("R-Squared = ", R2))
 
 # final MSE
 mse.lm.las.g <- mean((lm.las.g.pred-y.g)^2)
-mse.lm.las.g
-# worse than centers and forwards
-
+print(paste("MSE = ", format(mse.lm.las.g, scientific = TRUE)))
 ```
 
 As expected, given the low number of predictors, here we have a lower R-squared and a fairly higher MSE compared to models of the other positions.
 Probably the relationship between salaries and performance for guards is harder to grasp and it is best explained by variables not considered in our model. 
 
-```{r lasso-guards-overpaid-underpaid, echo=FALSE}
+```{r guards-overpaid-underpaid, echo=FALSE}
 
 ### 3 most overpaid and 3 most underpaid centers table ###
 lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
-lm.las.g.tables[[1]]
-lm.las.g.tables[[2]]
-
+kable(lm.las.g.tables[[1]], format="simple", caption="Three most overpaid guards according to the Lasso regression model by position")
+kable(lm.las.g.tables[[2]], format="simple", caption="Three most underpaid guards according to the Lasso regression model by position")
 ```
 
-We again find Beal and LaVine in the most 3 overpaid; Maxey, Bane and Gordon also here are classified among the most underpaid players. The predictions are very similar to those of the overall lasso regression model.
-The only but very interesting difference is that Stephen Curry results very overpaid in this model. Curry is one of the biggest talents in the NBA: he won 4 titles as the absolute star and 2 MVPs thanks to his unique style of play. After several years of dominance, the performance of his Golden state Warriors has been declining in recent seasons. Despite this, Curry overall performance in 23-24 was in line or even better compared to the two previous seasons. For this reason, we think that in this case the prediction of the model does not make much sense.
+We again find Beal and LaVine in the most 3 overpaid. Maxey, Bane and Gordon also here are classified among the most underpaid players. The predictions are very similar to those of the overall lasso regression model.
+
+The only but very interesting difference is that Stephen Curry results very overpaid in this model. Curry is one of the biggest talents in the NBA: he won 4 titles as the absolute star and 2 MVPs thanks to his unique style of play. After several years of dominance, the performance of his Golden State Warriors has been declining in recent seasons. Despite this, Curry overall performance in 23-24 was in line or even better compared to the two previous seasons. For this reason, we think that in this case the prediction of the model does not make much sense.
 
 
 ## Conclusion
@@ -926,20 +918,16 @@ The only but very interesting difference is that Stephen Curry results very over
 ```
 
 
-Summarizing, we started from a linear regression model and we applied a logarithmic transformation to the dependent variable salary. Then, in order to exclude unnecessary or redundant variable and to obtain a simpler model, we performed a variable selection. We got a simpler model (from x to y predictors) with a more than acceptable decrease in performance. However, given the probable presence of multicollinearity between the predictors, we implemented a ridge regression model and a lasso regression model. Indeed, ridge regression showed an improvement in both R-squared and MSE that was further enhanced by the lasso regression. 
-Since lasso regression was the best model in terms of performance, we used it to analyse separately players with different roles. The models for centers and forwards have shown a really good fit with the data. Moreover, the variables considered changed both in number and type compared to the model fitted on all players. For what concerns guards, a very simple model emerged but with significantly worse performance.
+Summarizing, we started from a linear regression model and we applied a logarithmic transformation to the dependent variable salary. Then, in order to exclude unnecessary or redundant variables and to obtain a simpler model, we performed a variable selection. We got a simpler model with a more than acceptable decrease in performance. However, given the probable presence of multicollinearity between the predictors, we implemented a Ridge regression model and a Lasso regression model. Indeed, Ridge regression showed an improvement in both R-squared and MSE that was further enhanced by the Lasso regression. 
+Since the latter was the best model in terms of performances, we used it to analyse separately players with different roles. The models for centers and forwards have shown a really good fit with the data. Moreover, the variables considered changed both in number and type compared to the model fitted on all players. For what concerns guards, a very simple model emerged but with significantly worse performance.
 
 ### Models' limitations
 
 It is necessary to remember that a lot of factors concur to determine how much a player should earn. 
-Regarding performances, the statistics we used can only give a partial idea of a player's defensive contribution; additionally, it is very difficult to understand how players perform mentally, i.e. to grasp characteristics such as attitude, leadership and basketball IQ. 
-Factors outside the basketball court also greatly influence the determination of salaries: player's potential, player's career, player's fit into the team, market dynamics, and so on. 
-We considered only a Regular Season: to have more complete models one would have to consider more seasons and, as mentioned at the beginning, also consider the playoffs.
+Regarding performances, the statistics we used can only give a partial idea of a player's defensive contribution; additionally, it is very difficult to understand how players perform mentally, i.e. to grasp characteristics such as attitude, leadership and basketball IQ.
+Factors outside the basketball court also greatly influence the determination of salaries: player's potential, player's career, player's fit into the team, market dynamics, and so on.
+We considered only the 2023/2024 Regular Season: to have more complete models one would have to consider more seasons and, as mentioned at the beginning, also consider the playoffs.
 
 ### Final comments
 
-In the end, although their obvious limitations, some of our models performed pretty good and provide a good basis for studying the relationship between NBA players' salaries and performance. In particular, Lasso regressions (except in the case of guards) fitted the data quite well with an acceptable mean squared error. As seen progressively, most of the biggest differences between actual salaries and predicted salary were quite reasonable. 
-
-
-
-
+In the end, although their obvious limitations, some of our models performed pretty good and provide a good basis for studying the relationship between NBA players' salaries and performances. In particular, Lasso regressions (except in the case of guards) fitted the data quite well with an acceptable mean squared error. As seen progressively, most of the biggest differences between actual salaries and predicted salary were quite reasonable. 

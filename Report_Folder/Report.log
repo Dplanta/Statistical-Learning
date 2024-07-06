@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.1)  5 JUL 2024 16:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.1)  6 JUL 2024 23:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -424,6 +424,24 @@ LaTeX Warning: Label `fig:lasso-lambda' multiply defined.
 
 LaTeX Warning: Label `fig:lasso-plot' multiply defined.
 
+
+LaTeX Warning: Label `fig:centers-lambda' multiply defined.
+
+
+LaTeX Warning: Label `fig:centers-plot' multiply defined.
+
+
+LaTeX Warning: Label `fig:forwards-lambda' multiply defined.
+
+
+LaTeX Warning: Label `fig:forwards-plot' multiply defined.
+
+
+LaTeX Warning: Label `fig:guards-lambda' multiply defined.
+
+
+LaTeX Warning: Label `fig:guards-plot' multiply defined.
+
 )
 \openout1 = `Report.aux'.
 
@@ -537,16 +555,15 @@ Underfull \hbox (badness 10000) in paragraph at lines 132--133
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 171--172
-
- []
-
-
 
 [1
 
 {c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 235.
+Underfull \hbox (badness 10000) in paragraph at lines 174--175
+
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 238.
 (c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
@@ -554,116 +571,114 @@ File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 [2{c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
 
 [3]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 394.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 397.
 (c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 395.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 398.
 
-Overfull \hbox (26.1579pt too wide) in alignment at lines 434--439
+Overfull \hbox (26.1579pt too wide) in alignment at lines 437--442
  [] [] [] [] [] [] [] [] [] [] [] 
  []
 
 
-Overfull \hbox (26.1579pt too wide) in alignment at lines 439--441
+Overfull \hbox (26.1579pt too wide) in alignment at lines 442--444
  [] [] [] [] [] [] [] [] [] [] [] 
  []
 
 
-Overfull \hbox (26.1579pt too wide) in alignment at lines 441--452
+Overfull \hbox (26.1579pt too wide) in alignment at lines 444--455
  [] [] [] [] [] [] [] [] [] [] [] 
- []
-
-
-Overfull \hbox (11.3676pt too wide) in alignment at lines 454--459
- [] [] [] [] [] [] [] [] [] [] 
- []
-
-
-Overfull \hbox (11.3676pt too wide) in alignment at lines 459--461
- [] [] [] [] [] [] [] [] [] [] 
- []
-
-
-Overfull \hbox (11.3676pt too wide) in alignment at lines 461--467
- [] [] [] [] [] [] [] [] [] [] 
  []
 
 [4]
-<Report_files/figure-latex/variable-salary-1.pdf, id=77, 469.755pt x 325.215pt>
+Overfull \hbox (11.3676pt too wide) in alignment at lines 457--462
+ [] [] [] [] [] [] [] [] [] [] 
+ []
+
+
+Overfull \hbox (11.3676pt too wide) in alignment at lines 462--464
+ [] [] [] [] [] [] [] [] [] [] 
+ []
+
+
+Overfull \hbox (11.3676pt too wide) in alignment at lines 464--470
+ [] [] [] [] [] [] [] [] [] [] 
+ []
+
+<Report_files/figure-latex/variable-salary-1.pdf, id=82, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/variable-salary-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/variable-salary-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/variable-salary-1.pdf  used on input line 494.
+Package pdftex.def Info: Report_files/figure-latex/variable-salary-1.pdf  used on input line 497.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 513.
+LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 516.
 (c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-
-[5 <./Report_files/figure-latex/variable-salary-1.pdf>]
-<Report_files/figure-latex/corrplot-independent-variables-1.pdf, id=92, 469.755pt x 325.215pt>
+<Report_files/figure-latex/corrplot-independent-variables-1.pdf, id=84, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/corrplot-independent-variables-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/corrplot-independent-variables-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/corrplot-independent-variables-1.pdf  used on input line 519.
+Package pdftex.def Info: Report_files/figure-latex/corrplot-independent-variables-1.pdf  used on input line 522.
 (pdftex.def)             Requested size: 375.80452pt x 260.17235pt.
 
 
-[6 <./Report_files/figure-latex/corrplot-independent-variables-1.pdf>]
-<Report_files/figure-latex/linear-regression-model-1.pdf, id=106, 469.755pt x 325.215pt>
+[5]
+
+[6 <./Report_files/figure-latex/variable-salary-1.pdf> <./Report_files/figure-latex/corrplot-independent-variables-1.pdf>]
+<Report_files/figure-latex/linear-regression-model-1.pdf, id=111, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/linear-regression-model-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/linear-regression-model-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/linear-regression-model-1.pdf  used on input line 605.
+Package pdftex.def Info: Report_files/figure-latex/linear-regression-model-1.pdf  used on input line 612.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 
 
 [7]
 
 [8 <./Report_files/figure-latex/linear-regression-model-1.pdf>]
-<Report_files/figure-latex/logarithmic-transformation-1.pdf, id=121, 469.755pt x 325.215pt>
+<Report_files/figure-latex/logarithmic-transformation-1.pdf, id=128, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/logarithmic-transformation-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/logarithmic-transformation-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/logarithmic-transformation-1.pdf  used on input line 674.
+Package pdftex.def Info: Report_files/figure-latex/logarithmic-transformation-1.pdf  used on input line 681.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 
 
 [9 <./Report_files/figure-latex/logarithmic-transformation-1.pdf>]
-<Report_files/figure-latex/parameters-selection-1.pdf, id=134, 469.755pt x 325.215pt>
+<Report_files/figure-latex/parameters-selection-1.pdf, id=141, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/parameters-selection-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/parameters-selection-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/parameters-selection-1.pdf  used on input line 717.
+Package pdftex.def Info: Report_files/figure-latex/parameters-selection-1.pdf  used on input line 724.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
 
 [10 <./Report_files/figure-latex/parameters-selection-1.pdf>]
 
 [11]
-<Report_files/figure-latex/correlation-independent-variables-1.pdf, id=152, 469.755pt x 325.215pt>
+<Report_files/figure-latex/correlation-independent-variables-1.pdf, id=159, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/correlation-independent-variables-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/correlation-independent-variables-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/correlation-independent-variables-1.pdf  used on input line 837.
+Package pdftex.def Info: Report_files/figure-latex/correlation-independent-variables-1.pdf  used on input line 850.
 (pdftex.def)             Requested size: 375.80452pt x 260.17235pt.
-<Report_files/figure-latex/residual-analysis-ess-1.pdf, id=154, 469.755pt x 325.215pt>
-File: Report_files/figure-latex/residual-analysis-ess-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/residual-analysis-ess-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/residual-analysis-ess-1.pdf  used on input line 853.
-(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 
 
 [12 <./Report_files/figure-latex/correlation-independent-variables-1.pdf>]
-
+<Report_files/figure-latex/residual-analysis-ess-1.pdf, id=172, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/residual-analysis-ess-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/residual-analysis-ess-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/residual-analysis-ess-1.pdf  used on input line 866.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 [13 <./Report_files/figure-latex/residual-analysis-ess-1.pdf>]
 
 [14]
-<Report_files/figure-latex/ridge-lambda-1.pdf, id=191, 469.755pt x 325.215pt>
+<Report_files/figure-latex/ridge-lambda-1.pdf, id=198, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/ridge-lambda-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/ridge-lambda-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/ridge-lambda-1.pdf  used on input line 1037.
+Package pdftex.def Info: Report_files/figure-latex/ridge-lambda-1.pdf  used on input line 1050.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
-<Report_files/figure-latex/ridge-plot-1.pdf, id=193, 469.755pt x 325.215pt>
+<Report_files/figure-latex/ridge-plot-1.pdf, id=200, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/ridge-plot-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/ridge-plot-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/ridge-plot-1.pdf  used on input line 1058.
+Package pdftex.def Info: Report_files/figure-latex/ridge-plot-1.pdf  used on input line 1071.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 
 
@@ -672,15 +687,15 @@ Package pdftex.def Info: Report_files/figure-latex/ridge-plot-1.pdf  used on inp
 [16 <./Report_files/figure-latex/ridge-lambda-1.pdf> <./Report_files/figure-latex/ridge-plot-1.pdf>]
 
 [17]
-<Report_files/figure-latex/lasso-lambda-1.pdf, id=228, 469.755pt x 325.215pt>
+<Report_files/figure-latex/lasso-lambda-1.pdf, id=235, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/lasso-lambda-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/lasso-lambda-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/lasso-lambda-1.pdf  used on input line 1227.
+Package pdftex.def Info: Report_files/figure-latex/lasso-lambda-1.pdf  used on input line 1240.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
-<Report_files/figure-latex/lasso-plot-1.pdf, id=229, 469.755pt x 325.215pt>
+<Report_files/figure-latex/lasso-plot-1.pdf, id=236, 469.755pt x 325.215pt>
 File: Report_files/figure-latex/lasso-plot-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/lasso-plot-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/lasso-plot-1.pdf  used on input line 1241.
+Package pdftex.def Info: Report_files/figure-latex/lasso-plot-1.pdf  used on input line 1254.
 (pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
 
 
@@ -690,7 +705,63 @@ Package pdftex.def Info: Report_files/figure-latex/lasso-plot-1.pdf  used on inp
 
 [20]
 
-[21] (./Report.aux)
+[21]
+<Report_files/figure-latex/centers-lambda-1.pdf, id=279, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/centers-lambda-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/centers-lambda-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/centers-lambda-1.pdf  used on input line 1447.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+
+
+[22 <./Report_files/figure-latex/centers-lambda-1.pdf>]
+<Report_files/figure-latex/centers-plot-1.pdf, id=295, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/centers-plot-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/centers-plot-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/centers-plot-1.pdf  used on input line 1499.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+
+
+[23 <./Report_files/figure-latex/centers-plot-1.pdf>]
+
+[24]
+<Report_files/figure-latex/forwards-lambda-1.pdf, id=314, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/forwards-lambda-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/forwards-lambda-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/forwards-lambda-1.pdf  used on input line 1657.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+
+
+[25]
+
+[26 <./Report_files/figure-latex/forwards-lambda-1.pdf>]
+<Report_files/figure-latex/forwards-plot-1.pdf, id=333, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/forwards-plot-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/forwards-plot-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/forwards-plot-1.pdf  used on input line 1708.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+[27 <./Report_files/figure-latex/forwards-plot-1.pdf>]
+
+[28]
+<Report_files/figure-latex/guards-lambda-1.pdf, id=353, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/guards-lambda-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/guards-lambda-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/guards-lambda-1.pdf  used on input line 1832.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+
+
+[29 <./Report_files/figure-latex/guards-lambda-1.pdf>]
+<Report_files/figure-latex/guards-plot-1.pdf, id=365, 469.755pt x 325.215pt>
+File: Report_files/figure-latex/guards-plot-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/guards-plot-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/guards-plot-1.pdf  used on input line 1880.
+(pdftex.def)             Requested size: 422.7756pt x 292.6908pt.
+
+
+[30 <./Report_files/figure-latex/guards-plot-1.pdf>]
+
+[31]
+
+[32] (./Report.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-05-27>
@@ -700,18 +771,18 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 12308 strings out of 475544
- 195526 string characters out of 5775997
- 1947908 words of memory out of 5000000
- 34654 multiletter control sequences out of 15000+600000
+ 12430 strings out of 475544
+ 199172 string characters out of 5775997
+ 1952908 words of memory out of 5000000
+ 34733 multiletter control sequences out of 15000+600000
  609687 words of font info for 80 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 89i,6n,93p,432b,597s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,6n,93p,462b,599s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmex10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi7.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/eduar/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on Report.pdf (21 pages, 675165 bytes).
+Output written on Report.pdf (32 pages, 761750 bytes).
 PDF statistics:
- 378 PDF objects out of 1000 (max. 8388607)
- 301 compressed objects within 4 object streams
- 87 named destinations out of 1000 (max. 500000)
- 112 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 522 PDF objects out of 1000 (max. 8388607)
+ 421 compressed objects within 5 object streams
+ 130 named destinations out of 1000 (max. 500000)
+ 166 words of extra memory for PDF output out of 10000 (max. 10000000)
 
