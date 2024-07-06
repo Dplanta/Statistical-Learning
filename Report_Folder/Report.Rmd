@@ -370,7 +370,7 @@ y <- fd_numeric$Salary
 
 lm.ess.pred <- predict(lm.ess)
 mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
-print(paste("MSE of the full linear model with logarithmic Salary = ", format(mse.lm.ess, scientific = TRUE)))
+print(paste("MSE of the reducted linear model with logarithmic Salary = ", format(mse.lm.ess, scientific = TRUE)))
 ```
 
 The Mean Squared Error of the reduced model is really close to the one of the complete linear model with the logarithmic transformation of the Salary, 4.77e+13 against 4.70e+13. Considering that the complete model has 28 variables and the reduced one 12, the latter model represents quite an improvement.
@@ -625,31 +625,7 @@ Secondly, we implemented 3 lasso regression models to explore the relationship b
 
 We used lasso regression because it turned out to be the best model in the previous phase.
 
-
-
-### ANOVA
-
-```{r anova, echo=FALSE}
-
-fd_guard_df <- as.data.frame(fd_guard)
-fd_forward_df <- as.data.frame(fd_forward)
-fd_center_df <- as.data.frame(fd_center)
-fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
-
-bartlett.test(Salary ~ Pos, data = fd_roles_df)
-
-aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
-summary(aov.roles)
-
-```
-The ANOVA is a hypothesis test of equal mean in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand the alternative hypothesis states that there is a difference between the average salaries of the different roles. Firstly, we tested the hypotesis of variances homogeneity with the Bartlett test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering the hypothesis of homogeneity of variances satisfied. 
-Proceeding with ANOVA, the test statistic F results equal to 0.009. This quantity indicates that the variability between the positions is quite small compared to the variability within the positions. The p-value is much greater than 0.05 (chosen again as level of significance), so we don't have sufficient evidence to reject the null hypothesis. 
-In conclusion, there is no significant evidence to suggest that average salaries differ significantly between different positions.
-
-
-### Models
-
-In our dataset the division was somewhat different, with 5 positions (PG, SG, PF, SF, C). We considered point guards (PG) and shooting guards (SG) as guards (G), power forwards (PF) and shooting forwards (SF) as forwards (F). The centers (C) are the same.   
+In our dataset the division was somewhat different, with 5 positions (PG, SG, PF, SF, C). We considered point guards (PG) and shooting guards (SG) as guards (G), power forwards (PF) and shooting forwards (SF) as forwards (F). The centers (C) are the same.
 
 ```{r creating-split, include=FALSE}
 
@@ -676,9 +652,31 @@ fd_guard_nopos <- fd_guard[, numeric_cols]
 ```
 
 
+### ANOVA
+
+```{r anova, echo=FALSE}
+
+fd_guard_df <- as.data.frame(fd_guard)
+fd_forward_df <- as.data.frame(fd_forward)
+fd_center_df <- as.data.frame(fd_center)
+fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
+
+bartlett.test(Salary ~ Pos, data = fd_roles_df)
+
+aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
+summary(aov.roles)
+
+```
+The ANOVA is a hypothesis test of equal means in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand, the alternative hypothesis states that at least one average salary is different. Firstly, we tested the hypotesis of variances homogeneity with Bartlett's test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering satisfied the hypothesis of homogeneity of variances. 
+Proceeding with ANOVA, the test statistic F results equal to 0.009. This quantity indicates that the variability of salaries between positions is rather small compared to the variability within positions. The p-value is much greater than 0.05 (chosen again as level of significance), so we don't have sufficient evidence to reject the null hypothesis. 
+In conclusion, there is no significant evidence to suggest that average salaries differ significantly between different positions.
+
+
+### Models
+
 #### Centers
 
-We now considered only the centers, 29 players. 
+We now considered only the centers, 67 players. 
 
 ```{r lasso-centers-start, include=FALSE}
 
@@ -702,7 +700,8 @@ y.c <- fd_center_nopos$Salary
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
 ```
-Again, we chose the $\lambda$ value that guarantees the lower mean cross-validated error.
+
+We chose the $\lambda$ value that guarantees the lower mean cross-validated error.
 
 ```{r lasso-centers-coefficients-traceplot, echo=FALSE}
 
@@ -739,8 +738,9 @@ mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
 mse.lm.las.c
 # better than before
 ```
-The models' performances are really good: approximately 0.8 R-squared and 2.749367e+13 MSE. By far, the best performances till now.
-It is possible to infer that the relationship between salaries and performance is very well represented from the model; however, it is important to consider that the sample here is quite small, only 29 observations. For this reason, the results must be considered carefully.
+
+The models' performance is really good: approximately 0.8 R-squared and 2.749367e+13 MSE. By far, the best performance till now.
+It is possible to infer that the relationship between salaries and performance is very well represented from the model; however, it is important to consider that the sample here is quite small, only 67 observations. For this reason, the results must be considered carefully.
 
 
 ```{r centers-underpaid-overpaid, echo=FALSE}
@@ -758,7 +758,7 @@ Looking at the most underpaid and most overpaid centers it emerges that the diff
 
 Among the overpaid centers we found again Deandre Ayton. 
 Regarding James Wiseman, he was a great prospect but he was really unlucky with injuries. Although he was traded from Golden State Warriors to Detroit Pistons (to a weaker team), he has not yet managed to fulfil its potential. He is still in his rookie contract: like Edwards, his salary is higher compared to average rookie contracts because he was the 2nd pick in 2020 draft. But unlike Edwards, according to the model his performance did not match his salary.
-Is quite surprising to find Jaren Jackson Jr here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
+It is quite surprising to find Jaren Jackson Jr here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
 
 **MOST UNDERPAID CENTERS**
 
@@ -767,10 +767,148 @@ Al Horford is a veteran, he made an excellent contribution to the Boston Celtics
 Andre Drummond is a great rebounder, capable of consistent performance in terms of statistics. However, he is lacking in aspects of the game that are not considered by the model, such as basketball IQ: maybe that is why he results underpaid according to the model.
 
 
-
 #### Forwards
 
+For what concerns forwards, we have 145 observations in our dataset.
+
+```{r lasso-forwards, echo=FALSE}
+
+lm.mod.f <- lm(Salary~+., data=fd_forward_nopos)
+summary(lm.mod.f)
+
+# design matrix not considering the intercept
+X.f <- model.matrix(Salary~., data=fd_forward_nopos)
+X.f <- X.f[,-1]
+
+# vector of responses
+y.f <- fd_forward_nopos$Salary
+
+### Cross validation to select the best lambda ###
+best_lambda <- ten_fold_cv(X.f, y.f, 1)
+
+```
+
+As for centers, we started from the complete model and we chose the best $\lambda$. 
+
+
+```{r lasso-forwards-model, echo=FALSE}
+
+# final model with best lambda on all data
+lm.las.f <- glmnet(X.f, y.f, alpha = 1)
+coef(lm.las.f, s = best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lm.las.f, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
+
+```
+
+Once chosen the best lambda, we fitted the model on all data. In this specific lasso regression 15 variables are reduced to zero, far more than in the lasso regression for centers (9) and the general lasso regression (6).
+
+```{r lasso-forward-performance, echo=FALSE}
+
+# use fitted best model to make predictions
+lm.las.f.pred <- predict(lm.las.f, s = best_lambda, X.f)
+
+# SST and SSE
+sst <- sum((y.f - mean(y.f))^2)
+sse <- sum((lm.las.f.pred - y.f)^2)
+
+# R-Squared
+R2 <- 1 - sse/sst
+R2
+# very high R2
+
+# final MSE
+mse.lm.las.f <- mean((lm.las.f.pred-y.f)^2)
+mse.lm.las.f
+# better than before
+
+```
+The model has a 0.75 R-squared and a 3.520197e+13 MSE. The performance is very good, also considering that this model has only 13 predictors as we mentioned earlier. Also for forwards we can say that the relationship between salaries and player performance is well captured by the model.    
+
+```{r underpaid-overpaid-forwards, echo=FALSE}
+
+### 3 most overpaid and 3 most underpaid forwards table ###
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward_nopos, 3)
+lm.las.f.tables[[1]]
+lm.las.f.tables[[2]]
+
+```
+
+The 3 most overpaid forwards according to this model are Michael Porter Jr, Tobias Harris and Klay Thompson. They were also among most overpaid players in the overall lasso regression; as we said before, it is reasonable to find these players in this tier. 
+The same applies to Williams, Oubre Jr and Love in terms of the 3 most underpaid forwards.
+
+
 #### Guards
+
+Regarding guards, we consider 148 observations.
+
+```{r lasso-guards, echo=FALSE}
+
+#### LASSO FOR GUARD POSITION
+
+lm.mod.g <- lm(Salary~+., data=fd_guard_nopos)
+summary(lm.mod.g)
+
+# design matrix not considering the intercept
+X.g <- model.matrix(Salary~., data=fd_guard_nopos)
+X.g <- X.g[,-1]
+
+# vector of responses
+y.g <- fd_guard_nopos$Salary
+
+### Cross validation to select the best lambda ###
+best_lambda <- ten_fold_cv(X.g, y.g, 1)
+
+# final model with best lambda on all data
+lm.las.g <- glmnet(X.g, y.g, alpha = 1)
+coef(lm.las.g, s = best_lambda)
+
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lm.las.g, xvar = "lambda", label = TRUE)
+abline(v = log(best_lambda), lty = 3, lwd = 2)
+
+
+```
+
+Following the same steps as with the other roles, we obtained a lasso regression model for guards. The result in terms of coefficients is very interesting: 23 variables are shrunk to zero, the model considers only 5 predictors. Given that the guard role tends to be the most difficult to interpret as the creative component plays a major role, we expected a more complex model than those obtained for centers and forwards. Instead, we are faced with a very simple model.
+
+```{r lasso-guards-performance, echo=FALSE}
+
+# use fitted best model to make predictions
+lm.las.g.pred <- predict(lm.las.g, s = best_lambda, X.g)
+
+# SST and SSE
+sst <- sum((y.g - mean(y.g))^2)
+sse <- sum((lm.las.g.pred - y.g)^2)
+
+# R-Squared
+R2 <- 1 - sse/sst
+R2
+# worse R2 than centers and forwards
+
+# final MSE
+mse.lm.las.g <- mean((lm.las.g.pred-y.g)^2)
+mse.lm.las.g
+# worse than centers and forwards
+
+```
+As expected, given the low number of predictors, here we have a lower R-squared and a fairly higher MSE compared to models of the other positions.
+Probably, the relationship between salaries and performance for guards is harder to grasp and it is best explained by variables not considered in our model. 
+
+```{r lasso-guards-overpaid-underpaid, echo=FALSE}
+
+### 3 most overpaid and 3 most underpaid centers table ###
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
+lm.las.g.tables[[1]]
+lm.las.g.tables[[2]]
+
+```
+
+We again find Beal and LaVine in the most 3 overpaid; Maxey, Bane and Gordon also here are classified among the most underpaid players. The predictions are very similar to those of the overall lasso regression model.
+The only but very interesting difference is that Stephen Curry results very overpaid in this model. Curry is one of the biggest talents in the NBA: he won 4 titles as the absolute star and 2 MVPs thanks to his unique style of play. After several years of dominance, the performance of his Golden state Warriors has been declining in recent seasons. Despite this, Curry overall performance in 23-24 was in line or even better compared to the two previous seasons. For this reason, we think that in this case the prediction of the model does not make much sense.
+
 
 ## Conclusion
 

@@ -391,6 +391,23 @@ lm.las.tables[[2]]
 # LASSO REGRESSION FOR DIFFERENT POSITIONS #
 ############################################
 
+#########
+# ANOVA # 
+#########
+
+# Is there, on average, a difference between salaries of players with different positions?
+
+fd_guard_df <- as.data.frame(fd_guard)
+fd_forward_df <- as.data.frame(fd_forward)
+fd_center_df <- as.data.frame(fd_center)
+fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
+
+bartlett.test(Salary ~ Pos, data = fd_roles_df)
+
+aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
+summary(aov.roles)
+
+
 # function to transform PG and SG into G, and PF and SF into F
 recode_pos <- function(x) {
   ifelse(x %in% c("PG", "SG"), "G", 
@@ -406,11 +423,16 @@ fd_forward <- fd_list$F
 fd_guard <- fd_list$G
 rm(fd_list)
 
+nrow(fd_center)
+nrow(fd_forward)
+nrow(fd_guard)
+
+
 # remove position
 fd_center_nopos <- fd_center[, numeric_cols]
 fd_forward_nopos <- fd_forward[, numeric_cols]
 fd_guard_nopos <- fd_guard[, numeric_cols]
-length(fd_center_nopos)
+
 
 #### LASSO FOR CENTER POSITION
 
@@ -547,21 +569,6 @@ lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
 
-#########
-# ANOVA # 
-#########
-
-# Is there, on average, a difference between salaries of players with different positions?
-
-fd_guard_df <- as.data.frame(fd_guard)
-fd_forward_df <- as.data.frame(fd_forward)
-fd_center_df <- as.data.frame(fd_center)
-fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
-
-bartlett.test(Salary ~ Pos, data = fd_roles_df)
-
-aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
-summary(aov.roles)
 
 
 
