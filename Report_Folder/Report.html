@@ -365,8 +365,8 @@ followed</a></li>
 <li><a href="#data-collection" id="toc-data-collection">Data
 collection</a>
 <ul>
-<li><a href="#why-consider-only-regular-season-data" id="toc-why-consider-only-regular-season-data">Why consider only Regular
-Season data?</a></li>
+<li><a href="#why-consider-only-regular-season-data" id="toc-why-consider-only-regular-season-data">Why consider only regular
+season data?</a></li>
 <li><a href="#glossary" id="toc-glossary">Glossary</a></li>
 <li><a href="#why-statistics-per-48-minutes" id="toc-why-statistics-per-48-minutes">Why statistics per 48
 minutes?</a></li>
@@ -412,20 +412,20 @@ comments</a></li>
 <h2>Objective of the project</h2>
 <p>Our goal is to investigate whether the salaries earned by the NBA
 players during the 2023-2024 season are fair in proportion to their
-performance during the current year’s Regular Season. To analyse
+performance during the current year’s regular season. To analyse
 performance, we selected several statistics: from the most common such
 as points, rebounds, assists to advanced metrics like Usage, Player
-Impact Estimated and Winning Shares. The idea is to explore the
-relationships between salaries and performance through different models
-in order to understand what kind of relationship there is and which
-model best fits the data. Then, we compared actual salaries with those
-predicted by our models to find out which players (according to the
-models) are the most overpaid or underpaid. In the end, we analysed the
-players by separating them by role (considering centers, forwards and
-guards separately) and constructed specific models for each position.
-The aim was to study similarities and differences of the specific models
-among themselves and with respect to the general ones implemented in the
-previous phase.</p>
+Impact Estimated and Winning Shares. The goal is to explore the
+relationships between salaries and performance using various models.
+This will help us understand how statistics correlate with salaries and
+determine which model best fits the data. Then, we compared actual
+salaries with those predicted by our models to find out which players
+(according to the models) are the most overpaid or underpaid. In the
+end, we analysed the players by separating them by role (considering
+centers, forwards and guards separately) and constructed specific models
+for each position. The aim was to study similarities and differences of
+the specific models among themselves and with respect to the general
+ones implemented in the previous phase.</p>
 </div>
 <div id="steps-followed" class="section level2">
 <h2>Steps followed</h2>
@@ -445,35 +445,35 @@ previous phase.</p>
 which we collected most of the stats. Additionally, we downloaded data
 about the salaries from <a href="https://hoopshype.com/">Hoopshype</a>
 and other stats of interest from <a href="https://www.basketball-reference.com">Basketball reference</a>.
-All data concerns the 2023-2024 NBA Regular Season.</p>
+All data concerns the 2023-2024 NBA regular season.</p>
 <div id="why-consider-only-regular-season-data" class="section level3">
-<h3>Why consider only Regular Season data?</h3>
-<p>Considering only data about Regular Season without considering
+<h3>Why consider only regular season data?</h3>
+<p>Considering only data about regular season without considering
 players performance during playoffs limits a bit the potential of our
 analysis. On one hand, it’s reasonable to infer that player performance
 during playoffs should have an important weight in determining his
 salary. On the other hand, considering playoffs in the analysis carries
 different issues.</p>
-<p>There are teams (and consequently players) that go further than
-others: 14 out of 30 teams can’t qualify for the playoffs. For the teams
-which qualify, playoff stats are calculated on a number of games that
-could differ greatly between different teams (e.g. if a team loses in
-the first round, it plays from 4 to 7 games. If a team reaches the
-finals, it plays from 16 to 28 games). During Regular Season every team
-plays 82 games.</p>
+<p>Some teams (and their players) progress further than others: 14 out
+of 30 teams can’t qualify for the playoffs. For those that do, playoff
+stats are calculated on a number of games that could differ greatly
+between different teams (e.g. if a team loses in the first round, it
+plays from 4 to 7 games. If a team reaches the finals, it plays from 16
+to 28 games). During regular season every team plays 82 games.</p>
 <p>Additionally, coaches usually rotate players at their disposal in a
-different way during playoffs: for instance, during NBA Regular Season
+different way during playoffs: for instance, during NBA regular season
 approximately 10-12 players for each team take part in the game; during
 playoffs it is not uncommon to observe only 7-8 players that come into
-play for each team. Furthermore, usually in a playoff game the best
-players are more involved compared to Regular Season games. It means
-that, first of all, they play several more minutes. Moreover, they have
-the ball in their hands for a lot of time and consequently their stats
-grow a lot; hence, it could happen that few players record a large part
-of the entire team’s statistics. Considering this, including playoffs
-data in the analysis could lead to an overestimation of performance of
-2-3 players and to an underestimation of the performance of the rest of
-the team.</p>
+play for each team. This means that there will be less players with
+enough playing time to compute the necessary statistics. Furthermore, in
+a playoff game, the stakes are higher, leading teams to become more risk
+adverse. The consequence is that that they will try to take advantage of
+their best players giving them as much plays as possible, leaving less
+opportunities to the other players of the roster, thus creating a bias
+in the production of the statistics. Considering this, including
+playoffs data in the analysis could lead to an overestimation of
+performance of 2-3 players and to an underestimation of the performance
+of the rest of the team.</p>
 <p>All in all, it is undeniable that playoffs are a fundamental part of
 the season. It is also obvious that if a player has more
 responsibilities in that phase he probably deserves a higher salary. But
@@ -481,7 +481,7 @@ we think that for the purposes of our analysis, the addition of
 statistics collected on a small sample of matches, different for
 practically every team, with highly polarized data between the various
 players may lead to biases if not handled properly.</p>
-<p>We think that considering only the Regular Season, although leading
+<p>We think that considering only the regular season, although leading
 to a limited analysis, may be sufficient to grasp the main relationships
 between salaries and performance.</p>
 </div>
@@ -499,11 +499,12 @@ player.</li>
 <h4>Traditional stats (collected from the <a href="https://www.nba.com/?47">NBA</a> website)</h4>
 <ul>
 <li><strong>GP</strong>: “Games played”, the number of games played by a
-player during the 2023-2024 Regular Season;</li>
+player during the 2023-2024 regular season;</li>
 <li><strong>FG_PCT</strong>: “Field Goal Percentage”, the percentage of
-field goal attempts that a player makes. Formula: (FGM)/(FGA);</li>
+field goal attempts that a player scores (both 2pt and 3pt). Formula:
+(FGM)/(FGA);</li>
 <li><strong>FG3_PCT</strong>: “3 Points “Field Goal Percentage”, the
-percentage of 3pt field goal attempts that a player makes;</li>
+percentage of 3pt field goal attempts that a player scores;</li>
 <li><strong>FT_PCT</strong>: “Free throws Percentage”, the percentage of
 free throws attempts that a player makes;</li>
 <li><strong>OREB</strong>: “Offensive Rebounds”, the number of rebounds
@@ -531,7 +532,7 @@ fouls that are drawn by a player or team;</li>
 <li><strong>PTS</strong>: “Points”, the number of points scored by a
 player;</li>
 <li><strong>MIN</strong>: “Minutes played”, number of minutes played by
-a player during the 2023-2024 Regular Season;</li>
+a player during the 2023-2024 regular season;</li>
 <li><strong>MIN_G</strong>: “Minutes played per game”.</li>
 </ul>
 </div>
@@ -584,7 +585,7 @@ average team and prorated to an 82-game season. Multiply by 2.70 to
 convert to wins over replacement.</li>
 </ul>
 <p>BPM and VORP are calculated per 100 possessions; MIN and WS are
-calculated over the whole Regular Season, MIN_G is calculated per game.
+calculated over the whole regular season, MIN_G is calculated per game.
 The other stats are considered per 48 minutes.</p>
 </div>
 </div>
@@ -601,8 +602,8 @@ player is fairly evaluated and not distorted by the minutes played.</p>
 <p>Once we had obtained the tables of interest, we selected from each
 table the statistics useful for analysis (those given in the glossary)
 and then merged the slices of the various datasets, removing all the
-players who played less than 480 minutes during the entire Regular
-Season.</p>
+players who played less than 480 minutes during the entire regular
+season.</p>
 <pre class="r"><code>data_traditional_tot &lt;- data_traditional_tot[data_traditional_tot$MIN &gt; 480, ]
 
 final_dataset &lt;- merge(data_salary, data_traditional_per48, by = &quot;PLAYER_NAME&quot;, all = TRUE)
@@ -881,12 +882,14 @@ Boxplot and histograms of the dependent variable Salary and of its
 logarithmic transformation
 </p>
 </div>
-<p>The boxplot shows that the salary distribution is right skewed, with
-some outliers in the right side. We expected this kind of distribution,
-the outliers are the players earning the highest salaries. The histogram
-also highlights the right skewed distribution. It can be seen that
-Salary’s log transformation reduces the skewness and makes the
-distribution of the variable closer to normal.</p>
+<p>The boxplot reveals that the salary distribution is right-skewed,
+with some outliers on the higher end. This distribution was anticipated,
+as in basketball, as in most other sports, we observe few players
+excelling and commanding high salaries while the majority of players
+fall within a narrower performance and salary range. The histogram also
+highlights the right skewed distribution. It can be seen that Salary’s
+log transformation reduces the skewness and makes the distribution of
+the variable closer to normal.</p>
 <p>In order to study correlations between the predictors of the model,
 we used the corrplot function (Figure <span class="math inline">\(\ref{fig:corrplot-independent-variables}\)</span>).</p>
 <pre class="r"><code>library(corrplot)
@@ -903,7 +906,7 @@ interesting to notice that Salary is positively correlated with PTS and
 advanced stats like USG_PCT, BPM and VORP: all of these variables are
 related to players’ shots and point contribution. For what concerns the
 other variables, there are some obvious correlations: for instance,
-between variables MIN (total minutes played during the Regular Season)
+between variables MIN (total minutes played during the regular season)
 and MIN_G (minutes played per game) and between variables REB, OREB and
 DREB (all related to rebounds, with the relation REB = OREB + DREB).
 Additionally, we expected the positive correlation between BPM and VORP
@@ -985,7 +988,9 @@ determining the response. Through the residual analysis it is noticeable
 that the relationship between fitted values and residuals is not exactly
 linear (1st graph). Additionally, in the third graph the points are not
 are included in a band of constant amplitude parallel to the x-axis,
-hence the omoschedasticity assumption can be doubted.</p>
+hence the omoschedasticity assumption can be doubted. From the fourth
+graph we can observe that the outliers appear to have low leverage,
+meaning that they don’t influence strongly the parameters</p>
 <pre><code>## 
 ## Call:
 ## lm(formula = log(Salary) ~ +., data = fd_numeric)
@@ -1425,13 +1430,14 @@ accepted a 3.8 millions salary (veteran minimum contract) to play with
 Los Angeles Clippers. For sure he is no longer a player worth 47
 millions, but he is not worth 3.8 millions either. Our model interprets
 pretty well the situation, stating that Westbrook should earn a 18.3
-millions salary: not a superstar one, but not a minimum wage either.</p>
-<p>Given the presence of correlations between the independent variables,
-the presence of multicollinearity is likely. For this reason, we decided
-to implement models that perform well when the variables are collinear
-such as Ridge regression and Lasso regression. In the next paragraphs we
-want to see if the performances of these models are better than that of
-the models seen so far.</p>
+millions salary: not a superstar’s salary, but also not minimum wage
+either.</p>
+<p>Given the presence of correlations between the predictors, the
+presence of multicollinearity is likely. For this reason, we decided to
+implement models that perform well when the variables are collinear such
+as Ridge regression and Lasso regression. In the next paragraphs we want
+to see if the performances of these models are better than that of the
+models seen so far.</p>
 </div>
 </div>
 <div id="ridge-regression" class="section level3">
@@ -1625,9 +1631,9 @@ model</caption>
 </tbody>
 </table>
 <p><strong>MOST OVERPAID PLAYERS</strong></p>
-<p>Here there are a different similarities between the previous model:
-Beal, Poole, LaVine, Ayton, Garland and Porter Jr. still result in the
-most overpaid players.</p>
+<p>We notice some similarities with the previous model: Beal, Poole,
+LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid
+players.</p>
 <p>Klay Thompson, after being a key piece in the Golden State Warriors
 dinasty, suffered a serious injury few years ago. After that, he was no
 longer the same player and the salary was, let’s say, no longer adequate
@@ -1657,8 +1663,8 @@ especially with this type of model.</p>
 <p><strong>MOST UNDERPAID PLAYERS</strong></p>
 <p>At first glance we can see that Ridge regression does not classify
 players with very high salaries (such as Lebron James and Kevin Durant)
-as the most underpaid. We believe that in this respect the prediction is
-better than the previous model one.</p>
+as the most underpaid. We believe that in this regard the prediction is
+better than the previous model’s.</p>
 <p>Again, we find Westbrook, Maxey and Oubre Jr. in this tier. Oubre’s
 last contract was 30 millions in 2 years with Phoenix Suns, so in line
 with the predicted one. Last year he signed a small 2.89 million
@@ -1694,12 +1700,13 @@ cases more meaningful predictions.</p>
 <div id="lasso-regression" class="section level3">
 <h3>Lasso regression</h3>
 <p>A disadvantage of ridge regression is that, unlike subset selection,
-it includes all <em>p</em> predictors in the final model. Also lasso
-regression shrinks the coefficients estimates towards zero but it has an
-absolute value shrinkage penalty instead of a quadratic one: <span class="math inline">\(\lambda \sum^p_{j=1} |\beta_j|\)</span>. When
-<span class="math inline">\(\lambda\)</span> is sufficiently large, some
-coefficient estimates become exactly equal to zero. Hence, like best
-subset selection, lasso performs a variable selection.</p>
+it includes all <em>p</em> predictors in the final model. Lasso
+regression instead shrinks the coefficients estimates towards zero but
+it has an absolute value shrinkage penalty instead of a quadratic one:
+<span class="math inline">\(\lambda \sum^p_{j=1} |\beta_j|\)</span>.
+When <span class="math inline">\(\lambda\)</span> is sufficiently large,
+some coefficient estimates become exactly equal to zero. Hence, like
+best subset selection, lasso performs a variable selection.</p>
 <div class="figure" style="text-align: center">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAAA7VBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZrY6AAA6ADo6OgA6Ojo6OmY6OpA6ZmY6ZpA6ZrY6kJA6kLY6kNtmAABmAGZmOgBmOjpmOpBmZjpmZmZmZpBmZrZmkJBmkLZmkNtmtrZmtttmtv+QOgCQOjqQZjqQZmaQZpCQkDqQkGaQkJCQkLaQtraQttuQtv+Q2/+pqam2ZgC2Zjq2kDq2kGa2kLa2tpC2tra2ttu227a229u22/+2///bkDrbkGbbtmbbtpDbtrbb25Db27bb29vb2//b////AAD/tmb/tpD/25D/27b/29v//7b//9v///8zFjAOAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO3dbYPTRr7mYTnp4APMwC4s2XR2mQMMOXNmw2S6w0mzMB7I0NC93WB//4+zkizbklW2VLdKUlXpd72YNNa4Wg9/3a2HUilZAQAkydgzAAChIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABARoAAgIkABQESAAoCIAAUAEQEKACICFABEBCgAiAhQABAFG6DL1/eSJPn2wbvdRx9fzpNkVv7Evp1FUvFo+IYMC7Z8n31079nn9nNjbih3M0+ed2znw/fZJ0+7zs+hObSfoczXx9/8w66h6rf0TV//9dqSWRawNsPLF7uvWNWBfeXYf0UprFtlt3cm1AB9P98UwcPik+W5Uvr77ch7kauG6guWFeHaiU1AGBrKfX1st+MY1vRm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" alt="Plot of the MSE with respect to the value of $\lambda$ in the Lasso regression model \label{fig:lasso-lambda}" width="90%" />
 <p class="caption">
@@ -1724,7 +1731,7 @@ are shrunk to zero. Among them, the coefficients of PIE and NET_RATING
 that were significant in the best subset selection model.</p>
 <pre><code>## [1] &quot;R-Squared =  0.69421191533625&quot;</code></pre>
 <pre><code>## [1] &quot;MSE =  4.338802e+13&quot;</code></pre>
-<p>Once fitted the model on all data with the best <span class="math inline">\(\lambda\)</span>, we evaluated the performances
+<p>Once fitted the model on all data with the best <span class="math inline">\(\lambda\)</span>, we evaluated the performances.
 The R-squared is marginally better than that of the ridge, 0.6942
 against 0.6938. The Mean squared error is slightly lower compared to the
 ridge one, 4.338802e+13 against 4.344009e+13. The performance of these
@@ -1905,9 +1912,9 @@ grouping players with respect to their playing positions. As positions,
 we considered the classic split of centers, forwards and guards. First
 of all, we wanted to check whether players earn, on average, the same
 salary regardless of their role. To do so, we used the ANOVA to compare
-the means of the different groups. Secondly, we implemented 3 lasso
-regression models to explore the relationship between salaries and
-performance for each position. The objectives are:</p>
+the means of the different groups. Secondly, we implemented a lasso
+regression model for each group to explore the relationship between
+salaries and performance for each position. The objectives are:</p>
 <ul>
 <li><p>observe the differences between the coefficients of the
 role-specific models among themselves and with respect to the lasso
@@ -2524,7 +2531,7 @@ mentally, i.e. to grasp characteristics such as attitude, leadership and
 basketball IQ. Factors outside the basketball court also greatly
 influence the determination of salaries: player’s potential, player’s
 career, player’s fit into the team, market dynamics, and so on. We
-considered only the 2023/2024 Regular Season: to have more complete
+considered only the 2023/2024 regular season: to have more complete
 models one would have to consider more seasons and, as mentioned at the
 beginning, also consider the playoffs.</p>
 </div>
