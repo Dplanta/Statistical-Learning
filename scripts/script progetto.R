@@ -1,3 +1,17 @@
+#########
+# MODIFICHE DA FARE
+# 1) utilizzare log(y) per ridge e per tutte le lasso
+# 1a) eventualmente cambiare interpretazioni
+#
+# 2) utilizzare MSE su test per comparare i modelli:
+# 2a) creare train e test set e calcolare test error su regressione logaritmica iniziale e su subset selection
+# 2b) confrontare di nuovo tutti i modelli utilizzando la divisione train e test (lui usa la stessa)
+# 2c) mantenere comunque MSE su tutti i dati per completezza di informazione
+########
+
+
+
+
 # Upload readxl to import data from Excel to R
 library(readxl)
 
@@ -220,6 +234,10 @@ par(mfrow=c(1,1))
 lm.ess.pred <- predict(lm.ess)
 mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
 mse.lm.ess
+
+library(flexmix)
+BIC(lm.log,lm.ess)
+
 
 ###  function that returns the top_N overpaid and top-N underpaid players tables ###
 create_tables <- function(real_values, pred_values, df, N) {
