@@ -1,6 +1,6 @@
 #########
 # MODIFICHE DA FARE
-# 1) utilizzare log(y) per ridge e per tutte le lasso
+#
 # 1a) eventualmente cambiare interpretazioni
 #
 # 2) utilizzare MSE su test per comparare i modelli:
@@ -85,16 +85,21 @@ summary(fd_numeric)
 
 # variable Salary (dependent)
 summary(Salary)
-boxplot(Salary, main="Boxplot of the salary")
-hist(Salary, main="Histogram of the salary")
-boxplot(log(Salary), main="Boxplot of the logarithmic salary")
-hist(log(Salary), main="Histogram of the logarithmic salary") # forma più regolare, ulteriore motivo per usare il logaritmo
+boxplot(Salary, main="Salary")
+hist(Salary, main="Salary")
+boxplot(log(Salary), main="Logarithmic salary")
+hist(log(Salary), main="Logarithmic salary") 
+
+## sqrt transformation of Salary
+boxplot(sqrt(Salary), main="Square rooted Salary")
+hist(sqrt(Salary), main="Square rooted Salary")  # forma più regolare, ulteriore motivo per usare sqrt
+
 
 par(mfrow = c(2, 2))
-boxplot(Salary, main="Boxplot of the salary")
-hist(Salary, main="Histogram of the salary")
-boxplot(log(Salary),  main="Logarithmic salary", ylab="Salary in millions")
-hist(log(Salary),  main="Logarithmic salary", xlab="Salary in millions")
+boxplot(Salary, main="Salary")
+hist(Salary, main="Salary")
+boxplot(sqrt(Salary), main="Square rooted Salary")
+hist(sqrt(Salary), main="Square rooted Salary")
 par(mfrow = c(1, 1))
 
 
@@ -124,8 +129,6 @@ cor_mat
 library(corrplot)
 
 corrplot(cor(fd_numeric), method = 'color')
-corrplot(cor(fd_numeric), method = 'ellipse')
-
 
 ############
 ## MODELS ## 
@@ -156,7 +159,7 @@ par(mfrow = c(1, 1))
 
 ## QQ plot ok, check linearity residuals vs fitted; check eteroschedasticity scale-location
 
-# trying to transform the response variable
+# trying to transform the response variable (log)
 lm.log <- lm(log(Salary)~+., data=fd_numeric)
 summary(lm.log)
 par(mfrow = c(2, 2))
@@ -168,42 +171,51 @@ lm.log.pred <- predict(lm.log)
 mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
 mse.lm.log
 
+
+## trying to transform the response variable (sqrt)
+
+lm.sqrt <- lm(sqrt(Salary)~., data = fd_numeric)
+summary(lm.sqrt)
+par(mfrow = c(2, 2))
+plot(lm.sqrt)
+par(mfrow = c(1, 1))
+
 ## better linearity residuals vs fitted(1st plot), better with omoschedasticity(3rd plot)
 
 
 ###############################
-# EXHAUSTIVE SUBSET SELECTION #
+# EXHAUSTIVE SUBSET SELECTION # logarithm
 ###############################
 library(leaps)
 
-regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
-reg.summary <- summary(regfit.full)
-reg.summary$outmat
-reg.summary$which
-reg.summary$rsq
+regfit.full.log <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
+reg.summary.log <- summary(regfit.full.log)
+reg.summary.log$outmat
+reg.summary.log$which
+reg.summary.log$rsq
 
 par(mfrow=c(2,2))
 
 # residual sum of squares
-plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
+plot(reg.summary.log$rss,xlab="Number of Variables",ylab="RSS",type="l")
 
 # adjusted-R^2 with its largest value
-plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
-i <- which.max(reg.summary$adjr2)
-points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
-text(i,reg.summary$adjr2[i], i, pos=1)
+plot(reg.summary.log$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+i <- which.max(reg.summary.log$adjr2)
+points(i,reg.summary.log$adjr2[i], col="red",cex=2,pch=20)
+text(i,reg.summary.log$adjr2[i], i, pos=1)
 
 # Mallow's Cp with its smallest value
-plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary$cp)#return the index of the minimum
-points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
-text(i,reg.summary$cp[i], i, pos=3)
+plot(reg.summary.log$cp,xlab="Number of Variables",ylab="Cp",type='l')
+i <- which.min(reg.summary.log$cp)#return the index of the minimum
+points(i,reg.summary.log$cp[i],col="red",cex=2,pch=20)
+text(i,reg.summary.log$cp[i], i, pos=3)
 
 # BIC with its smallest value
-plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
-i <- which.min(reg.summary$bic)
-points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
-text(i,reg.summary$bic[i], i, pos=3)
+plot(reg.summary.log$bic,xlab="Number of Variables",ylab="BIC",type='l')
+i <- which.min(reg.summary.log$bic)
+points(i,reg.summary.log$bic[i],col="red",cex=2,pch=20)
+text(i,reg.summary.log$bic[i], i, pos=3)
 
 par(mfrow = c(1,1))
 
@@ -213,17 +225,17 @@ par(mfrow = c(1,1))
 #let's get the list of selected parameters:
 covariates = 12
 
-selected.model <- reg.summary$which[covariates,]
-selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
-print(selected.parameters)
+selected.model.log <- reg.summary.log$which[covariates,]
+selected.parameters.log <- names(selected.model.log[selected.model.log])[-1] #-1 to lose the intercept
+print(selected.parameters.log)
 
-selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
+selected.formula.log <- as.formula(paste("log(Salary) ~", paste(selected.parameters.log, collapse = " + ")))
 
-lm.ess <- lm(selected.formula, data=fd_numeric)
-summary(lm.ess)
+lm.ess.log <- lm(selected.formula.log, data=fd_numeric)
+summary(lm.ess.log)
 
 # correlation between dependent variables
-corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'color')
+corrplot(cor(fd_numeric[c(selected.parameters.log)]), method = 'color')
 
 # residual analysis
 par(mfrow=c(2,2))
@@ -231,12 +243,12 @@ plot(lm.ess)
 par(mfrow=c(1,1))
 
 # model performances
-lm.ess.pred <- predict(lm.ess)
-mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
-mse.lm.ess
+lm.ess.pred.log <- predict(lm.ess.log)
+mse.lm.ess.log <- mean((exp(lm.ess.pred.log)-y)^2)
+mse.lm.ess.log
 
 library(flexmix)
-BIC(lm.log,lm.ess)
+BIC(lm.log,lm.ess.log)
 
 
 ###  function that returns the top_N overpaid and top-N underpaid players tables ###
@@ -265,7 +277,7 @@ create_tables <- function(real_values, pred_values, df, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
+lm.ess.tables <- create_tables(y, exp(lm.ess.pred.log), final_dataset, 10)
 lm.ess.tables[[1]]
 lm.ess.tables[[2]]
 
@@ -278,19 +290,119 @@ corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 ## For this reason, we will try ridge and lasso that perform good 
 ## in case of multicollinearity 
 
+###############################
+# EXHAUSTIVE SUBSET SELECTION # sqrt
+###############################
+library(leaps)
+
+regfit.full.sqrt <- regsubsets(sqrt(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
+reg.summary.sqrt <- summary(regfit.full.sqrt)
+reg.summary.sqrt$outmat
+reg.summary.sqrt$which
+reg.summary.sqrt$rsq
+
+par(mfrow=c(2,2))
+
+# residual sum of squares
+plot(reg.summary.sqrt$rss,xlab="Number of Variables",ylab="RSS",type="l")
+
+# adjusted-R^2 with its largest value
+plot(reg.summary.sqrt$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+i <- which.max(reg.summary.sqrt$adjr2)
+points(i,reg.summary.sqrt$adjr2[i], col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$adjr2[i], i, pos=1)
+
+# Mallow's Cp with its smallest value
+plot(reg.summary.sqrt$cp,xlab="Number of Variables",ylab="Cp",type='l')
+i <- which.min(reg.summary.sqrt$cp)#return the index of the minimum
+points(i,reg.summary.sqrt$cp[i],col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$cp[i], i, pos=3)
+
+# BIC with its smallest value
+plot(reg.summary.sqrt$bic,xlab="Number of Variables",ylab="BIC",type='l')
+i <- which.min(reg.summary.sqrt$bic)
+points(i,reg.summary.sqrt$bic[i],col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$bic[i], i, pos=3)
+
+par(mfrow = c(1,1))
+
+# It seems that selecting 14 parameters gives us the best 
+# balance between model simplicity and precision. 
+
+#let's get the list of selected parameters:
+covariates = 14
+
+selected.model.sqrt <- reg.summary.sqrt$which[covariates,]
+selected.parameters.sqrt <- names(selected.model.sqrt[selected.model.sqrt])[-1] #-1 to lose the intercept
+print(selected.parameters.sqrt)
+
+selected.formula.sqrt <- as.formula(paste("sqrt(Salary) ~", paste(selected.parameters.sqrt, collapse = " + ")))
+
+lm.ess.sqrt <- lm(selected.formula.sqrt, data=fd_numeric)
+summary(lm.ess.sqrt)
+
+# correlation between dependent variables
+corrplot(cor(fd_numeric[c(selected.parameters.sqrt)]), method = 'color')
+
+# residual analysis
+par(mfrow=c(2,2))
+plot(lm.ess.sqrt)
+par(mfrow=c(1,1))
+
+# model performances
+lm.ess.pred.sqrt <- predict(lm.ess.sqrt)
+mse.lm.ess.sqrt <- mean((lm.ess.pred.sqrt)^2-y)^2
+mse.lm.ess.sqrt
+print(format(mse.lm.ess.sqrt, scientific=TRUE))
+
+
+
+###  function that returns the top_N overpaid and top-N underpaid players tables ###
+create_tables <- function(real_values, pred_values, df, N) {
+  res <- real_values - pred_values
+  res <- as.vector(res)
+  
+  overpaid_indices <- order(res, decreasing=TRUE)[1:N]
+  underpaid_indices <- order(res, decreasing=FALSE)[1:N]
+  
+  over_diff <- res[overpaid_indices]
+  under_diff <- res[underpaid_indices]
+  
+  over_pred <- pred_values[overpaid_indices]
+  under_pred <- pred_values[underpaid_indices]
+  
+  ## actual salary and player names
+  fd_over <- df[overpaid_indices, ][c('Salary')]
+  fd_under <- df[underpaid_indices, ][c('Salary')]
+  
+  overpaid_table <- cbind(fd_over, over_pred, over_diff)
+  colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  underpaid_table <- cbind(fd_under, under_pred, -under_diff)
+  colnames(underpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  
+  return(list(overpaid_table, underpaid_table))
+}
+
+lm.ess.sqrt.tables <- create_tables(y, lm.ess.pred.sqrt^2, final_dataset, 10)
+lm.ess.sqrt.tables[[1]]
+lm.ess.sqrt.tables[[2]]
+
+# correlation between dependent variables
+corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'number')
 
 #############################
-#     RIDGE REGRESSION      #
+#     RIDGE REGRESSION      # SQRT
 #############################
 library(glmnet)
 
 # linear model
-lm.mod <- lm(Salary~+., data=fd_numeric)
-summary(lm.mod)
+lm.mod.sqrt <- lm(sqrt(Salary)~+., data=fd_numeric)
+summary(lm.mod.sqrt)
 
 # design matrix not considering the intercept
-X <- model.matrix(Salary~., data=fd_numeric)
+X <- model.matrix(sqrt(Salary)~., data=fd_numeric)
 X <- X[,-1]
+y <- fd_numeric$Salary
 # y already defined before
 
 ### Ten Fold Cross Validation function to select the best lambda ###
@@ -302,7 +414,7 @@ ten_fold_cv <- function(X, y, a) {
   train <- sample(1:n, n/2)
   test  <- setdiff(1:n, train)
   
-  cv.out <- cv.glmnet(X[train, ], y[train], alpha = a, nfold = 10)
+  cv.out <- cv.glmnet(X[train, ], sqrt(y[train]), alpha = a, nfold = 10)
   
   # This plots the cross-validation curve (red dotted line) along with upper and
   # lower standard deviation curves along the lambda sequence (error bars).
@@ -318,9 +430,9 @@ ten_fold_cv <- function(X, y, a) {
   print(paste("The best lambda is = ", round(best_lambda)))
   
   # estimated test MSE with bestlambda value
-  mod <- glmnet(X[train, ], y[train], alpha = a)
+  mod <- glmnet(X[train, ], sqrt(y[train]), alpha = a)
   pred <- predict(mod, s = best_lambda, newx = X[test,])
-  mse <- mean((pred-y[test])^2)
+  mse <- mean((pred^2-y[test])^2)
   print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
   
   return <- best_lambda
@@ -328,8 +440,9 @@ ten_fold_cv <- function(X, y, a) {
 
 best_lambda <- ten_fold_cv(X, y, 0)
 
+
 ## final model with best lambda on all data
-lm.rid <- glmnet(X, y, alpha = 0)
+lm.rid <- glmnet(X, sqrt(y), alpha = 0)
 coef(lm.rid, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
@@ -343,7 +456,7 @@ lm.rid.pred <- predict(lm.rid, s = best_lambda, X)
 
 #find SST and SSE
 sst <- sum((y - mean(y))^2)
-sse <- sum((lm.rid.pred - y)^2)
+sse <- sum((lm.rid.pred^2 - y)^2)
 
 #find R-Squared
 R2 <- 1 - sse/sst
@@ -351,19 +464,20 @@ R2
 # R2 better than Exhaustive Subset Selection
 
 # final MSE
-mse.lm.rid <- mean((lm.rid.pred-y)^2)
+mse.lm.rid <- mean((lm.rid.pred^2-y)^2)
 mse.lm.rid
 ## mse better than Exhaustive Subset Selection
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
-lm.rid.tables <- create_tables(y, lm.rid.pred, final_dataset, 10)
+lm.rid.tables <- create_tables(y, lm.rid.pred^2, final_dataset, 10)
 lm.rid.tables[[1]]
 lm.rid.tables[[2]]
 
 #### the ridge regression shows better results compared to the Exhaustive
 #### Subset Selection. One of the reasons is the fact that ridge regression
 #### works well with collinear variables, even with a small lambda.
+
 
 
 #############################
@@ -373,7 +487,7 @@ lm.rid.tables[[2]]
 best_lambda <- ten_fold_cv(X, y, 1)
 
 # final model with best lambda on all data
-lm.las <- glmnet(X, y, alpha = 1)
+lm.las <- glmnet(X, sqrt(y), alpha = 1)
 coef(lm.las, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
@@ -385,7 +499,7 @@ lm.las.pred <- predict(lm.las, s = best_lambda, X)
 
 # SST and SSE
 sst <- sum((y - mean(y))^2)
-sse <- sum((lm.las.pred - y)^2)
+sse <- sum((lm.las.pred^2 - y)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -393,14 +507,13 @@ R2
 # slightly better R2 than ridge
 
 # final MSE
-lm.las.pred <- predict(lm.las, s=best_lambda, X)
-mse.lm.las <- mean((lm.las.pred-y)^2)
+mse.lm.las <- mean((lm.las.pred^2-y)^2)
 mse.lm.las
 # slightly better MSE than ridge
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
-lm.las.tables <- create_tables(y, lm.las.pred, final_dataset, 10)
+lm.las.tables <- create_tables(y, lm.las.pred^2, final_dataset, 10)
 lm.las.tables[[1]]
 lm.las.tables[[2]]
 
@@ -454,11 +567,11 @@ fd_guard_nopos <- fd_guard[, numeric_cols]
 
 #### LASSO FOR CENTER POSITION
 
-lm.mod.c <- lm(Salary~+., data=fd_center_nopos)
+lm.mod.c <- lm(sqrt(Salary)~., data=fd_center_nopos)
 summary(lm.mod.c)
 
 # design matrix not considering the intercept
-X.c <- model.matrix(Salary~., data=fd_center_nopos)
+X.c <- model.matrix(sqrt(Salary)~., data=fd_center_nopos)
 X.c <- X.c[,-1]
 y.c <- fd_center_nopos$Salary
 
@@ -466,7 +579,7 @@ y.c <- fd_center_nopos$Salary
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
 
 # final model with best lambda on all data
-lm.las.c <- glmnet(X.c, y.c, alpha = 1)
+lm.las.c <- glmnet(X.c, sqrt(y.c), alpha = 1)
 coef(lm.las.c, s=best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
@@ -478,7 +591,7 @@ lm.las.c.pred <- predict(lm.las.c, s = best_lambda, X.c)
 
 # SST and SSE
 sst <- sum((y.c - mean(y.c))^2)
-sse <- sum((lm.las.c.pred - y.c)^2)
+sse <- sum((lm.las.c.pred^2 - y.c)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -486,23 +599,23 @@ R2
 # very high R2
 
 # final MSE
-mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
+mse.lm.las.c <- mean((lm.las.c.pred^2 - y.c)^2)
 mse.lm.las.c
 # better than before
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center_nopos, 3)
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred^2, fd_center_nopos, 3)
 lm.las.c.tables[[1]]
 lm.las.c.tables[[2]]
 
 
 #### LASSO FOR FORWARD POSITION
 
-lm.mod.f <- lm(Salary~+., data=fd_forward_nopos)
+lm.mod.f <- lm(sqrt(Salary)~., data=fd_forward_nopos)
 summary(lm.mod.f)
 
 # design matrix not considering the intercept
-X.f <- model.matrix(Salary~., data=fd_forward_nopos)
+X.f <- model.matrix(sqrt(Salary)~., data=fd_forward_nopos)
 X.f <- X.f[,-1]
 
 # vector of responses
@@ -512,7 +625,7 @@ y.f <- fd_forward_nopos$Salary
 best_lambda <- ten_fold_cv(X.f, y.f, 1)
 
 # final model with best lambda on all data
-lm.las.f <- glmnet(X.f, y.f, alpha = 1)
+lm.las.f <- glmnet(X.f, sqrt(y.f), alpha = 1)
 coef(lm.las.f, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
@@ -524,7 +637,7 @@ lm.las.f.pred <- predict(lm.las.f, s = best_lambda, X.f)
 
 # SST and SSE
 sst <- sum((y.f - mean(y.f))^2)
-sse <- sum((lm.las.f.pred - y.f)^2)
+sse <- sum((lm.las.f.pred^2 - y.f)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -532,23 +645,23 @@ R2
 # very high R2
 
 # final MSE
-mse.lm.las.f <- mean((lm.las.f.pred-y.f)^2)
+mse.lm.las.f <- mean((lm.las.f.pred^2-y.f)^2)
 mse.lm.las.f
 # better than before
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward_nopos, 3)
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred^2, fd_forward_nopos, 3)
 lm.las.f.tables[[1]]
 lm.las.f.tables[[2]]
 
 
 #### LASSO FOR GUARD POSITION
 
-lm.mod.g <- lm(Salary~+., data=fd_guard_nopos)
+lm.mod.g <- lm(sqrt(Salary)~., data=fd_guard_nopos)
 summary(lm.mod.g)
 
 # design matrix not considering the intercept
-X.g <- model.matrix(Salary~., data=fd_guard_nopos)
+X.g <- model.matrix(sqrt(Salary)~., data=fd_guard_nopos)
 X.g <- X.g[,-1]
 
 # vector of responses
@@ -558,7 +671,7 @@ y.g <- fd_guard_nopos$Salary
 best_lambda <- ten_fold_cv(X.g, y.g, 1)
 
 # final model with best lambda on all data
-lm.las.g <- glmnet(X.g, y.g, alpha = 1)
+lm.las.g <- glmnet(X.g, sqrt(y.g), alpha = 1)
 coef(lm.las.g, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
@@ -570,7 +683,7 @@ lm.las.g.pred <- predict(lm.las.g, s = best_lambda, X.g)
 
 # SST and SSE
 sst <- sum((y.g - mean(y.g))^2)
-sse <- sum((lm.las.g.pred - y.g)^2)
+sse <- sum((lm.las.g.pred^2 - y.g)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
@@ -578,12 +691,12 @@ R2
 # worse R2 than centers and forwards
 
 # final MSE
-mse.lm.las.g <- mean((lm.las.g.pred-y.g)^2)
+mse.lm.las.g <- mean((lm.las.g.pred^2-y.g)^2)
 mse.lm.las.g
 # worse than centers and forwards
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred^2, fd_guard_nopos, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
 
