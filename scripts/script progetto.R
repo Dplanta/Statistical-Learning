@@ -247,7 +247,7 @@ subset_selection <- function(df) {
   return(model)
 }
 
-lm.ess = subset_selection(fd_numeric)
+lm.ess <-  subset_selection(fd_numeric)
 summary(lm.ess)
 
 # extract the selected parameters
