@@ -1,17 +1,8 @@
-#########
-# MODIFICHE DA FARE
-#
-# 1a) eventualmente cambiare interpretazioni
-#
-# 2) utilizzare MSE su test per comparare i modelli:
-# 2a) creare train e test set e calcolare test error su regressione logaritmica iniziale e su subset selection
-# 2b) confrontare di nuovo tutti i modelli utilizzando la divisione train e test (lui usa la stessa)
-# 2c) mantenere comunque MSE su tutti i dati per completezza di informazione
-########
-
-
-# Upload readxl to import data from Excel to R
-library(readxl)
+# useful libraries
+library(readxl)   # to import data from Excel to R
+library(corrplot) # to display the correlation plot
+library(glmnet)
+library(leaps)    # for regsubsets
 
 # Upload datasets
 data_salary <- read_excel("./data/NBA_players_salaries_HH.xlsx")
@@ -70,6 +61,7 @@ final_dataset <- final_dataset[, -1]
 
 rm(data_salary, data_advanced, data_miscellaneous, data_traditional_per48, data_traditional_tot, data_vorp)
 
+
 ###########
 ### EDA ###
 ###########
@@ -79,7 +71,6 @@ attach(final_dataset)
 numeric_cols <- sapply(final_dataset, is.numeric)
 fd_numeric <- final_dataset[, numeric_cols]
 summary(fd_numeric)
-
 
 # variable Salary (dependent)
 summary(Salary)
@@ -93,7 +84,6 @@ hist(log(Salary), main="Logarithmic salary")
 # sqrt transformation of Salary
 boxplot(sqrt(Salary), main="Square rooted Salary")
 hist(sqrt(Salary), main="Square rooted Salary")  # forma più regolare, ulteriore motivo per usare sqrt
-
 
 par(mfrow = c(2, 2))
 boxplot(Salary, main="Salary")
@@ -126,23 +116,24 @@ cov_mat
 cor_mat <- round(cor(fd_numeric),2)
 cor_mat
 
-library(corrplot)
-
 corrplot(cor(fd_numeric), method = 'color')
+
 
 ############
 ## MODELS ## 
 ############
 
-## we will start creating a linear model in order to predict the salaries and
-## then we'll perform a stepwise regression to remove the less significative
-## variables.
-## After that, we'll use ridge regression in order to reduce the effect of
-## multicollinearity. Then, we'll compare the performances of the models.
-## Lastly, we'll compare models' results with the actual salaries earned by
-## the players during the 2023/2024 season. 
+# we will start creating a linear model in order to predict the salaries and
+# then we'll perform a Subset Selection in order to remove the less
+# significant variables.
+# After that, we will use Ridge and Lasso regression in order to reduce the
+# effect of multicollinearity. Then, we'll compare the performances of the
+# models and the results with the actual salaries earned by the players during
+# the 2023/2024 season. We will finally do an analysis dividing the players
+# based on their position (centers, forwards, guards) fitting a model for each
+# of them and analyzing the performances.
 
-## LINEAR REGRESSION MODEL
+# LINEAR REGRESSION MODEL
 lm.mod <- lm(Salary~+., data=fd_numeric)
 summary(lm.mod)
 
@@ -158,21 +149,25 @@ par(mfrow = c(2, 2))
 plot(lm.mod)
 par(mfrow = c(1, 1))
 
-## QQ plot ok, check linearity residuals vs fitted;
-# check eteroschedasticity scale-location
+# QQ plot ok, problems on the first plot (linearity residuals vs fitted) and
+# on the third plot (eteroschedasticity scale-location)
+
 
 # trying to transform the response variable (log)
-# lm.log <- lm(log(Salary)~+., data=fd_numeric)
-# summary(lm.log)
+lm.log <- lm(log(Salary)~+., data=fd_numeric)
+summary(lm.log)
 
-# par(mfrow = c(2, 2))
-# plot(lm.log)
-# par(mfrow = c(1, 1))
+par(mfrow = c(2, 2))
+plot(lm.log)
+par(mfrow = c(1, 1))
+# better plots, better linearity and omoschedasticity
 
 #MSE
-# lm.log.pred <- predict(lm.log)
-# mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
-# mse.lm.log
+lm.log.pred <- predict(lm.log)
+mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
+mse.lm.log
+format(sqrt(mse.lm.log), scientific = TRUE)
+# worse performances --> try to find a better transformation
 
 
 # transform the response variable (sqrt)
@@ -180,17 +175,17 @@ lm.sqrt <- lm(sqrt(Salary)~., data = fd_numeric)
 summary(lm.sqrt)
 
 par(mfrow = c(2, 2))
-plot(lm.sqrt)
+plot(lm.sqrt)         # plots ok
 par(mfrow = c(1, 1))
 
 lm.sqrt.pred <- predict(lm.sqrt)
 mse.lm.sqrt <- mean((lm.sqrt.pred^2 - y)^2)
 mse.lm.sqrt
 format(sqrt(mse.lm.sqrt), scientific = TRUE)
+# better performances w.r.t. the previous two models
 
-# better linearity residuals vs fitted(1st plot),
-# better with omoschedasticity(3rd plot)
-
+# computing performances of the complete model with sqrt of the Salary
+# in a test set in order to compare it to the other models
 X <- model.matrix(sqrt(Salary)~., data=fd_numeric)
 X <- X[,-1]
 n <- nrow(X)
@@ -199,11 +194,8 @@ set.seed(1)
 train <- sample(1:n, n/2)
 test  <- setdiff(1:n, train)
 
-# look at the performances of the complete model with sqrt of the Salary
-# in a test set in order to compare it to the other models
-library(glmnet)
 lm.sqrt.test <- glmnet(X[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
-lm.sqrt.test.pred <- predict(lm.sqrt.test, s = 0, newx = X[test, ], exact = TRUE, x = X[train, ], y = y[train])
+lm.sqrt.test.pred <- predict(lm.sqrt.test, s = 0, newx = X[test, ], exact = TRUE)
 lm.sqrt.test.mse <- mean((lm.sqrt.test.pred^2-y[test])^2)
 print(paste("Estimated test MSE = ", format(lm.sqrt.test.mse, scientific = TRUE)))
 format(sqrt(lm.sqrt.test.mse), scientific = TRUE)
@@ -212,78 +204,79 @@ format(sqrt(lm.sqrt.test.mse), scientific = TRUE)
 ###############################
 # EXHAUSTIVE SUBSET SELECTION
 ###############################
-library(leaps)
 
-regfit.full.sqrt <- regsubsets(sqrt(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
-reg.summary.sqrt <- summary(regfit.full.sqrt)
-reg.summary.sqrt$outmat
-reg.summary.sqrt$which
-reg.summary.sqrt$rsq
+subset_selection <- function(df) {
+  regfit.full <- regsubsets(sqrt(Salary)~., data=df, nvmax=(ncol(df)-1))
+  reg.summary <- summary(regfit.full)
 
-par(mfrow=c(2,2))
+  par(mfrow=c(2,2))
 
-# residual sum of squares
-plot(reg.summary.sqrt$rss,xlab="Number of Variables",ylab="RSS",type="l")
+  # residual sum of squares
+  plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
 
-# adjusted-R^2 with its largest value
-plot(reg.summary.sqrt$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
-i <- which.max(reg.summary.sqrt$adjr2)
-points(i,reg.summary.sqrt$adjr2[i], col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$adjr2[i], i, pos=1)
+  # adjusted-R^2 with its largest value
+  plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+  i <- which.max(reg.summary$adjr2)
+  points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
+  text(i,reg.summary$adjr2[i], i, pos=1)
 
-# Mallow's Cp with its smallest value
-plot(reg.summary.sqrt$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary.sqrt$cp)#return the index of the minimum
-points(i,reg.summary.sqrt$cp[i],col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$cp[i], i, pos=3)
+  # Mallow's Cp with its smallest value
+  plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
+  i <- which.min(reg.summary$cp)#return the index of the minimum
+  points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
+  text(i,reg.summary$cp[i], i, pos=3)
+  
+  covariates = i
 
-# BIC with its smallest value
-plot(reg.summary.sqrt$bic,xlab="Number of Variables",ylab="BIC",type='l')
-i <- which.min(reg.summary.sqrt$bic)
-points(i,reg.summary.sqrt$bic[i],col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$bic[i], i, pos=3)
+  # BIC with its smallest value
+  plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
+  i <- which.min(reg.summary$bic)
+  points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
+  text(i,reg.summary$bic[i], i, pos=3)
 
-par(mfrow = c(1,1))
+  par(mfrow = c(1,1))
 
-# It seems that selecting 14 parameters gives us the best 
-# balance between model simplicity and precision. 
+  selected.model <- reg.summary$which[covariates, ]
+  selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
+  print(selected.parameters)
+  
+  selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters, collapse = " + ")))
+  
+  model <- lm(selected.formula, data=df)
+  
+  return(model)
+}
 
-#let's get the list of selected parameters:
-covariates = 14
+lm.ess = subset_selection(fd_numeric)
+summary(lm.ess)
 
-selected.model.sqrt <- reg.summary.sqrt$which[covariates,]
-selected.parameters.sqrt <- names(selected.model.sqrt[selected.model.sqrt])[-1] #-1 to lose the intercept
-print(selected.parameters.sqrt)
-
-selected.formula.sqrt <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.sqrt, collapse = " + ")))
-
-lm.ess.sqrt <- lm(selected.formula.sqrt, data=fd_numeric)
-summary(lm.ess.sqrt)
+# extract the selected parameters
+selected.parameters.ess <- attr(terms(lm.ess), "term.labels")
 
 # correlation between dependent variables
-corrplot(cor(fd_numeric[c(selected.parameters.sqrt)]), method = 'color')
+corrplot(cor(fd_numeric[c(selected.parameters.ess)]), method = 'color')
 
 # residual analysis
 par(mfrow=c(2,2))
-plot(lm.ess.sqrt)
+plot(lm.ess)
 par(mfrow=c(1,1))
 
 # model performances
-lm.ess.pred.sqrt <- predict(lm.ess.sqrt)
-mse.lm.ess.sqrt <- mean((lm.ess.pred.sqrt)^2-y)^2
-mse.lm.ess.sqrt
-format(mse.lm.ess.sqrt, scientific=TRUE)
-format(sqrt(mse.lm.ess.sqrt), scientific=TRUE)
+lm.ess.pred <- predict(lm.ess)
+mse.lm.ess <- mean((lm.ess.pred)^2 - y)^2
+format(mse.lm.ess, scientific=TRUE)
+format(sqrt(mse.lm.ess), scientific=TRUE)
 
-# performances on a test set
-X <- model.matrix(selected.formula.sqrt, data=fd_numeric)
-X <- X[,-1]
+# performances on the test set
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess, collapse = " + ")))
+X.ess <- model.matrix(selected.formula, data=fd_numeric)
+X.ess <- X.ess[,-1]
 
-lm.ess.sqrt.test <- glmnet(X[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
-lm.ess.sqrt.test.pred <- predict(lm.ess.sqrt.test, s = 0, newx = X[test, ], exact = TRUE, x = X[train, ], y = y[train])
-lm.ess.sqrt.test.mse <- mean((lm.ess.sqrt.test.pred^2-y[test])^2)
-print(paste("Estimated test MSE = ", format(lm.ess.sqrt.test.mse, scientific = TRUE)))
-format(sqrt(lm.ess.sqrt.test.mse), scientific = TRUE)
+lm.ess.test <- glmnet(X.ess[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
+lm.ess.test.pred <- predict(lm.ess.test, s = 0, newx = X.ess[test, ], exact = TRUE)
+lm.ess.test.mse <- mean((lm.ess.test.pred^2 - y[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.test.mse, scientific = TRUE)))
+print(paste("Square root of the estimated test MSE = ", format(sqrt(lm.ess.test.mse), scientific = TRUE)))
 
 
 ###  function that returns the top_N overpaid and top-N underpaid players tables ###
@@ -312,24 +305,17 @@ create_tables <- function(real_values, pred_values, df, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.sqrt.tables <- create_tables(y, lm.ess.pred.sqrt^2, final_dataset, 10)
-lm.ess.sqrt.tables[[1]]
-lm.ess.sqrt.tables[[2]]
+lm.ess.tables <- create_tables(y, lm.ess.pred^2, final_dataset, 10)
+lm.ess.tables[[1]]
+lm.ess.tables[[2]]
 
-# correlation between dependent variables
-corrplot(cor(fd_numeric[c(selected.parameters.sqrt)]), method = 'color')
 
 #############################
 #     RIDGE REGRESSION
 #############################
 
 # linear model
-lm.mod.sqrt <- lm(sqrt(Salary)~., data=fd_numeric)
-summary(lm.mod.sqrt)
-
-# design matrix not considering the intercept
-X <- model.matrix(sqrt(Salary)~., data=fd_numeric)
-X <- X[,-1]
+summary(lm.sqrt)
 
 ### Ten Fold Cross Validation function to select the best lambda ###
 ten_fold_cv <- function(X, y, a) {
@@ -360,12 +346,13 @@ ten_fold_cv <- function(X, y, a) {
   pred <- predict(mod, s = best_lambda, newx = X[test,])
   mse <- mean((pred^2-y[test])^2)
   print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
+  print(paste("Square root of the estimated test MSE with the best lambda is = ", format(sqrt(mse), scientific = TRUE)))
   
   return <- best_lambda
 }
 
 best_lambda <- ten_fold_cv(X, y, 0)
-
+# worse performance on the test set
 
 ## final model with best lambda on all data
 lm.rid <- glmnet(X, sqrt(y), alpha = 0)
@@ -392,7 +379,7 @@ R2
 # final MSE
 mse.lm.rid <- mean((lm.rid.pred^2-y)^2)
 mse.lm.rid
-## mse worse than Exhaustive Subset Selection
+# mse worse than Exhaustive Subset Selection
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
@@ -400,9 +387,9 @@ lm.rid.tables <- create_tables(y, lm.rid.pred^2, final_dataset, 10)
 lm.rid.tables[[1]]
 lm.rid.tables[[2]]
 
-#### the ridge regression shows better results compared to the Exhaustive
-#### Subset Selection. One of the reasons is the fact that ridge regression
-#### works well with collinear variables, even with a small lambda.
+# Ridge regression shows worse performances compared to the Subset Selection
+# in terms of errors, probably the multicollinearity does not influence
+# the performance of the Subset Selection
 
 
 
@@ -435,6 +422,7 @@ R2
 # final MSE
 mse.lm.las <- mean((lm.las.pred^2-y)^2)
 mse.lm.las
+format(sqrt(mse.lm.las), scientific= TRUE)
 # slightly better MSE than ridge
 
 
@@ -444,26 +432,13 @@ lm.las.tables[[1]]
 lm.las.tables[[2]]
 
 
-############################################
-# LASSO REGRESSION FOR DIFFERENT POSITIONS #
-############################################
+####################################
+# ANALYSIS FOR DIFFERENT POSITIONS #
+####################################
 
 #########
 # ANOVA # 
 #########
-
-# Is there, on average, a difference between salaries of players with different positions?
-
-fd_guard_df <- as.data.frame(fd_guard)
-fd_forward_df <- as.data.frame(fd_forward)
-fd_center_df <- as.data.frame(fd_center)
-fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
-
-bartlett.test(Salary ~ Pos, data = fd_roles_df)
-
-aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
-summary(aov.roles)
-
 
 # function to transform PG and SG into G, and PF and SF into F
 recode_pos <- function(x) {
@@ -472,6 +447,14 @@ recode_pos <- function(x) {
 }
 
 final_dataset$Pos <- recode_pos(final_dataset$Pos)
+
+# Is there, on average, a difference between salaries of players
+# with different positions?
+bartlett.test(Salary ~ Pos, data = final_dataset)
+
+aov.roles <- aov(Salary ~ Pos, data = final_dataset)
+summary(aov.roles)
+
 
 # split the dataset based on position
 fd_list <- split(final_dataset, final_dataset$Pos)
@@ -484,75 +467,47 @@ nrow(fd_center)
 nrow(fd_forward)
 nrow(fd_guard)
 
-
 # remove position
-fd_center_nopos <- fd_center[, numeric_cols]
-fd_forward_nopos <- fd_forward[, numeric_cols]
-fd_guard_nopos <- fd_guard[, numeric_cols]
+fd_center <- fd_center[, numeric_cols]
+fd_forward <- fd_forward[, numeric_cols]
+fd_guard <- fd_guard[, numeric_cols]
 
 
-#### LASSO FOR CENTER POSITION
+###################
+# CENTER POSITION #
+###################
 
-regfit.center <- regsubsets(sqrt(Salary)~., data=fd_guard_nopos, nvmax=(ncol(fd_guard_nopos)-1))
-reg.summary.c <- summary(regfit.center)
+# linear model
+lm.mod.c <- lm(sqrt(Salary)~., data=fd_center)
+summary(lm.mod.c)
 
-par(mfrow=c(2,2))
 
-# residual sum of squares
-plot(reg.summary.c$rss,xlab="Number of Variables",ylab="RSS",type="l")
+### SUBSET SELECTION ###
 
-# adjusted-R^2 with its largest value
-plot(reg.summary.c$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
-i <- which.max(reg.summary.c$adjr2)
-points(i,reg.summary.c$adjr2[i], col="red",cex=2,pch=20)
-text(i,reg.summary.c$adjr2[i], i, pos=1)
+lm.ess.c = subset_selection(fd_center)
+summary(lm.ess.c)
 
-# Mallow's Cp with its smallest value
-plot(reg.summary.c$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary.c$cp)#return the index of the minimum
-points(i,reg.summary.c$cp[i],col="red",cex=2,pch=20)
-text(i,reg.summary.c$cp[i], i, pos=3)
-
-# BIC with its smallest value
-plot(reg.summary.c$bic,xlab="Number of Variables",ylab="BIC",type='l')
-i <- which.min(reg.summary.c$bic)
-points(i,reg.summary.c$bic[i],col="red",cex=2,pch=20)
-text(i,reg.summary.c$bic[i], i, pos=3)
-
-par(mfrow = c(1,1))
-
-# It seems that selecting 14 parameters gives us the best 
-# balance between model simplicity and precision. 
-
-#let's get the list of selected parameters:
-covariates = 6
-
-selected.model.c <- reg.summary.c$which[covariates,]
-selected.parameters.c <- names(selected.model.c[selected.model.c])[-1] #-1 to lose the intercept
-print(selected.parameters.c)
-
-selected.formula.c <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.c, collapse = " + ")))
-
-lm.ess.center <- lm(selected.formula.c, data=fd_guard_nopos)
-summary(lm.ess.center)
+# extract the selected parameters
+selected.parameters.ess.c <- attr(terms(lm.ess.c), "term.labels")
 
 # correlation between dependent variables
-corrplot(cor(fd_guard_nopos[c(selected.parameters.c)]), method = 'color')
+corrplot(cor(fd_center[c(selected.parameters.ess.c)]), method = 'color')
 
 # residual analysis
 par(mfrow=c(2,2))
-plot(lm.ess.center)
+plot(lm.ess.c)
 par(mfrow=c(1,1))
 
 # model performances
-y.c <- fd_guard_nopos$Salary
-lm.ess.center.pred <- predict(lm.ess.center)
-mse.lm.ess.c <- mean((lm.ess.center.pred)^2-y.c)^2
-format(mse.lm.ess.c, scientific = TRUE)
+y.c <- fd_center$Salary
+lm.ess.c.pred <- predict(lm.ess.c)
+mse.lm.ess.c <- mean((lm.ess.c.pred)^2 - y.c)^2
+format(mse.lm.ess.c, scientific=TRUE)
 format(sqrt(mse.lm.ess.c), scientific=TRUE)
 
-# performances on a test set
-X.c <- model.matrix(sqrt(Salary)~., data=fd_guard_nopos)
+# performances on the test set
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess.c, collapse = " + ")))
+X.c <- model.matrix(sqrt(Salary)~., data=fd_center)
 X.c <- X.c[,-1]
 n <- nrow(X.c)
 
@@ -560,24 +515,23 @@ set.seed(1)
 train <- sample(1:n, n/2)
 test  <- setdiff(1:n, train)
 
-lm.ess.center.test <- glmnet(X.c[train, ], sqrt(y.c[train]), alpha = 0, lambda = 0)
-lm.ess.center.test.pred <- predict(lm.ess.center.test, s = 0, newx = X.c[test, ], exact = TRUE, x = X.c[train, ], y = y.c[train])
-lm.ess.center.test.mse <- mean((lm.ess.center.test.pred^2 - y.c[test])^2)
-print(paste("Estimated test MSE = ", format(lm.ess.center.test.mse, scientific = TRUE)))
-format(sqrt(lm.ess.center.test.mse), scientific = TRUE)
-
-lm.mod.c <- lm(sqrt(Salary)~., data=fd_center_nopos)
-summary(lm.mod.c)
+lm.ess.c.test <- glmnet(X.c[train, ], sqrt(y.c[train]), alpha = 0, lambda = 0)
+lm.ess.c.test.pred <- predict(lm.ess.c.test, s = 0, newx = X.c[test, ], exact = TRUE)
+lm.ess.c.test.mse <- mean((lm.ess.c.test.pred^2 - y.c[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.c.test.mse, scientific = TRUE)))
+format(sqrt(lm.ess.c.test.mse), scientific = TRUE)
 
 
-### Cross validation to select the best lambda ###
+### LASSO REGRESSION ###
+
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
 
 # final model with best lambda on all data
 lm.las.c <- glmnet(X.c, sqrt(y.c), alpha = 1)
 coef(lm.las.c, s=best_lambda)
 
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+# Trace plot to visualize how the coefficient estimates changed as
+# a result of increasing lambda
 plot(lm.las.c, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 
@@ -591,7 +545,7 @@ sse <- sum((lm.las.c.pred^2 - y.c)^2)
 # R-Squared
 R2 <- 1 - sse/sst
 R2
-# very high R2
+# higher R2
 
 # final MSE
 mse.lm.las.c <- mean((lm.las.c.pred^2 - y.c)^2)
@@ -599,24 +553,62 @@ mse.lm.las.c
 # better than before
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.c.tables <- create_tables(y.c, lm.las.c.pred^2, fd_center_nopos, 3)
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred^2, fd_center, 3)
 lm.las.c.tables[[1]]
 lm.las.c.tables[[2]]
 
 
-#### LASSO FOR FORWARD POSITION
+####################
+# FORWARD POSITION #
+####################
 
-lm.mod.f <- lm(sqrt(Salary)~., data=fd_forward_nopos)
+# linear model
+lm.mod.f <- lm(sqrt(Salary)~., data=fd_forward)
 summary(lm.mod.f)
 
-# design matrix not considering the intercept
-X.f <- model.matrix(sqrt(Salary)~., data=fd_forward_nopos)
+
+### SUBSET SELECTION ###
+
+lm.ess.f = subset_selection(fd_forward)
+summary(lm.ess.f)
+
+# extract the selected parameters
+selected.parameters.ess.f <- attr(terms(lm.ess.f), "term.labels")
+
+# correlation between dependent variables
+corrplot(cor(fd_forward[c(selected.parameters.ess.f)]), method = 'color')
+
+# residual analysis
+par(mfrow=c(2,2))
+plot(lm.ess.f)
+par(mfrow=c(1,1))
+
+# model performances
+y.f <- fd_forward$Salary
+lm.ess.f.pred <- predict(lm.ess.f)
+mse.lm.ess.f <- mean((lm.ess.f.pred)^2 - y.f)^2
+format(mse.lm.ess.f, scientific=TRUE)
+format(sqrt(mse.lm.ess.f), scientific=TRUE)
+
+# performances on the test set
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess.f, collapse = " + ")))
+X.f <- model.matrix(sqrt(Salary)~., data=fd_forward)
 X.f <- X.f[,-1]
+n <- nrow(X.f)
 
-# vector of responses
-y.f <- fd_forward_nopos$Salary
+set.seed(1)
+train <- sample(1:n, n/2)
+test  <- setdiff(1:n, train)
 
-### Cross validation to select the best lambda ###
+lm.ess.f.test <- glmnet(X.f[train, ], sqrt(y.f[train]), alpha = 0, lambda = 0)
+lm.ess.f.test.pred <- predict(lm.ess.f.test, s = 0, newx = X.f[test, ], exact = TRUE)
+lm.ess.f.test.mse <- mean((lm.ess.f.test.pred^2 - y.f[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.f.test.mse, scientific = TRUE)))
+format(sqrt(lm.ess.f.test.mse), scientific = TRUE)
+
+
+### LASSO REGRESSION ###
+
 best_lambda <- ten_fold_cv(X.f, y.f, 1)
 
 # final model with best lambda on all data
@@ -637,32 +629,68 @@ sse <- sum((lm.las.f.pred^2 - y.f)^2)
 # R-Squared
 R2 <- 1 - sse/sst
 R2
-# very high R2
 
 # final MSE
 mse.lm.las.f <- mean((lm.las.f.pred^2-y.f)^2)
 mse.lm.las.f
-# better than before
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-lm.las.f.tables <- create_tables(y.f, lm.las.f.pred^2, fd_forward_nopos, 3)
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred^2, fd_forward, 3)
 lm.las.f.tables[[1]]
 lm.las.f.tables[[2]]
 
 
-#### LASSO FOR GUARD POSITION
+##################
+# GUARD POSITION #
+##################
 
-lm.mod.g <- lm(sqrt(Salary)~., data=fd_guard_nopos)
+# linear model
+lm.mod.g <- lm(sqrt(Salary)~., data=fd_guard)
 summary(lm.mod.g)
 
-# design matrix not considering the intercept
-X.g <- model.matrix(sqrt(Salary)~., data=fd_guard_nopos)
+
+### SUBSET SELECTION ###
+
+lm.ess.g = subset_selection(fd_guard)
+summary(lm.ess.g)
+
+# extract the selected parameters
+selected.parameters.ess.g <- attr(terms(lm.ess.g), "term.labels")
+
+# correlation between dependent variables
+corrplot(cor(fd_guard[c(selected.parameters.ess.g)]), method = 'color')
+
+# residual analysis
+par(mfrow=c(2,2))
+plot(lm.ess.g)
+par(mfrow=c(1,1))
+
+# model performances
+y.g <- fd_guard$Salary
+lm.ess.g.pred <- predict(lm.ess.g)
+mse.lm.ess.g <- mean((lm.ess.g.pred)^2 - y.g)^2
+format(mse.lm.ess.g, scientific=TRUE)
+format(sqrt(mse.lm.ess.g), scientific=TRUE)
+
+# performances on the test set
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess.g, collapse = " + ")))
+X.g <- model.matrix(sqrt(Salary)~., data=fd_guard)
 X.g <- X.g[,-1]
+n <- nrow(X.g)
 
-# vector of responses
-y.g <- fd_guard_nopos$Salary
+set.seed(1)
+train <- sample(1:n, n/2)
+test  <- setdiff(1:n, train)
 
-### Cross validation to select the best lambda ###
+lm.ess.g.test <- glmnet(X.g[train, ], sqrt(y.g[train]), alpha = 0, lambda = 0)
+lm.ess.g.test.pred <- predict(lm.ess.g.test, s = 0, newx = X.g[test, ], exact = TRUE)
+lm.ess.g.test.mse <- mean((lm.ess.g.test.pred^2 - y.g[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.g.test.mse, scientific = TRUE)))
+format(sqrt(lm.ess.g.test.mse), scientific = TRUE)
+
+
+### LASSO REGRESSION ###
+
 best_lambda <- ten_fold_cv(X.g, y.g, 1)
 
 # final model with best lambda on all data
@@ -683,20 +711,14 @@ sse <- sum((lm.las.g.pred^2 - y.g)^2)
 # R-Squared
 R2 <- 1 - sse/sst
 R2
-# worse R2 than centers and forwards
+# worse R2 than Subset Selection
 
-# final MSE
+# MSE
 mse.lm.las.g <- mean((lm.las.g.pred^2-y.g)^2)
 mse.lm.las.g
-# worse than centers and forwards
+# worse mse
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.g.tables <- create_tables(y.g, lm.las.g.pred^2, fd_guard_nopos, 3)
+lm.las.g.tables <- create_tables(y.g, lm.las.g.pred^2, fd_guard, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
-
-
-
-
-
-
