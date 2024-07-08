@@ -1,5 +1,5 @@
 ---
-title: "Titolo del progetto"
+title: "NBA players' salary prediction based on performance"
 author: "Domenico Plantamura, Eduardo David Lotto, Manuel D'Alterio Grazioli, Gabriele Fugagnoli"
 font: 12pt
 output:
@@ -189,21 +189,27 @@ kable(final_dataset[1:5, 11:20], format="simple", align = "cccccccccc", row.name
 kable(final_dataset[1:5, 21:30], format="simple", align = "cccccccccc", row.names = FALSE)
 ```
 
-Firstly, we perform an analysis, which can be seen in the Figure \ref{fig:variable-salary}, of the variable Salary, and its logarithmic transformation, that will be the dependent variable in the models.
+Firstly, we perform an analysis, which can be seen in the Figure \ref{fig:variable-salary}, of the variable Salary. We considered two transformations of this variable, using logarithm and square root. 
 
 ```{r variable-salary, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Boxplot and histograms of the dependent variable Salary and of its logarithmic transformation \\label{fig:variable-salary}"}
 
 numeric_cols <- sapply(final_dataset, is.numeric)
 fd_numeric <- final_dataset[, numeric_cols]
+summary(Salary)
 par(mfrow = c(2, 2))
-boxplot(Salary, main="Boxplot of the salary")
-hist(Salary, main="Histogram of the salary")
-boxplot(log(Salary),  main="Logarithmic salary", ylab="Salary in millions")
-hist(log(Salary),  main="Logarithmic salary", xlab="Salary in millions")
+boxplot(Salary, main="Salary")
+hist(Salary, main="Salary")
+boxplot(log(Salary),  main="Logarithmic salary")
+hist(log(Salary),  main="Logarithmic salary")
+
+boxplot(Salary, main="Salary")
+hist(Salary, main="Salary")
+boxplot(sqrt(Salary), main="Square rooted Salary")
+hist(sqrt(Salary), main="Square rooted Salary")
 par(mfrow = c(1, 1))
 ```
 
-The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. 
+The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. After the square root transformation, the salary keeps a right skewed distribution but in a more symmetrical manner than the original variable.  
 
 ```{r boxplots-independent-variables, include=FALSE}
 boxplot(AGE, main="AGE", names=c("AGE"), show.names=TRUE, ylab="years")
@@ -262,22 +268,51 @@ The complete model has a good R-squared of 0.7081 and a MSE of 4.14e+13.
 It emerges that many variables are not significative in determining the response. 
 Through the residual analysis it is noticeable that the relationship between fitted values and residuals is not exactly linear (1st graph). Additionally, in the third graph the points are not are included in a band of constant amplitude parallel to the x-axis, hence the omoschedasticity assumption can be doubted. 
 
-```{r logarithmic-transformation, echo=FALSE, fig.cap="Residuals plot of the complete linear model with logarithmic Salary \\label{fig:logarithmic-transformation}", fig.align="center", out.width='90%'}
+```{r square-root-transformation, echo=FALSE, fig.cap="Residuals plot of the complete linear model with square rooted Salary \\label{fig:square-root-transformation}", fig.align="center", out.width='90%'}
 
-lm.log <- lm(log(Salary)~+., data=fd_numeric)
-summary(lm.log)
+
+# transform the response variable (sqrt)
+lm.sqrt <- lm(sqrt(Salary)~., data = fd_numeric)
+summary(lm.sqrt)
+
 par(mfrow = c(2, 2))
-plot(lm.log)
+plot(lm.sqrt)
+par(mfrow = c(1, 1))
 
-lm.log.pred <- predict(lm.log)
-mse.lm.log <- mean((exp(lm.log.pred)-y)^2)
-print(paste("MSE of the complete linear model with logarithmic Salary = ", format(mse.lm.log, scientific = TRUE)))
+lm.sqrt.pred <- predict(lm.sqrt)
+mse.lm.sqrt <- mean((lm.sqrt.pred^2 - y)^2)
+mse.lm.sqrt
+print(paste("MSE of the complete linear model with logarithmic Salary = ", format(mse.lm.sqrt, scientific = TRUE)))
+
+```
+We tried to apply a logarithmic transformation to the dependent variable: the model showed a lower R-squared (0.6516) and a slightly higher MSE (4.70e+13).
+Applying a logarithmic transformation to the dependent variable `Salary`, the first graph showed a more linear relationship and the third graph allows to infer a more constant variance in the error terms. Nevertheless, the deterioration in performance suggests that the logarithmic transformation is not the most suitable. For this reason, we have chosen to use the square root.
+The performance was better compared to the other two models: 0.7089 R-Squared, 3.607895e+13 MSE. Moreover, as can be seen in the Figure \ref{fig:square-root-transformation}, the relationship is more linear and the variance in the error terms is more constant (compared to the model without transformations). 
+In both models many variables are not significant in determining the response: for this reason, to avoid a model that is unnecessary complex, we performed a variable selection. A square root transformation of the dependent variable Salary will be applied because it improves the performance of the complete model, it makes the salaries distribution closer to normal, it improves the linearity of the model and it reduces residuals eteroschedasticity.
+
+
+```{r test-mse-sqrt-complete-model, include=FALSE}
+
+X <- model.matrix(sqrt(Salary)~., data=fd_numeric)
+X <- X[,-1]
+n <- nrow(X)
+
+set.seed(1)
+train <- sample(1:n, n/2)
+test  <- setdiff(1:n, train)
+
+# look at the performances of the complete model with sqrt of the Salary
+# in a test set in order to compare it to the other models
+library(glmnet)
+lm.sqrt.test <- glmnet(X[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
+lm.sqrt.test.pred <- predict(lm.sqrt.test, s = 0, newx = X[test, ], exact = TRUE, x = X[train, ], y = y[train])
+lm.sqrt.test.mse <- mean((lm.sqrt.test.pred^2-y[test])^2)
+print(paste("Estimated test MSE = ", format(lm.sqrt.test.mse, scientific = TRUE)))
+format(sqrt(lm.sqrt.test.mse), scientific = TRUE)
+
 ```
 
-With a logarithmic transformation of the dependent variable, the model shows a lower R-squared (0.6516) and a slightly higher MSE (4.70e+13). This can be seen in the Figure \ref{fig:logarithmic-transformation}.
-Applying a logarithmic transformation to the dependent variable `Salary`, the first graph shows a more linear relationship and the third graph allows to infer a more constant variance in the error terms.
-In both models many variables are not significative in determining the response: for this reason, to avoid a model that is unnecessary complex, we performed a variable selection. A logarithmic transformation of the dependent variable Salary will be applied because, although it slightly worsens the performance of the model, it makes the salaries distribution closer to normal, it improves the linearity of the model and it reduces residuals eteroschedasticity.
-
+The estimated MSE on the test set is 
 
 ### Variable selection
 
@@ -289,45 +324,55 @@ To find the best balance between model simplicity and precision, we evaluated th
 ```{r parameters-selection, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Evaluation of the number of parameters through RSS, Adjusted R-squared, Mallow's Cp and BIC \\label{fig:parameters-selection}", fig.align='center'}
 
 library(leaps)
-regfit.full <- regsubsets(log(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
-reg.summary <- summary(regfit.full)
 
-par(mfrow = c(2, 2))
+regfit.full.sqrt <- regsubsets(sqrt(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
+reg.summary.sqrt <- summary(regfit.full.sqrt)
+#reg.summary.sqrt$outmat
+#reg.summary.sqrt$which
+#reg.summary.sqrt$rsq
 
-plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
+par(mfrow=c(2,2))
 
-plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
-i <- which.max(reg.summary$adjr2)
-points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
-text(i,reg.summary$adjr2[i], i, pos=1)
+# residual sum of squares
+plot(reg.summary.sqrt$rss,xlab="Number of Variables",ylab="RSS",type="l")
 
-plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary$cp)
-points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
-text(i,reg.summary$cp[i], i, pos=3)
+# adjusted-R^2 with its largest value
+plot(reg.summary.sqrt$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+i <- which.max(reg.summary.sqrt$adjr2)
+points(i,reg.summary.sqrt$adjr2[i], col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$adjr2[i], i, pos=1)
 
-plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
-i <- which.min(reg.summary$bic)
-points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
-text(i,reg.summary$bic[i], i, pos=3)
+# Mallow's Cp with its smallest value
+plot(reg.summary.sqrt$cp,xlab="Number of Variables",ylab="Cp",type='l')
+i <- which.min(reg.summary.sqrt$cp)#return the index of the minimum
+points(i,reg.summary.sqrt$cp[i],col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$cp[i], i, pos=3)
+
+# BIC with its smallest value
+plot(reg.summary.sqrt$bic,xlab="Number of Variables",ylab="BIC",type='l')
+i <- which.min(reg.summary.sqrt$bic)
+points(i,reg.summary.sqrt$bic[i],col="red",cex=2,pch=20)
+text(i,reg.summary.sqrt$bic[i], i, pos=3)
 
 par(mfrow = c(1,1))
 ```
 
-Considering Mallow's Cp, the best number of parameters for our model is 12. This result can be seen in the Figure \ref{fig:parameters-selection}. We obtained the list of parameters from the `regsubset` function to get the best model with 12 parameters. 
+Considering Mallow's Cp, the best number of parameters for our model is 14. This result can be seen in the Figure \ref{fig:parameters-selection}. We obtained the list of parameters from the `regsubset` function to get the best model with 14 parameters. 
 
-```{r best_model_12_parameters, echo=FALSE}
-covariates = 12
+```{r best_model_14_parameters, echo=FALSE}
+#let's get the list of selected parameters:
+covariates = 14
 
-selected.model <- reg.summary$which[covariates,]
-selected.parameters <- names(selected.model[selected.model])[-1]
-selected.formula <- as.formula(paste("log(Salary) ~", paste(selected.parameters, collapse = " + ")))
+selected.model.sqrt <- reg.summary.sqrt$which[covariates,]
+selected.parameters.sqrt <- names(selected.model.sqrt[selected.model.sqrt])[-1] #-1 to lose the intercept
 
-lm.ess <- lm(selected.formula, data=fd_numeric)
-summary(lm.ess)
+selected.formula.sqrt <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.sqrt, collapse = " + ")))
+
+lm.ess.sqrt <- lm(selected.formula.sqrt, data=fd_numeric)
+summary(lm.ess.sqrt)
 ```
 
-The reduced model shows a 0.6457 R-squared, that indicates a quite good fit.
+The reduced model shows a 0.7061 R-squared, that indicates a good fit.
 
 Different variables are strongly significant:
 
@@ -339,48 +384,65 @@ Different variables are strongly significant:
 
 - **MIN_G**: players that play on average more minutes in a game earn, on average, a higher salary.
 
-The variable FG_PCT is less significative than TS_PCT, but the coefficient here is positive. Both the stats measure shooting percentages, but FG_PCT does not weight shots and does not consider free throws. In this way, the previous mentioned effect on 3 point shooting specialists is reduced. It is possible to infer that FG_PCT represents better, within this model, the positive impact of good shooting percentages on wages.
+- **PIE**: for what concerns PIE, we did not expect a highly negative coefficient. This metric measures the impact of a player in a single match. The negative sign has different possible explanations: projecting PIE per 48 minutes inflates the metric for players who have a high impact on the game but few minutes played. It considers a lot of stats, even stats that seem to be not significant in determining salary; PIE difference between high salary players and low salary ones is not proportional to the differences in salaries. It is always difficult consider defensive contribution with this kind of metric and it is reasonable to think that defensive contribution plays an important role in determining a players salary. Furthermore, PIE does not consider aspects like leadership and IQ that, as defensive contribution, will certainly have an impact on the salaries.
 
-The variables OFF_RATING, DEF_RATING, NET_RATING, PIE and WS have a level of significance between 0.01 and 0.05. The positive sign of OFF_RATING and WS coefficients and the negative sign of DEF_RATING coefficient are in line with what we expected. OFF_RATING (DEF_RATING) represents the points scored (conceded) by the team when the player is playing, WS measures the player contribution to the team wins. We didn't expected a negative signs for NET_RATING (OFF_RATING - DEF_RATING) and PIE, that measures the player impact in the game. 
+- **WS**: the variable Win Shares attempts measures each player contribution for team success. Consequently, we were expecting that higher values of WS have a positive impact on the Salary.
 
-For what concerns PIE, the negative sign has different possible explanations: projecting PIE per 48 minutes inflates the metric for players who have a high impact on the game but few minutes played. It considers a lot of stats, even stats that seem to be not significative in determining salary; PIE difference between high salary players and low salary ones is not proportional to the differences in salaries. It is always difficult consider defensive contribution with this kind of metric and it is reasonable to think that defensive contribution plays an important role in determining a players salary. Furthermore, PIE does not consider aspects like leadership and IQ that, as defensive contribution, will certainly have an impact on the salaries.
-Anyway, beyond all the possible explanations, these unexpected negative signs likely depend from other variables not included in the model.
+The variable FG_PCT is less significant than TS_PCT, but the coefficient here is positive. Both the stats measure shooting percentages, but FG_PCT does not weight shots and does not consider free throws. In this way, the previous mentioned effect on 3 point shooting specialists is reduced. It is possible to infer that FG_PCT represents better, within this model, the positive impact of good shooting percentages on wages.
+
+The variables OFF_RATING, DEF_RATING, NET_RATING, GP and FG_PCT have a level of significance between 0.001 and 0.01. The positive sign of OFF_RATING and FG_PCT coefficients and the negative sign of DEF_RATING coefficient are in line with what we expected. OFF_RATING (DEF_RATING) represents the points scored (conceded) by the team when the player is playing, WS measures the player contribution to the team wins. We didn't expected negative signs for NET_RATING (OFF_RATING - DEF_RATING) and GP (slightly negative) 
+
+Beyond all the possible explanations, these unexpected negative signs likely depend from other variables not included in the model.
 
 #### Correlation between dependent variables
 
 ```{r correlation-independent-variables, echo=FALSE, fig.cap="Correlation between dependent variables of the reduced model \\label{fig:correlation-independent-variables}", fig.align='center', out.width='80%'}
 
-corrplot(cor(fd_numeric[c(selected.parameters)]), method = 'color')
+corrplot(cor(fd_numeric[c(selected.parameters.sqrt)]), method = 'color')
 ```
 
 It can be seen in the Figure \ref{fig:correlation-independent-variables} that there are, also in this case, different correlations between the dependent variables.
 
 #### Residual analysis
 
-```{r residual-analysis-ess, echo=FALSE, fig.cap="Residual plot of the reduced model with 12 covariates \\label{fig:residual-analysis-ess}", fig.align='center', out.width='90%'}
+```{r residual-analysis-ess, echo=FALSE, fig.cap="Residual plot of the reduced model with 14 covariates \\label{fig:residual-analysis-ess}", fig.align='center', out.width='90%'}
 par(mfrow=c(2,2))
-plot(lm.ess)
+plot(lm.ess.sqrt)
 par(mfrow=c(1,1))
 ```
 
 From what can be seen in the Figure \ref{fig:residual-analysis-ess}, the assumptions of the linear model seem to be fulfilled. There are some players who are outliers in each graph: they probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
 
 
-#### MSE and BIC
+#### MSE
 
 ```{r model-performance, echo=FALSE}
 y <- fd_numeric$Salary
 
-lm.ess.pred <- predict(lm.ess)
-mse.lm.ess <- mean((exp(lm.ess.pred)-y)^2)
-print(paste("MSE of the reducted linear model with logarithmic Salary = ", format(mse.lm.ess, scientific = TRUE)))
+lm.ess.pred.sqrt <- predict(lm.ess.sqrt)
+mse.lm.ess.sqrt <- mean((lm.ess.pred.sqrt)^2-y)^2
+print(paste("MSE of the reduced linear model with square root Salary = ", format(mse.lm.ess.sqrt, scientific = TRUE)))
 
-library(flexmix)
-BIC(lm.log,lm.ess)
+print(paste("MSE square root of the reduced linear model with square root Salary = ",format(sqrt(mse.lm.ess.sqrt), scientific=TRUE)))
 
 ```
+The reduced model has a very good MSE calculated on the whole model: 5.319559e+11.
+In order to compare different models, we divided the dataset into train and test. Once fitted the model on the training set, we evaluated the performance on the test set to avoid overfitting.
 
-The Mean Squared Error of the reduced model is really close to the one of the complete linear model with the logarithmic transformation of the Salary, 4.77e+13 against 4.70e+13. In order to compare the two models we used the Bayesian Information Criterion (BIC) since the models have a different number of predictors. The BIC for the reduced model is than that of the full model (753.9 against 842): for this reason, according to this measure, the reduced model has a better balance of fit and parsimony.
+```{r reduced-model-test-MSE, echo=FALSE}
+
+# performances on a test set
+X <- model.matrix(selected.formula.sqrt, data=fd_numeric)
+X <- X[,-1]
+
+lm.ess.sqrt.test <- glmnet(X[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
+lm.ess.sqrt.test.pred <- predict(lm.ess.sqrt.test, s = 0, newx = X[test, ], exact = TRUE, x = X[train, ], y = y[train])
+lm.ess.sqrt.test.mse <- mean((lm.ess.sqrt.test.pred^2-y[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.sqrt.test.mse, scientific = TRUE)))
+format(sqrt(lm.ess.sqrt.test.mse), scientific = TRUE)
+
+```
+The estimated MSE on the test set is 4.449e+13. We will use this value to compare the model with the next ones.
 
 #### Real salaries vs salaries prediction
 
@@ -411,7 +473,7 @@ create_tables <- function(real_values, pred_values, df, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.tables <- create_tables(y, exp(lm.ess.pred), final_dataset, 10)
+lm.ess.tables <- create_tables(y, lm.ess.pred.sqrt^2, final_dataset, 10)
 kable(lm.ess.tables[[1]], format="simple", caption="Ten most overpaid players according to the reduced model")
 ```
 
@@ -434,18 +496,30 @@ Trae Young and Zach Lavine have superstar contracts respectively in Atlanta and 
 
 Regarding Deandre Ayton, he was an amazing prospect but he repeatedly failed to meet expectations at the most important moments. He signed a big contract in 2022 but his performance were not at the same level as the salary. He was traded to Washington (keeping the same contract) but also this year in a different team he did not fulfil expectations.
 
-Zion Williamson and Michael Porter Jr. (especially the former) are young players that in their still short careers have not shown their full potential due to injuries. Their contracts, let's say, consider their potential performance at the top of their form.
+Michael Porter Jr. (especially the former) is a young player that in his still short careers has not shown his full potential due to injuries. His contract, let's say, considers his potential performance at the top of his form.
+
 Jordan Poole had an exploit in the previous seasons playing with a top team, Golden State Warriors, that somehow justifies his salary. He seemed to be ready to carry a team on his own, he was traded to Washington but his first season was a failure. 
+
+Klay Thompson, after being a key piece in the Golden State Warriors dinasty, suffered a serious injury few years ago. After that, he was no longer the same player and the salary was, let's say, no longer adequate to his performance. His contract with Golden State ended after the 23-24 season and he recently signed with Dallas Mavericks for 50 millions in 3 years, thus he will earn a salary closer (even lower) to the predicted one.
+
+Regarding Tobias Harris, this was the last contract year with Philadelphia 76ers. He signed this contract in 2019, team's situation was really different, Harris seemed to be the missing piece to build a contender for the title. After 5 years and a lot of changes, his situation is similar to Thompson's: salary not in line with performance. In fact, he also signed recently with another team (Detroit Pistons) for 52 millions in 2 years, really close to the prediction.
+
+Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results as really overpaid was quite predictable.
 
 **MOST UNDERPAID PLAYERS**
 
-Lebron James and Kevin Durant are two of the best players in the league for many years now. Even though, according to our model they should earn much more than the maximum wage. For sure their careers and their performance motivate a high salary, but equally surely they are not underpaid. We think that this overestimation depends in part on the fact that the variable AGE in the model is strongly significant, Lebron James is 39 and Kevin Durant is 35. The same reasoning could apply to Kyrie Irving (32) and especially Demar Derozan (34).
-
-For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.
+*For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.*
 
 Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says.
 
 Russell Westbrook is in the waning phase of his career. On the expiry of his last superstar contract, no team in the league offered him a comparable salary (he earned 47 millions in 2022). Consequently, he accepted a 3.8 millions salary (veteran minimum contract) to play with Los Angeles Clippers. For sure he is no longer a player worth 47 millions, but he is not worth 3.8 millions either. Our model interprets pretty well the situation, stating that Westbrook should earn a 18.3 millions salary: not a superstar one, but not a minimum wage either. 
+
+Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction.
+
+Bane, Haliburton, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they clearly overperformed considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
+
+Oubre's last contract was 30 millions in 2 years with Phoenix Suns, so in line with the predicted one. Last year he signed a small 2.89 million one-year contract with Philadelphia 76ers for several reasons: injury history, lack of performance consistency, market dynamics. Probably he will sign a new contract soon.
+
 
 Given the presence of correlations between the independent variables, the presence of multicollinearity is likely. For this reason, we decided to implement models that perform well when the variables are collinear such as Ridge regression and Lasso regression. In the next paragraphs we want to see if the performances of these models are better than that of the models seen so far.
 
@@ -453,23 +527,37 @@ Given the presence of correlations between the independent variables, the presen
 ### Ridge regression
 
 The subset selection method uses least squares to fit a linear model with a subset of the predictors. On the other hand, ridge regression does not select a subset of the coefficients *$\beta_j$* of the model, but it fits a model with all *p* predictors adding a term $\lambda \sum^p_{j=1} \beta^2_j$. This term is called shrinkage penalty, since it has the effect to push the coefficient estimates towards zero. Lambda ($\lambda$) is a tuning parameter that controls the impact of the penalty on the estimates. In order to determine a good value for $\lambda$, we used cross-validation.
+We also used a square root transformation of the dependent variable in this model because, as mentioned before, it improves linearity, omoschedasticity, variable's normality and it reduces the influence of outliers.
 
 ```{r ridge-starting, include=FALSE}
-library(glmnet)
-X <- model.matrix(Salary~., data=fd_numeric)
+
+# linear model
+lm.mod.sqrt <- lm(sqrt(Salary)~., data=fd_numeric)
+summary(lm.mod.sqrt)
+
+# design matrix not considering the intercept
+X <- model.matrix(sqrt(Salary)~., data=fd_numeric)
 X <- X[,-1]
 ```
 
-```{r ridge-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to the value of $\\lambda$ in the Ridge regression model \\label{fig:ridge-lambda}", fig.align='center', out.width='90%'}
+```{r ridge-square-root-lambda, echo=FALSE, fig.cap="Plot of the MSE with respect to the value of $\\lambda$ in the Ridge regression model \\label{fig:ridge-lambda}", fig.align='center', out.width='90%'}
 
+### Ten Fold Cross Validation function to select the best lambda ###
 ten_fold_cv <- function(X, y, a) {
+  print("### 10-FOLD CROSS-VALIDATION ###")
   n <- nrow(X)
   
   set.seed(1)
   train <- sample(1:n, n/2)
   test  <- setdiff(1:n, train)
   
-  cv.out <- cv.glmnet(X[train, ], y[train], alpha = a, nfold = 10)
+  cv.out <- cv.glmnet(X[train, ], sqrt(y[train]), alpha = a, nfold = 10)
+  
+  # This plots the cross-validation curve (red dotted line) along with upper and
+  # lower standard deviation curves along the lambda sequence (error bars).
+  # Two special values along the lambda sequence are indicated by the vertical
+  # dotted lines. lambda.min is the value of lambda that gives minimum mean
+  # cross-validated error.
   plot(cv.out)
   
   ## selecting the lambda that minimizes test MSE
@@ -477,55 +565,67 @@ ten_fold_cv <- function(X, y, a) {
   print(paste("The best lambda is = ", round(best_lambda)))
   
   # estimated test MSE with bestlambda value
-  mod <- glmnet(X[train, ], y[train], alpha = a)
+  mod <- glmnet(X[train, ], sqrt(y[train]), alpha = a)
   pred <- predict(mod, s = best_lambda, newx = X[test,])
-  mse <- mean((pred-y[test])^2)
+  mse <- mean((pred^2-y[test])^2)
   print(paste("The estimated test MSE with the best lambda is = ", format(mse, scientific = TRUE)))
+  
   return <- best_lambda
 }
+
 best_lambda <- ten_fold_cv(X, y, 0)
 ```
 
-In the plot of the Figure \ref{fig:ridge-lambda} the red dotted line represents the cross-validation curve along with upper and lower standard deviation curves along the $\lambda$ sequence (error bars). We chose the value of $\lambda$ (755675.4) that gives minimum mean cross-validated error.
-The mean squared error on the test set is 5.45e+13.
+In the plot of the Figure \ref{fig:ridge-lambda} the red dotted line represents the cross-validation curve along with upper and lower standard deviation curves along the $\lambda$ sequence (error bars). We chose the value of $\lambda$ (153) that gives minimum mean cross-validated error.
+The mean squared error on the test set is 4.867e+13.
+Applying the square root transformation of the dependent variable Salary does not influence the $\lambda$ value returned by the k-fold cross-validation since it is a monotonic transformation and it does not changes the relative ranking of $\lambda$. 
 
 ```{r ridge-with-best-lambda, include=FALSE}
 
-lm.rid <- glmnet(X, y, alpha = 0)
-coef(lm.rid, s=best_lambda)
+## final model with best lambda on all data
+lm.rid <- glmnet(X, sqrt(y), alpha = 0)
+coef(lm.rid, s = best_lambda)
 ```
 
 ```{r ridge-plot, echo=FALSE, fig.cap="Plot of the values of the parameters with respect to $\\lambda$ in the Ridge regression model \\label{fig:ridge-plot}", fig.align='center', out.width='90%'}
 
-plot(lm.rid, xvar="lambda", label=TRUE)
-abline(v=log(best_lambda), lty=3, lwd=2)
+# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+plot(lm.rid, xvar = "lambda", label = TRUE)
+abline(v=log(best_lambda), lty = 3, lwd = 2)
 ```
 
 The final model was fitted with the best $\lambda$ on all data. The trace plot, in the Figure \ref{fig:ridge-plot}, shows how the coefficients change if $\lambda$ increases.
 
 ```{r ridge-performances, echo=FALSE}
 
+#use fitted best model to make predictions
 lm.rid.pred <- predict(lm.rid, s = best_lambda, X)
+
+#find SST and SSE
 sst <- sum((y - mean(y))^2)
-sse <- sum((lm.rid.pred - y)^2)
+sse <- sum((lm.rid.pred^2 - y)^2)
 
+#find R-Squared
 R2 <- 1 - sse/sst
-print(paste("R-squared = ", R2))
+R2
+# R2 better than Exhaustive Subset Selection
 
-mse.lm.rid <- mean((lm.rid.pred-y)^2)
-print(paste("MSE = ", format(mse.lm.rid, scientific = TRUE)))
+# final MSE
+mse.lm.rid <- mean((lm.rid.pred^2-y)^2)
+mse.lm.rid
 ```
 
-Once fitted the model on all data with the best lambda, we evaluated the performance. 
+Once fitted the model on all data with the best lambda, we evaluated the performance on the whole dataset. 
 
-The 0.69 R-squared highlights a fairly good fit; *ha senso il confronto con il modello non logaritmico?* 
-Also the MSE improves: we get 4.34e+13 instead of the previous 4.77e+13.
+The 0.72 R-squared highlights a very good fit; also the 4.008e+13 MSE is a good result.
+
+Considering the MSE on the test set, 4.867e+13, the Ridge regression is outperformed by the model obtained with the subset selection (4.449e+13).
 
 The final step is the comparison between real salaries and predicted ones.
 
 ```{r overpaid-lm.rid, echo=FALSE}
 
-lm.rid.tables <- create_tables(y, lm.rid.pred, final_dataset, 10)
+lm.rid.tables <- create_tables(y, lm.rid.pred^2, final_dataset, 10)
 kable(lm.rid.tables[[1]], format="simple", caption="Ten most overpaid players according to the Ridge regression model")
 ```
 
@@ -536,29 +636,13 @@ kable(lm.rid.tables[[2]], format="simple", caption="Ten most underpaid players a
 
 **MOST OVERPAID PLAYERS**
 
-Here there are a different similarities between the previous model: Beal, Poole, LaVine, Ayton, Garland and Porter Jr. still result in the most overpaid players.
-
-Klay Thompson, after being a key piece in the Golden State Warriors dinasty, suffered a serious injury few years ago. After that, he was no longer the same player and the salary was, let's say, no longer adequate to his performance. His contract with Golden State ended after the 23-24 season and he recently signed with Dallas Mavericks for 50 millions in 3 years, thus he will earn a salary closer (even lower) to the predicted one.
-
-Regarding Tobias Harris, this was the last contract year with Philadelphia 76ers. He signed this contract in 2019, team's situation was really different, Harris seemed to be the missing piece to build a contender for the title. After 5 years and a lot of changes, his situation is similar to Thompson's: salary not in line with performance. In fact, he also signed recently with another team (Detroit Pistons) for 52 millions in 2 years, really close to the prediction.
-
-Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results as really overpaid was quite predictable.
-
-Discussions about Rudy Gobert's value are always controversial. He doesn't shine for his technique, he is a so called hustle player: a great defender (three times best defender of the year) who gives a great contribution in terms of intangibles aspects that are really difficult to grasp with stats. It is really difficult to assess his value, especially with this type of model.
+9 out of 10 players in this tier are the same as those classified as overpaid in the previous model. Also the differences between predicted salary and actual salary are quite similar. 
 
 **MOST UNDERPAID PLAYERS**
 
-At first glance we can see that Ridge regression does not classify players with very high salaries (such as Lebron James and Kevin Durant) as the most underpaid. We believe that in this respect the prediction is better than the previous model one.
+The same can be said for the most underpaid players: 9 out of 10 are the same as those found in the previous model.
 
-Again, we find Westbrook, Maxey and Oubre Jr. in this tier. Oubre's last contract was 30 millions in 2 years with Phoenix Suns, so in line with the predicted one. Last year he signed a small 2.89 million one-year contract with Philadelphia 76ers for several reasons: injury history, lack of performance consistency, market dynamics. Probably he will sign a new contract soon.
-
-Eric Gordon is a veteran, he signed for a very small salary with Phoenix Suns in order to play with a contender. This move is not uncommon for good players in the final part of their career, especially if they never won a NBA title like Gordon. In the previous contract with Houston Rockets Gordon earned 75.6 millions in 4 years, perfectly in line with the prediction.
-
-Bane, Haliburton, Sengun, Thomas and Williams have a Maxey-like situation: they are young players which are still in their rookie contracts but they clearly overperformed considering how much they earn. Maybe the model over evaluates a bit Cam Thomas, because he produces really good offensive numbers (the stats and the models capture the offensive contribution really well, much less the defensive one) when called on but his performance decrease when it comes to defense. Additionally, he could improve in leadership and understanding of the game.
-
-Anthony Edwards had an amazing season, he carried his team to playoffs conference finals. 23-24 season was the last one in his rookie contract (he perceives a higher salary than the previous mentioned players in their rookie contracts because he was a better prospect when drafted), for this reason he perceived a lower salary compared to the model's expectation. It is really likely that he will receive a big offer in the near future.
-
-All in all, Ridge regression has shown better results compared to the previous model: better R-squared, lower mean squared error and in some cases more meaningful predictions.
+All in all, Ridge regression has shown satisfactory performances. By making a comparison with the reduced model, R-squared slightly improves from 0.7061 to 0.7175 but it was quite expected since Ridge considers many more predictors. For what concerns the MSE calculated both on the whole dataset and the test set, the reduced model outperforms the Ridge regression. Consequently, we can say that the reduced model is better in terms of precision and parsimony. 
 
 
 ### Lasso regression

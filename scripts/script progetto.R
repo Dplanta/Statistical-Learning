@@ -1,15 +1,3 @@
-#########
-# MODIFICHE DA FARE
-#
-# 1a) eventualmente cambiare interpretazioni
-#
-# 2) utilizzare MSE su test per comparare i modelli:
-# 2a) creare train e test set e calcolare test error su regressione logaritmica iniziale e su subset selection
-# 2b) confrontare di nuovo tutti i modelli utilizzando la divisione train e test (lui usa la stessa)
-# 2c) mantenere comunque MSE su tutti i dati per completezza di informazione
-########
-
-
 # Upload readxl to import data from Excel to R
 library(readxl)
 
