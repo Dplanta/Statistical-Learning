@@ -155,7 +155,7 @@ par(mfrow = c(1, 1))
 
 
 # trying to transform the response variable (log)
-lm.log <- lm(log(Salary)~+., data=fd_numeric)
+lm.log <- lm(log(Salary)~., data=fd_numeric)
 summary(lm.log)
 
 par(mfrow = c(2, 2))
@@ -380,6 +380,7 @@ R2
 # final MSE
 mse.lm.rid <- mean((lm.rid.pred^2-y)^2)
 mse.lm.rid
+format(sqrt(mse.lm.rid), scientific= TRUE)
 # mse worse than Exhaustive Subset Selection
 
 
@@ -424,7 +425,7 @@ R2
 mse.lm.las <- mean((lm.las.pred^2-y)^2)
 mse.lm.las
 format(sqrt(mse.lm.las), scientific= TRUE)
-# slightly better MSE than ridge
+
 
 
 ### 10 most overpaid and 10 most underpaid players table ###
