@@ -408,7 +408,7 @@ plot(lm.ess)
 par(mfrow=c(1,1))
 ```
 
-From what can be seen in the Figure \ref{fig:residual-analysis-ess}, the assumptions of the linear model seem to be fulfilled. There are some players who are outliers in each graph: they probably have special contracts (two-way contracts). This means that they usually play in the team's second team (in a so called development league) and occasionally in the first team, so they have really low salaries compared to the league average.
+From what can be seen in the Figure \ref{fig:residual-analysis-ess}, the assumptions of the linear model seem to be fulfilled. There are some players who are outliers in each graph.
 
 
 #### MSE
@@ -696,7 +696,7 @@ It is interesting to note that 9 out of 10 players in this table are the same as
 
 Also in this case, 8 out of 10 players are the same as in the Ridge and the differences are really small. One of the changes is the presence of Kevin Love. As Eric Gordon, he is a veteran and he signed for a small salary with Miami Heat.
 
-We can state that Lasso regression has better performance compared to Ridge regression: the R-squared and the MSE on the whole dataset are slightly worse, but the MSE on the test set is higher. This is an important result, especially considering that Lasso regression model is way simpler (only 9 predictors). 
+We can state that Lasso regression has better performance compared to Ridge regression: the R-squared and the MSE on the whole dataset are slightly worse, but the MSE on the test set is lower. This is an important result, especially considering that Lasso regression model is way simpler (only 9 predictors). 
 Placing in contrast the Lasso regression and the reduced model it is important to consider that, despite a higher MSE on the test, the first model is more parsimonious, 9 predictors against 14. On the other hand, the latter is more precise.
 
 ## Salaries analysis by position
@@ -809,7 +809,7 @@ plot(lm.las.c, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 ```
 
-Once chosen the $\lambda$ value that guarantees the lower mean cross-validated error, we fitted the model on all data. It is interesting that, in the particular case of centers, 13 features are considered: the model is more complex than the general lasso model (9 predictors). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
+Once chosen the $\lambda$ value that guarantees the lower mean cross-validated error, we fitted the model on all data. It is interesting that, in the particular case of centers, 14 features are considered: the model is more complex than the general lasso model (9 predictors). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
 
 
 ```{r lasso-centers-performance, echo=FALSE}
