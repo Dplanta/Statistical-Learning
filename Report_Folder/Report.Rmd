@@ -288,7 +288,7 @@ par(mfrow = c(1, 1))
 lm.sqrt.pred <- predict(lm.sqrt)
 mse.lm.sqrt <- mean((lm.sqrt.pred^2 - y)^2)
 mse.lm.sqrt
-print(paste("MSE of the complete linear model with logarithmic Salary = ", format(mse.lm.sqrt, scientific = TRUE)))
+print(paste("MSE of the complete linear model with square rooted Salary = ", format(mse.lm.sqrt, scientific = TRUE)))
 
 ```
 We tried to apply a logarithmic transformation to the dependent variable: the model showed a lower R-squared (0.6516) and a slightly higher MSE (4.70e+13).
@@ -927,6 +927,7 @@ abline(v = log(best_lambda), lty = 3, lwd = 2)
 lm.las.f.pred <- predict(lm.las.f, s = best_lambda, X.f)
 
 ```
+
 The model results simpler compared to the centers' one (11 vs 14 predictors). The variable USG_PCT has, by far, the biggest coefficient: according to this model, forwards who finish (with a shot, a free throw or a turnover) most of their team's possessions, on average, earn more. 
 The trace plot shows how the coefficients change increasing lambda.
 
@@ -986,7 +987,7 @@ lm.ess.g = subset_selection(fd_guard)
 summary(lm.ess.g)
 
 ```
-
+According to Mallow's Cp, we chose a model with only 6 predictors. This is quite surprising given that the role of guard is probably the most creative role in basketball: we expected a more complex model. Nevertheless, the model fits the data quite well as shown by the 0.66 R-squared. The variables AGE and MIN_G are strongly significant. The variable 3_PCT acts in a peculiar way: the highly negative coefficient indicates that (according to this model), on average, guards with high percentages in 3 point shots earn less. It may depend on the fact that many guards are 3-point specialists: thus (as mentioned before for the variable TS_PCT), their main contribution is scoring behind the 3-point line. For this reason, it makes sense that players with a limited role have a smaller salary. But again, probably this coefficient depends from other variables that are not considered in this model.
 
 ```{r ess-guards-analysis, echo=FALSE}
 
@@ -1003,6 +1004,9 @@ par(mfrow=c(1,1))
 
 
 ```
+Different correlations between predictors emerge from the correlation matrix. Regarding the residual analysis, despite the presence of some outliers, the linear model assumptions are acceptably respected.
+
+
 ```{r ess-guards-performances, echo=FALSE}
 
 # model performances
@@ -1030,7 +1034,7 @@ format(sqrt(lm.ess.g.test.mse), scientific = TRUE)
 
 
 ```
-
+Concerning performances, the estimated test MSE of 6.7e+13 is higher compared to the previous models, but this was quite predictable due to the low number of predictors. On the other hand, the MSE on the complete guards dataset is really good: 7.998e+11.
 
 ```{r lasso-guards-overpaid-underpaid, echo=FALSE}
 
@@ -1048,16 +1052,8 @@ We again find Beal, LaVine and Garland as the 3 most overpaid players. Maxey, We
 
 ### Models performances summary
 
-```{r final-model-comparison, include=FALSE}
-
-# idea: tabella con modello, numero dei predittori, R2 e MSE 
-
-
-```
-
-
-Summarizing, we started from a linear regression model and we applied a logarithmic transformation to the dependent variable salary. Then, in order to exclude unnecessary or redundant variable and to obtain a simpler model, we performed a variable selection. We got a simpler model (from x to y predictors) with a more than acceptable decrease in performance. However, given the probable presence of multicollinearity between the predictors, we implemented a ridge regression model and a lasso regression model. Indeed, ridge regression showed an improvement in both R-squared and MSE that was further enhanced by the lasso regression. 
-Since lasso regression was the best model in terms of performance, we used it to analyse separately players with different roles. The models for centers and forwards have shown a really good fit with the data. Moreover, the variables considered changed both in number and type compared to the model fitted on all players. For what concerns guards, a very simple model emerged but with significantly worse performance.
+Summarizing, we started from a linear regression model and we applied a square root transformation to the dependent variable salary. Then, in order to exclude unnecessary or redundant variable and to obtain a simpler model, we performed a variable selection. We got a simpler model (from 29 to 14 predictors) with a negligible decrease in performance. However, given the probable presence of multicollinearity between the predictors, we implemented a Ridge regression model and a Lasso regression model. The reduced model and the Lasso regression model outperformed Ridge regression considering precision and parsimony. Comparing Lasso regression and reduced model, the former was more parsimonious but the latter was more precise.
+We used Lasso regressions to analyse centers and forwards and a model obtained through a subset selection to analyse guards. The models for centers and forwards have shown a really good fit with the data. Moreover, the variables considered changed both in number and type compared to the models fitted on all players. For what concerns guards, a very simple model emerged but with an acceptable performance.
 
 ### Models' limitations
 
@@ -1068,7 +1064,7 @@ We considered only a Regular Season: to have more complete models one would have
 
 ### Final comments
 
-In the end, although their obvious limitations, some of our models performed pretty good and provide a good basis for studying the relationship between NBA players' salaries and performance. In particular, Lasso regressions (except in the case of guards) fitted the data quite well with an acceptable mean squared error. As seen progressively, most of the biggest differences between actual salaries and predicted salary were quite reasonable. 
+In the end, although their obvious limitations, some of our models performed pretty good and provided a good basis for studying the relationship between NBA players' salaries and performance. In particular, Lasso regression and models obtained through a subset selection brought valid results. As seen progressively, most of the biggest differences between actual salaries and predicted salary were quite reasonable. 
 
 
 

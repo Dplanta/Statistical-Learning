@@ -59,6 +59,7 @@ class(final_dataset$Salary)
 rownames(final_dataset) <- final_dataset$PLAYER_NAME
 final_dataset <- final_dataset[, -1]
 
+
 rm(data_salary, data_advanced, data_miscellaneous, data_traditional_per48, data_traditional_tot, data_vorp)
 
 
