@@ -38,9 +38,9 @@ library(knitr)
 
 ## Objective of the project
 
-Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyse performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
-The idea is to deep dive into the relationship between salaries and performance through different models in order to understand what kind of relationship there is and which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
-In the end, we analysed the players by separating them by role (considering centers, forwards and guards separately) and constructed specific models for each position. The aim was to study similarities and differences of the specific models among themselves and with respect to the general ones implemented in the previous phase.
+Our goal is to investigate whether the salaries earned by the NBA players during the 2023-2024 season are fair in proportion to their performance during the current year's Regular season. To analyze performance, we selected several statistics: from the most common such as points, rebounds, assists to advanced metrics like Usage, Player Impact Estimated and Winning Shares. 
+The goal is to explore the relationships between salaries and performance using various models. This will help us understand how statistics correlate with salaries and determine which model best fits the data. Then, we compared actual salaries with those predicted by our models to find out which players (according to the models) are the most overpaid or underpaid.
+In the end, we analyzed the players by separating them by role (considering centers, forwards and guards separately) and constructed specific models for each position. The aim is to study similarities and differences of the specific models among themselves and with respect to the general ones implemented in the previous phase.
 
 
 ## Steps followed
@@ -64,9 +64,10 @@ All data concerns the 2023-2024 NBA Regular Season.
 
 Considering only data about Regular Season without considering players performance during playoffs limits a bit the potential of our analysis. On one hand, it's reasonable to infer that player performance during playoffs should have an important weight in determining his salary. On the other hand, considering playoffs in the analysis carries different issues.
 
-There are teams (and consequently players) that go further than others: 14 out of 30 teams can't qualify for the playoffs. For the teams which qualify, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During Regular Season every team plays a fixed number of games, 82.
+Some teams (and their players) progress further than others: 14 out of 30 teams can't qualify for the playoffs. For those that do, playoff stats are calculated on a number of games that could differ greatly between different teams (e.g. if a team loses in the first round, it plays from 4 to 7 games. If a team reaches the finals, it plays from 16 to 28 games). During regular season every team plays 82 games.
 
-Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. Furthermore, usually in a playoff game the best players are more involved compared to Regular season games. It means that, first of all, they play several more minutes. Moreover, they have the ball in their hands for a lot of time and consequently their stats grow a lot; hence, it could happen that few players record a large part of the entire team's statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
+Additionally, coaches usually rotate players at their disposal in a different way during playoffs: for instance, during regular season approximately 10-12 players for each team take part in the game; during playoffs it is not uncommon to observe only 7-8 players that come into play for each team. 
+Furthermore, in a playoff game, the stakes are higher, leading teams to become more risk adverse. The consequence is that that they will try to take advantage of their best players giving them as much plays as possible, leaving less opportunities to the other players of the roster, thus creating a bias in the production of the statistics. Considering this, including playoffs data in the analysis could lead to an overestimation of performance of 2-3 players and to an underestimation of the performance of the rest of the team.
 
 All in all, it is undeniable that playoffs are a fundamental part of the season. It is also obvious that if a player has more responsibilities in that phase he probably deserves a higher salary. But we think that for the purposes of our analysis, the addition of statistics collected on a small sample of matches, different for practically every team, with highly polarized data between the various players may lead to biases if not handled properly.
 
@@ -83,7 +84,7 @@ We think that considering only the regular season, although leading to a limited
 ### Traditional stats (collected from the [NBA](https://www.nba.com/?47) website)
 
 -	**GP**: “Games played”, the number of games played by a player during the 2023-2024 regular season;
--	**FG_PCT**: “Field Goal Percentage”, the percentage of field goal attempts that a player makes. Formula: (FGM)/(FGA);
+-	**FG_PCT**: “Field Goal Percentage”, the percentage of field goal attempts that a player makes (both 2pt and 3pt). Formula: (FGM)/(FGA);
 -	**FG3_PCT**: “3 Points “Field Goal Percentage”, the percentage of 3pt field goal attempts that a player makes;
 -	**FT_PCT**: “Free throws Percentage”, the percentage of free throws attempts that a player makes;
 -	**OREB**: “Offensive Rebounds”, the number of rebounds a player or team has collected while they were on offense;
@@ -220,7 +221,7 @@ hist(sqrt(Salary), main="Square rooted Salary")
 par(mfrow = c(1, 1))
 ```
 
-The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. We expected this kind of distribution, the outliers are the players earning the highest salaries. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. After the square root transformation, the salary keeps a right skewed distribution but in a more symmetrical manner than the original variable.  
+The boxplot shows that the salary distribution is right skewed, with some outliers in the right side. This distribution was anticipated, as in basketball, as in most other sports, we observe few players excelling and commanding high salaries while the majority of players fall within a narrower performance and salary range. The histogram also highlights the right skewed distribution. It can be seen that Salary's log transformation reduces the skewness and makes the distribution of the variable closer to normal. After the square root transformation, the salary keeps a right skewed distribution but in a more symmetrical manner than the original variable.  
 
 ```{r boxplots-independent-variables, include=FALSE}
 boxplot(AGE, main="AGE", names=c("AGE"), show.names=TRUE, ylab="years")
