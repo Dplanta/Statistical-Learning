@@ -423,20 +423,20 @@ comments</a></li>
 <h2>Objective of the project</h2>
 <p>Our goal is to investigate whether the salaries earned by the NBA
 players during the 2023-2024 season are fair in proportion to their
-performance during the current year’s Regular season. To analyse
+performance during the current year’s Regular season. To analyze
 performance, we selected several statistics: from the most common such
 as points, rebounds, assists to advanced metrics like Usage, Player
-Impact Estimated and Winning Shares. The idea is to deep dive into the
-relationship between salaries and performance through different models
-in order to understand what kind of relationship there is and which
-model best fits the data. Then, we compared actual salaries with those
-predicted by our models to find out which players (according to the
-models) are the most overpaid or underpaid. In the end, we analysed the
-players by separating them by role (considering centers, forwards and
-guards separately) and constructed specific models for each position.
-The aim was to study similarities and differences of the specific models
-among themselves and with respect to the general ones implemented in the
-previous phase.</p>
+Impact Estimated and Winning Shares. The goal is to explore the
+relationships between salaries and performance using various models.
+This will help us understand how statistics correlate with salaries and
+determine which model best fits the data. Then, we compared actual
+salaries with those predicted by our models to find out which players
+(according to the models) are the most overpaid or underpaid. In the
+end, we analyzed the players by separating them by role (considering
+centers, forwards and guards separately) and constructed specific models
+for each position. The aim is to study similarities and differences of
+the specific models among themselves and with respect to the general
+ones implemented in the previous phase.</p>
 </div>
 <div id="steps-followed" class="section level2">
 <h2>Steps followed</h2>
@@ -465,26 +465,24 @@ analysis. On one hand, it’s reasonable to infer that player performance
 during playoffs should have an important weight in determining his
 salary. On the other hand, considering playoffs in the analysis carries
 different issues.</p>
-<p>There are teams (and consequently players) that go further than
-others: 14 out of 30 teams can’t qualify for the playoffs. For the teams
-which qualify, playoff stats are calculated on a number of games that
-could differ greatly between different teams (e.g. if a team loses in
-the first round, it plays from 4 to 7 games. If a team reaches the
-finals, it plays from 16 to 28 games). During Regular Season every team
-plays a fixed number of games, 82.</p>
+<p>Some teams (and their players) progress further than others: 14 out
+of 30 teams can’t qualify for the playoffs. For those that do, playoff
+stats are calculated on a number of games that could differ greatly
+between different teams (e.g. if a team loses in the first round, it
+plays from 4 to 7 games. If a team reaches the finals, it plays from 16
+to 28 games). During regular season every team plays 82 games.</p>
 <p>Additionally, coaches usually rotate players at their disposal in a
 different way during playoffs: for instance, during regular season
 approximately 10-12 players for each team take part in the game; during
 playoffs it is not uncommon to observe only 7-8 players that come into
-play for each team. Furthermore, usually in a playoff game the best
-players are more involved compared to Regular season games. It means
-that, first of all, they play several more minutes. Moreover, they have
-the ball in their hands for a lot of time and consequently their stats
-grow a lot; hence, it could happen that few players record a large part
-of the entire team’s statistics. Considering this, including playoffs
-data in the analysis could lead to an overestimation of performance of
-2-3 players and to an underestimation of the performance of the rest of
-the team.</p>
+play for each team. Furthermore, in a playoff game, the stakes are
+higher, leading teams to become more risk adverse. The consequence is
+that that they will try to take advantage of their best players giving
+them as much plays as possible, leaving less opportunities to the other
+players of the roster, thus creating a bias in the production of the
+statistics. Considering this, including playoffs data in the analysis
+could lead to an overestimation of performance of 2-3 players and to an
+underestimation of the performance of the rest of the team.</p>
 <p>All in all, it is undeniable that playoffs are a fundamental part of
 the season. It is also obvious that if a player has more
 responsibilities in that phase he probably deserves a higher salary. But
@@ -512,7 +510,8 @@ player.</li>
 <li><strong>GP</strong>: “Games played”, the number of games played by a
 player during the 2023-2024 regular season;</li>
 <li><strong>FG_PCT</strong>: “Field Goal Percentage”, the percentage of
-field goal attempts that a player makes. Formula: (FGM)/(FGA);</li>
+field goal attempts that a player makes (both 2pt and 3pt). Formula:
+(FGM)/(FGA);</li>
 <li><strong>FG3_PCT</strong>: “3 Points “Field Goal Percentage”, the
 percentage of 3pt field goal attempts that a player makes;</li>
 <li><strong>FT_PCT</strong>: “Free throws Percentage”, the percentage of
@@ -903,13 +902,15 @@ square root transformation
 </p>
 </div>
 <p>The boxplot shows that the salary distribution is right skewed, with
-some outliers in the right side. We expected this kind of distribution,
-the outliers are the players earning the highest salaries. The histogram
-also highlights the right skewed distribution. It can be seen that
-Salary’s log transformation reduces the skewness and makes the
-distribution of the variable closer to normal. After the square root
-transformation, the salary keeps a right skewed distribution but in a
-more symmetrical manner than the original variable.</p>
+some outliers in the right side. This distribution was anticipated, as
+in basketball, as in most other sports, we observe few players excelling
+and commanding high salaries while the majority of players fall within a
+narrower performance and salary range. The histogram also highlights the
+right skewed distribution. It can be seen that Salary’s log
+transformation reduces the skewness and makes the distribution of the
+variable closer to normal. After the square root transformation, the
+salary keeps a right skewed distribution but in a more symmetrical
+manner than the original variable.</p>
 <p>In order to study correlations between the predictors of the model,
 we used the <code>corrplot</code> function (Figure <span class="math inline">\(\ref{fig:corrplot-independent-variables}\)</span>).</p>
 <pre class="r"><code>corrplot(cor(fd_numeric), method = &#39;color&#39;)</code></pre>
@@ -1256,71 +1257,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Bradley Beal</td>
-<td align="right">46741590</td>
-<td align="right">24358643</td>
-<td align="right">22382947</td>
+<td align="left">$46,741,590</td>
+<td align="left">$24,358,643</td>
+<td align="left">$22,382,947</td>
 </tr>
 <tr class="even">
 <td>Zach LaVine</td>
-<td align="right">40064220</td>
-<td align="right">20681956</td>
-<td align="right">19382264</td>
+<td align="left">$40,064,220</td>
+<td align="left">$20,681,956</td>
+<td align="left">$19,382,264</td>
 </tr>
 <tr class="odd">
 <td>Darius Garland</td>
-<td align="right">34005250</td>
-<td align="right">14635007</td>
-<td align="right">19370243</td>
+<td align="left">$34,005,250</td>
+<td align="left">$14,635,007</td>
+<td align="left">$19,370,243</td>
 </tr>
 <tr class="even">
 <td>Deandre Ayton</td>
-<td align="right">32459438</td>
-<td align="right">13809140</td>
-<td align="right">18650298</td>
+<td align="left">$32,459,438</td>
+<td align="left">$13,809,140</td>
+<td align="left">$18,650,298</td>
 </tr>
 <tr class="odd">
 <td>Michael Porter Jr.</td>
-<td align="right">33386850</td>
-<td align="right">15306816</td>
-<td align="right">18080034</td>
+<td align="left">$33,386,850</td>
+<td align="left">$15,306,816</td>
+<td align="left">$18,080,034</td>
 </tr>
 <tr class="even">
 <td>Jordan Poole</td>
-<td align="right">27955357</td>
-<td align="right">11003024</td>
-<td align="right">16952333</td>
+<td align="left">$27,955,357</td>
+<td align="left">$11,003,024</td>
+<td align="left">$16,952,333</td>
 </tr>
 <tr class="odd">
 <td>Tobias Harris</td>
-<td align="right">39270150</td>
-<td align="right">22395296</td>
-<td align="right">16874854</td>
+<td align="left">$39,270,150</td>
+<td align="left">$22,395,296</td>
+<td align="left">$16,874,854</td>
 </tr>
 <tr class="even">
 <td>Trae Young</td>
-<td align="right">40064220</td>
-<td align="right">24504123</td>
-<td align="right">15560097</td>
+<td align="left">$40,064,220</td>
+<td align="left">$24,504,123</td>
+<td align="left">$15,560,097</td>
 </tr>
 <tr class="odd">
 <td>Fred VanVleet</td>
-<td align="right">40806300</td>
-<td align="right">25628038</td>
-<td align="right">15178262</td>
+<td align="left">$40,806,300</td>
+<td align="left">$25,628,038</td>
+<td align="left">$15,178,262</td>
 </tr>
 <tr class="even">
 <td>Klay Thompson</td>
-<td align="right">43219440</td>
-<td align="right">28056247</td>
-<td align="right">15163193</td>
+<td align="left">$43,219,440</td>
+<td align="left">$28,056,247</td>
+<td align="left">$15,163,193</td>
 </tr>
 </tbody>
 </table>
@@ -1330,71 +1331,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Tyrese Maxey</td>
-<td align="right">4343920</td>
-<td align="right">20847446</td>
-<td align="right">16503526</td>
+<td align="left">$4,343,920</td>
+<td align="left">$20,847,446</td>
+<td align="left">$16,503,526</td>
 </tr>
 <tr class="even">
 <td>Russell Westbrook</td>
-<td align="right">3835738</td>
-<td align="right">19419261</td>
-<td align="right">15583523</td>
+<td align="left">$3,835,738</td>
+<td align="left">$19,419,261</td>
+<td align="left">$15,583,523</td>
 </tr>
 <tr class="odd">
 <td>Desmond Bane</td>
-<td align="right">3845083</td>
-<td align="right">18158172</td>
-<td align="right">14313089</td>
+<td align="left">$3,845,083</td>
+<td align="left">$18,158,172</td>
+<td align="left">$14,313,089</td>
 </tr>
 <tr class="even">
 <td>Kelly Oubre Jr.</td>
-<td align="right">2891467</td>
-<td align="right">16072226</td>
-<td align="right">13180759</td>
+<td align="left">$2,891,467</td>
+<td align="left">$16,072,226</td>
+<td align="left">$13,180,759</td>
 </tr>
 <tr class="odd">
 <td>Eric Gordon</td>
-<td align="right">3196448</td>
-<td align="right">16357558</td>
-<td align="right">13161110</td>
+<td align="left">$3,196,448</td>
+<td align="left">$16,357,558</td>
+<td align="left">$13,161,110</td>
 </tr>
 <tr class="even">
 <td>Jalen Williams</td>
-<td align="right">4558680</td>
-<td align="right">17084418</td>
-<td align="right">12525738</td>
+<td align="left">$4,558,680</td>
+<td align="left">$17,084,418</td>
+<td align="left">$12,525,738</td>
 </tr>
 <tr class="odd">
 <td>Cam Thomas</td>
-<td align="right">2240160</td>
-<td align="right">14547343</td>
-<td align="right">12307183</td>
+<td align="left">$2,240,160</td>
+<td align="left">$14,547,343</td>
+<td align="left">$12,307,183</td>
 </tr>
 <tr class="even">
 <td>Tyrese Haliburton</td>
-<td align="right">5808435</td>
-<td align="right">17514933</td>
-<td align="right">11706498</td>
+<td align="left">$5,808,435</td>
+<td align="left">$17,514,933</td>
+<td align="left">$11,706,498</td>
 </tr>
 <tr class="odd">
 <td>Reggie Jackson</td>
-<td align="right">5000000</td>
-<td align="right">16679982</td>
-<td align="right">11679982</td>
+<td align="left">$5,000,000</td>
+<td align="left">$16,679,982</td>
+<td align="left">$11,679,982</td>
 </tr>
 <tr class="even">
 <td>Jalen Brunson</td>
-<td align="right">26346666</td>
-<td align="right">37833452</td>
-<td align="right">11486786</td>
+<td align="left">$26,346,666</td>
+<td align="left">$37,833,452</td>
+<td align="left">$11,486,786</td>
 </tr>
 </tbody>
 </table>
@@ -1557,71 +1558,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Bradley Beal</td>
-<td align="right">46741590</td>
-<td align="right">21040330</td>
-<td align="right">25701260</td>
+<td align="left">$46,741,590</td>
+<td align="left">$21,040,330</td>
+<td align="left">$25,701,260</td>
 </tr>
 <tr class="even">
 <td>Zach LaVine</td>
-<td align="right">40064220</td>
-<td align="right">19257941</td>
-<td align="right">20806279</td>
+<td align="left">$40,064,220</td>
+<td align="left">$19,257,941</td>
+<td align="left">$20,806,279</td>
 </tr>
 <tr class="odd">
 <td>Darius Garland</td>
-<td align="right">34005250</td>
-<td align="right">14533439</td>
-<td align="right">19471811</td>
+<td align="left">$34,005,250</td>
+<td align="left">$14,533,439</td>
+<td align="left">$19,471,811</td>
 </tr>
 <tr class="even">
 <td>Deandre Ayton</td>
-<td align="right">32459438</td>
-<td align="right">13218585</td>
-<td align="right">19240853</td>
+<td align="left">$32,459,438</td>
+<td align="left">$13,218,585</td>
+<td align="left">$19,240,853</td>
 </tr>
 <tr class="odd">
 <td>Klay Thompson</td>
-<td align="right">43219440</td>
-<td align="right">24705388</td>
-<td align="right">18514052</td>
+<td align="left">$43,219,440</td>
+<td align="left">$24,705,388</td>
+<td align="left">$18,514,052</td>
 </tr>
 <tr class="even">
 <td>Michael Porter Jr.</td>
-<td align="right">33386850</td>
-<td align="right">15122623</td>
-<td align="right">18264227</td>
+<td align="left">$33,386,850</td>
+<td align="left">$15,122,623</td>
+<td align="left">$18,264,227</td>
 </tr>
 <tr class="odd">
 <td>Jordan Poole</td>
-<td align="right">27955357</td>
-<td align="right">10304747</td>
-<td align="right">17650610</td>
+<td align="left">$27,955,357</td>
+<td align="left">$10,304,747</td>
+<td align="left">$17,650,610</td>
 </tr>
 <tr class="even">
 <td>Tobias Harris</td>
-<td align="right">39270150</td>
-<td align="right">21815514</td>
-<td align="right">17454636</td>
+<td align="left">$39,270,150</td>
+<td align="left">$21,815,514</td>
+<td align="left">$17,454,636</td>
 </tr>
 <tr class="odd">
 <td>Fred VanVleet</td>
-<td align="right">40806300</td>
-<td align="right">24004172</td>
-<td align="right">16802128</td>
+<td align="left">$40,806,300</td>
+<td align="left">$24,004,172</td>
+<td align="left">$16,802,128</td>
 </tr>
 <tr class="even">
 <td>Gordon Hayward</td>
-<td align="right">31500000</td>
-<td align="right">16032599</td>
-<td align="right">15467401</td>
+<td align="left">$31,500,000</td>
+<td align="left">$16,032,599</td>
+<td align="left">$15,467,401</td>
 </tr>
 </tbody>
 </table>
@@ -1631,71 +1632,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Tyrese Maxey</td>
-<td align="right">4343920</td>
-<td align="right">21966393</td>
-<td align="right">17622473</td>
+<td align="left">$4,343,920</td>
+<td align="left">$21,966,393</td>
+<td align="left">$17,622,473</td>
 </tr>
 <tr class="even">
 <td>Eric Gordon</td>
-<td align="right">3196448</td>
-<td align="right">17996224</td>
-<td align="right">14799776</td>
+<td align="left">$3,196,448</td>
+<td align="left">$17,996,224</td>
+<td align="left">$14,799,776</td>
 </tr>
 <tr class="odd">
 <td>Russell Westbrook</td>
-<td align="right">3835738</td>
-<td align="right">18547948</td>
-<td align="right">14712210</td>
+<td align="left">$3,835,738</td>
+<td align="left">$18,547,948</td>
+<td align="left">$14,712,210</td>
 </tr>
 <tr class="even">
 <td>Tyrese Haliburton</td>
-<td align="right">5808435</td>
-<td align="right">18576500</td>
-<td align="right">12768065</td>
+<td align="left">$5,808,435</td>
+<td align="left">$18,576,500</td>
+<td align="left">$12,768,065</td>
 </tr>
 <tr class="odd">
 <td>Desmond Bane</td>
-<td align="right">3845083</td>
-<td align="right">16605443</td>
-<td align="right">12760360</td>
+<td align="left">$3,845,083</td>
+<td align="left">$16,605,443</td>
+<td align="left">$12,760,360</td>
 </tr>
 <tr class="even">
 <td>Kelly Oubre Jr.</td>
-<td align="right">2891467</td>
-<td align="right">15142953</td>
-<td align="right">12251486</td>
+<td align="left">$2,891,467</td>
+<td align="left">$15,142,953</td>
+<td align="left">$12,251,486</td>
 </tr>
 <tr class="odd">
 <td>Cam Thomas</td>
-<td align="right">2240160</td>
-<td align="right">14488545</td>
-<td align="right">12248385</td>
+<td align="left">$2,240,160</td>
+<td align="left">$14,488,545</td>
+<td align="left">$12,248,385</td>
 </tr>
 <tr class="even">
 <td>Alperen Sengun</td>
-<td align="right">3536280</td>
-<td align="right">15676549</td>
-<td align="right">12140269</td>
+<td align="left">$3,536,280</td>
+<td align="left">$15,676,549</td>
+<td align="left">$12,140,269</td>
 </tr>
 <tr class="odd">
 <td>Jalen Williams</td>
-<td align="right">4558680</td>
-<td align="right">15011822</td>
-<td align="right">10453142</td>
+<td align="left">$4,558,680</td>
+<td align="left">$15,011,822</td>
+<td align="left">$10,453,142</td>
 </tr>
 <tr class="even">
 <td>Jalen Brunson</td>
-<td align="right">26346666</td>
-<td align="right">36674733</td>
-<td align="right">10328067</td>
+<td align="left">$26,346,666</td>
+<td align="left">$36,674,733</td>
+<td align="left">$10,328,067</td>
 </tr>
 </tbody>
 </table>
@@ -1757,71 +1758,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Bradley Beal</td>
-<td align="right">46741590</td>
-<td align="right">20983050</td>
-<td align="right">25758540</td>
+<td align="left">$46,741,590</td>
+<td align="left">$20,983,050</td>
+<td align="left">$25,758,540</td>
 </tr>
 <tr class="even">
 <td>Zach LaVine</td>
-<td align="right">40064220</td>
-<td align="right">20410086</td>
-<td align="right">19654134</td>
+<td align="left">$40,064,220</td>
+<td align="left">$20,410,086</td>
+<td align="left">$19,654,134</td>
 </tr>
 <tr class="odd">
 <td>Klay Thompson</td>
-<td align="right">43219440</td>
-<td align="right">23767204</td>
-<td align="right">19452236</td>
+<td align="left">$43,219,440</td>
+<td align="left">$23,767,204</td>
+<td align="left">$19,452,236</td>
 </tr>
 <tr class="even">
 <td>Darius Garland</td>
-<td align="right">34005250</td>
-<td align="right">14576770</td>
-<td align="right">19428480</td>
+<td align="left">$34,005,250</td>
+<td align="left">$14,576,770</td>
+<td align="left">$19,428,480</td>
 </tr>
 <tr class="odd">
 <td>Michael Porter Jr.</td>
-<td align="right">33386850</td>
-<td align="right">14520473</td>
-<td align="right">18866377</td>
+<td align="left">$33,386,850</td>
+<td align="left">$14,520,473</td>
+<td align="left">$18,866,377</td>
 </tr>
 <tr class="even">
 <td>Deandre Ayton</td>
-<td align="right">32459438</td>
-<td align="right">14321490</td>
-<td align="right">18137948</td>
+<td align="left">$32,459,438</td>
+<td align="left">$14,321,490</td>
+<td align="left">$18,137,948</td>
 </tr>
 <tr class="odd">
 <td>Trae Young</td>
-<td align="right">40064220</td>
-<td align="right">22389415</td>
-<td align="right">17674805</td>
+<td align="left">$40,064,220</td>
+<td align="left">$22,389,415</td>
+<td align="left">$17,674,805</td>
 </tr>
 <tr class="even">
 <td>Jordan Poole</td>
-<td align="right">27955357</td>
-<td align="right">11410551</td>
-<td align="right">16544806</td>
+<td align="left">$27,955,357</td>
+<td align="left">$11,410,551</td>
+<td align="left">$16,544,806</td>
 </tr>
 <tr class="odd">
 <td>Tobias Harris</td>
-<td align="right">39270150</td>
-<td align="right">22738473</td>
-<td align="right">16531677</td>
+<td align="left">$39,270,150</td>
+<td align="left">$22,738,473</td>
+<td align="left">$16,531,677</td>
 </tr>
 <tr class="even">
 <td>Fred VanVleet</td>
-<td align="right">40806300</td>
-<td align="right">24375929</td>
-<td align="right">16430371</td>
+<td align="left">$40,806,300</td>
+<td align="left">$24,375,929</td>
+<td align="left">$16,430,371</td>
 </tr>
 </tbody>
 </table>
@@ -1831,71 +1832,71 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Tyrese Maxey</td>
-<td align="right">4343920</td>
-<td align="right">21383862</td>
-<td align="right">17039942</td>
+<td align="left">$4,343,920</td>
+<td align="left">$21,383,862</td>
+<td align="left">$17,039,942</td>
 </tr>
 <tr class="even">
 <td>Eric Gordon</td>
-<td align="right">3196448</td>
-<td align="right">18287738</td>
-<td align="right">15091290</td>
+<td align="left">$3,196,448</td>
+<td align="left">$18,287,738</td>
+<td align="left">$15,091,290</td>
 </tr>
 <tr class="odd">
 <td>Desmond Bane</td>
-<td align="right">3845083</td>
-<td align="right">18755171</td>
-<td align="right">14910088</td>
+<td align="left">$3,845,083</td>
+<td align="left">$18,755,171</td>
+<td align="left">$14,910,088</td>
 </tr>
 <tr class="even">
 <td>Russell Westbrook</td>
-<td align="right">3835738</td>
-<td align="right">18375701</td>
-<td align="right">14539963</td>
+<td align="left">$3,835,738</td>
+<td align="left">$18,375,701</td>
+<td align="left">$14,539,963</td>
 </tr>
 <tr class="odd">
 <td>Kelly Oubre Jr.</td>
-<td align="right">2891467</td>
-<td align="right">15859036</td>
-<td align="right">12967569</td>
+<td align="left">$2,891,467</td>
+<td align="left">$15,859,036</td>
+<td align="left">$12,967,569</td>
 </tr>
 <tr class="even">
 <td>Cam Thomas</td>
-<td align="right">2240160</td>
-<td align="right">14364829</td>
-<td align="right">12124669</td>
+<td align="left">$2,240,160</td>
+<td align="left">$14,364,829</td>
+<td align="left">$12,124,669</td>
 </tr>
 <tr class="odd">
 <td>Alperen Sengun</td>
-<td align="right">3536280</td>
-<td align="right">15623299</td>
-<td align="right">12087019</td>
+<td align="left">$3,536,280</td>
+<td align="left">$15,623,299</td>
+<td align="left">$12,087,019</td>
 </tr>
 <tr class="even">
 <td>Tyrese Haliburton</td>
-<td align="right">5808435</td>
-<td align="right">17281441</td>
-<td align="right">11473006</td>
+<td align="left">$5,808,435</td>
+<td align="left">$17,281,441</td>
+<td align="left">$11,473,006</td>
 </tr>
 <tr class="odd">
 <td>Miles Bridges</td>
-<td align="right">7921300</td>
-<td align="right">19164775</td>
-<td align="right">11243475</td>
+<td align="left">$7,921,300</td>
+<td align="left">$19,164,775</td>
+<td align="left">$11,243,475</td>
 </tr>
 <tr class="even">
 <td>Kevin Love</td>
-<td align="right">3835738</td>
-<td align="right">14628749</td>
-<td align="right">10793011</td>
+<td align="left">$3,835,738</td>
+<td align="left">$14,628,749</td>
+<td align="left">$10,793,011</td>
 </tr>
 </tbody>
 </table>
@@ -2065,29 +2066,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Deandre Ayton</td>
-<td align="right">32459438</td>
-<td align="right">15869488</td>
-<td align="right">16589950</td>
+<td align="left">$32,459,438</td>
+<td align="left">$15,869,488</td>
+<td align="left">$16,589,950</td>
 </tr>
 <tr class="even">
 <td>Kristaps Porzingis</td>
-<td align="right">36016200</td>
-<td align="right">26330642</td>
-<td align="right">9685558</td>
+<td align="left">$36,016,200</td>
+<td align="left">$26,330,642</td>
+<td align="left">$9,685,558</td>
 </tr>
 <tr class="odd">
 <td>Jaren Jackson Jr.</td>
-<td align="right">27102202</td>
-<td align="right">17732344</td>
-<td align="right">9369858</td>
+<td align="left">$27,102,202</td>
+<td align="left">$17,732,344</td>
+<td align="left">$9,369,858</td>
 </tr>
 </tbody>
 </table>
@@ -2097,29 +2098,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Alperen Sengun</td>
-<td align="right">3536280</td>
-<td align="right">17318688</td>
-<td align="right">13782408</td>
+<td align="left">$3,536,280</td>
+<td align="left">$17,318,688</td>
+<td align="left">$13,782,408</td>
 </tr>
 <tr class="even">
 <td>Al Horford</td>
-<td align="right">10000000</td>
-<td align="right">19105610</td>
-<td align="right">9105610</td>
+<td align="left">$10,000,000</td>
+<td align="left">$19,105,610</td>
+<td align="left">$9,105,610</td>
 </tr>
 <tr class="odd">
 <td>Nikola Vucevic</td>
-<td align="right">18518519</td>
-<td align="right">26257229</td>
-<td align="right">7738710</td>
+<td align="left">$18,518,519</td>
+<td align="left">$26,257,229</td>
+<td align="left">$7,738,710</td>
 </tr>
 </tbody>
 </table>
@@ -2220,29 +2221,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Michael Porter Jr.</td>
-<td align="right">33386850</td>
-<td align="right">14575242</td>
-<td align="right">18811608</td>
+<td align="left">$33,386,850</td>
+<td align="left">$14,575,242</td>
+<td align="left">$18,811,608</td>
 </tr>
 <tr class="even">
 <td>Tobias Harris</td>
-<td align="right">39270150</td>
-<td align="right">22111611</td>
-<td align="right">17158539</td>
+<td align="left">$39,270,150</td>
+<td align="left">$22,111,611</td>
+<td align="left">$17,158,539</td>
 </tr>
 <tr class="odd">
 <td>Klay Thompson</td>
-<td align="right">43219440</td>
-<td align="right">26199144</td>
-<td align="right">17020296</td>
+<td align="left">$43,219,440</td>
+<td align="left">$26,199,144</td>
+<td align="left">$17,020,296</td>
 </tr>
 </tbody>
 </table>
@@ -2252,29 +2253,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Kelly Oubre Jr.</td>
-<td align="right">2891467</td>
-<td align="right">15782162</td>
-<td align="right">12890695</td>
+<td align="left">$2,891,467</td>
+<td align="left">$15,782,162</td>
+<td align="left">$12,890,695</td>
 </tr>
 <tr class="even">
 <td>Kevin Love</td>
-<td align="right">3835738</td>
-<td align="right">15945101</td>
-<td align="right">12109363</td>
+<td align="left">$3,835,738</td>
+<td align="left">$15,945,101</td>
+<td align="left">$12,109,363</td>
 </tr>
 <tr class="odd">
 <td>Jalen Williams</td>
-<td align="right">4558680</td>
-<td align="right">15322917</td>
-<td align="right">10764237</td>
+<td align="left">$4,558,680</td>
+<td align="left">$15,322,917</td>
+<td align="left">$10,764,237</td>
 </tr>
 </tbody>
 </table>
@@ -2364,29 +2365,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Bradley Beal</td>
-<td align="right">46741590</td>
-<td align="right">19535853</td>
-<td align="right">27205737</td>
+<td align="left">$46,741,590</td>
+<td align="left">$19,535,853</td>
+<td align="left">$27,205,737</td>
 </tr>
 <tr class="even">
 <td>Darius Garland</td>
-<td align="right">34005250</td>
-<td align="right">14145827</td>
-<td align="right">19859423</td>
+<td align="left">$34,005,250</td>
+<td align="left">$14,145,827</td>
+<td align="left">$19,859,423</td>
 </tr>
 <tr class="odd">
 <td>Zach LaVine</td>
-<td align="right">40064220</td>
-<td align="right">21087352</td>
-<td align="right">18976868</td>
+<td align="left">$40,064,220</td>
+<td align="left">$21,087,352</td>
+<td align="left">$18,976,868</td>
 </tr>
 </tbody>
 </table>
@@ -2396,29 +2397,29 @@ model</caption>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Salary</th>
-<th align="right">Predicted salary</th>
-<th align="right">Difference</th>
+<th align="left">Salary</th>
+<th align="left">Predicted salary</th>
+<th align="left">Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Tyrese Maxey</td>
-<td align="right">4343920</td>
-<td align="right">22452630</td>
-<td align="right">18108710</td>
+<td align="left">$4,343,920</td>
+<td align="left">$22,452,630</td>
+<td align="left">$18,108,710</td>
 </tr>
 <tr class="even">
 <td>Eric Gordon</td>
-<td align="right">3196448</td>
-<td align="right">19264808</td>
-<td align="right">16068360</td>
+<td align="left">$3,196,448</td>
+<td align="left">$19,264,808</td>
+<td align="left">$16,068,360</td>
 </tr>
 <tr class="odd">
 <td>Russell Westbrook</td>
-<td align="right">3835738</td>
-<td align="right">19570532</td>
-<td align="right">15734794</td>
+<td align="left">$3,835,738</td>
+<td align="left">$19,570,532</td>
+<td align="left">$15,734,794</td>
 </tr>
 </tbody>
 </table>

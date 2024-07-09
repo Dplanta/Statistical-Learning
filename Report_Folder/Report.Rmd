@@ -29,6 +29,7 @@ library(corrplot) # to display the correlation plot
 library(glmnet)
 library(leaps)    # for regsubsets
 library(knitr)
+library(scales)
 ```
 
 
@@ -471,6 +472,14 @@ create_tables <- function(real_values, pred_values, df, N) {
   colnames(overpaid_table) <- c("Salary", "Predicted salary", "Difference")
   underpaid_table <- cbind(fd_under, under_pred, -under_diff)
   colnames(underpaid_table) <- c("Salary", "Predicted salary", "Difference")
+  
+  overpaid_table$Salary <- dollar_format()(overpaid_table$Salary)
+  overpaid_table$`Predicted salary` <- dollar_format()(overpaid_table$`Predicted salary`)
+  overpaid_table$Difference <- dollar_format()(overpaid_table$Difference)
+  
+  underpaid_table$Salary <- dollar_format()(underpaid_table$Salary)
+  underpaid_table$`Predicted salary` <- dollar_format()(underpaid_table$`Predicted salary`)
+  underpaid_table$Difference <- dollar_format()(underpaid_table$Difference)
   
   return(list(overpaid_table, underpaid_table))
 }
