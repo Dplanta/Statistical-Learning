@@ -23,6 +23,14 @@ knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 
 ```
 
+```{r libraries, include=FALSE}
+library(readxl)   # to import data from Excel to R
+library(corrplot) # to display the correlation plot
+library(glmnet)
+library(leaps)    # for regsubsets
+
+```
+
 
 \
 
@@ -46,8 +54,6 @@ To perform our analysis we followed these steps:
 3.  Analysis;
 
 4.  Interpretation.
-
-We now explain in depth each step.
 
 \
 
@@ -323,53 +329,58 @@ To find the best balance between model simplicity and precision, we evaluated th
 
 ```{r parameters-selection, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Evaluation of the number of parameters through RSS, Adjusted R-squared, Mallow's Cp and BIC \\label{fig:parameters-selection}", fig.align='center'}
 
-library(leaps)
+subset_selection <- function(df) {
+  regfit.full <- regsubsets(sqrt(Salary)~., data=df, nvmax=(ncol(df)-1))
+  reg.summary <- summary(regfit.full)
 
-regfit.full.sqrt <- regsubsets(sqrt(Salary)~., data=fd_numeric, nvmax=(ncol(fd_numeric)-1))
-reg.summary.sqrt <- summary(regfit.full.sqrt)
-#reg.summary.sqrt$outmat
-#reg.summary.sqrt$which
-#reg.summary.sqrt$rsq
+  par(mfrow=c(2,2))
 
-par(mfrow=c(2,2))
+  # residual sum of squares
+  plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
 
-# residual sum of squares
-plot(reg.summary.sqrt$rss,xlab="Number of Variables",ylab="RSS",type="l")
+  # adjusted-R^2 with its largest value
+  plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
+  i <- which.max(reg.summary$adjr2)
+  points(i,reg.summary$adjr2[i], col="red",cex=2,pch=20)
+  text(i,reg.summary$adjr2[i], i, pos=1)
 
-# adjusted-R^2 with its largest value
-plot(reg.summary.sqrt$adjr2,xlab="Number of Variables",ylab="Adjusted Rsq",type="l")
-i <- which.max(reg.summary.sqrt$adjr2)
-points(i,reg.summary.sqrt$adjr2[i], col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$adjr2[i], i, pos=1)
+  # Mallow's Cp with its smallest value
+  plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
+  i <- which.min(reg.summary$cp)#return the index of the minimum
+  points(i,reg.summary$cp[i],col="red",cex=2,pch=20)
+  text(i,reg.summary$cp[i], i, pos=3)
+  
+  covariates = i
 
-# Mallow's Cp with its smallest value
-plot(reg.summary.sqrt$cp,xlab="Number of Variables",ylab="Cp",type='l')
-i <- which.min(reg.summary.sqrt$cp)#return the index of the minimum
-points(i,reg.summary.sqrt$cp[i],col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$cp[i], i, pos=3)
+  # BIC with its smallest value
+  plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
+  i <- which.min(reg.summary$bic)
+  points(i,reg.summary$bic[i],col="red",cex=2,pch=20)
+  text(i,reg.summary$bic[i], i, pos=3)
 
-# BIC with its smallest value
-plot(reg.summary.sqrt$bic,xlab="Number of Variables",ylab="BIC",type='l')
-i <- which.min(reg.summary.sqrt$bic)
-points(i,reg.summary.sqrt$bic[i],col="red",cex=2,pch=20)
-text(i,reg.summary.sqrt$bic[i], i, pos=3)
+  par(mfrow = c(1,1))
 
-par(mfrow = c(1,1))
+  selected.model <- reg.summary$which[covariates, ]
+  selected.parameters <- names(selected.model[selected.model])[-1] #-1 to lose the intercept
+  print(selected.parameters)
+  
+  selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters, collapse = " + ")))
+  
+  model <- lm(selected.formula, data=df)
+  
+   return(model)
+}
+
+lm.ess <-  subset_selection(fd_numeric)
+lm.ess
 ```
 
 Considering Mallow's Cp, the best number of parameters for our model is 14. This result can be seen in the Figure \ref{fig:parameters-selection}. We obtained the list of parameters from the `regsubset` function to get the best model with 14 parameters. 
 
+
 ```{r best_model_14_parameters, echo=FALSE}
-#let's get the list of selected parameters:
-covariates = 14
 
-selected.model.sqrt <- reg.summary.sqrt$which[covariates,]
-selected.parameters.sqrt <- names(selected.model.sqrt[selected.model.sqrt])[-1] #-1 to lose the intercept
-
-selected.formula.sqrt <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.sqrt, collapse = " + ")))
-
-lm.ess.sqrt <- lm(selected.formula.sqrt, data=fd_numeric)
-summary(lm.ess.sqrt)
+summary(lm.ess)
 ```
 
 The reduced model shows a 0.7061 R-squared, that indicates a good fit.
@@ -398,7 +409,10 @@ Beyond all the possible explanations, these unexpected negative signs likely dep
 
 ```{r correlation-independent-variables, echo=FALSE, fig.cap="Correlation between dependent variables of the reduced model \\label{fig:correlation-independent-variables}", fig.align='center', out.width='80%'}
 
-corrplot(cor(fd_numeric[c(selected.parameters.sqrt)]), method = 'color')
+# extract the selected parameters
+selected.parameters.ess <- attr(terms(lm.ess), "term.labels")
+# correlation between dependent variables
+corrplot(cor(fd_numeric[c(selected.parameters.ess)]), method = 'color')
 ```
 
 It can be seen in the Figure \ref{fig:correlation-independent-variables} that there are, also in this case, different correlations between the dependent variables.
@@ -406,8 +420,9 @@ It can be seen in the Figure \ref{fig:correlation-independent-variables} that th
 #### Residual analysis
 
 ```{r residual-analysis-ess, echo=FALSE, fig.cap="Residual plot of the reduced model with 14 covariates \\label{fig:residual-analysis-ess}", fig.align='center', out.width='90%'}
+# residual analysis
 par(mfrow=c(2,2))
-plot(lm.ess.sqrt)
+plot(lm.ess)
 par(mfrow=c(1,1))
 ```
 
@@ -419,28 +434,29 @@ From what can be seen in the Figure \ref{fig:residual-analysis-ess}, the assumpt
 ```{r model-performance, echo=FALSE}
 y <- fd_numeric$Salary
 
-lm.ess.pred.sqrt <- predict(lm.ess.sqrt)
-mse.lm.ess.sqrt <- mean((lm.ess.pred.sqrt)^2-y)^2
-print(paste("MSE of the reduced linear model with square root Salary = ", format(mse.lm.ess.sqrt, scientific = TRUE)))
+lm.ess.pred <- predict(lm.ess)
+mse.lm.ess <- mean((lm.ess.pred)^2 - y)^2
+print(paste("MSE of the reduced linear model with square root Salary = ", format(mse.lm.ess, scientific = TRUE)))
 
-print(paste("MSE square root of the reduced linear model with square root Salary = ",format(sqrt(mse.lm.ess.sqrt), scientific=TRUE)))
+print(paste("MSE square root of the reduced linear model with square root Salary = ",format(sqrt(mse.lm.ess), scientific=TRUE)))
 
 ```
+
 The reduced model has a very good MSE calculated on the whole model: 5.319559e+11.
 In order to compare different models, we divided the dataset into train and test. Once fitted the model on the training set, we evaluated the performance on the test set to avoid overfitting.
 
 ```{r reduced-model-test-MSE, echo=FALSE}
 
 # performances on a test set
-X <- model.matrix(selected.formula.sqrt, data=fd_numeric)
-X <- X[,-1]
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess, collapse = " + ")))
+X.ess <- model.matrix(selected.formula, data=fd_numeric)
+X.ess <- X.ess[,-1]
 
-lm.ess.sqrt.test <- glmnet(X[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
-lm.ess.sqrt.test.pred <- predict(lm.ess.sqrt.test, s = 0, newx = X[test, ], exact = TRUE, x = X[train, ], y = y[train])
-lm.ess.sqrt.test.mse <- mean((lm.ess.sqrt.test.pred^2-y[test])^2)
-print(paste("Estimated test MSE = ", format(lm.ess.sqrt.test.mse, scientific = TRUE)))
-format(sqrt(lm.ess.sqrt.test.mse), scientific = TRUE)
-
+lm.ess.test <- glmnet(X.ess[train, ], sqrt(y[train]), alpha = 0, lambda = 0)
+lm.ess.test.pred <- predict(lm.ess.test, s = 0, newx = X.ess[test, ], exact = TRUE)
+lm.ess.test.mse <- mean((lm.ess.test.pred^2 - y[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.test.mse, scientific = TRUE)))
+print(paste("Square root of the estimated test MSE = ", format(sqrt(lm.ess.test.mse), scientific = TRUE)))
 ```
 The estimated MSE on the test set is 4.449e+13. We will use this value to compare the model with the next ones.
 
@@ -473,7 +489,7 @@ create_tables <- function(real_values, pred_values, df, N) {
   return(list(overpaid_table, underpaid_table))
 }
 
-lm.ess.tables <- create_tables(y, lm.ess.pred.sqrt^2, final_dataset, 10)
+lm.ess.tables <- create_tables(y, lm.ess.pred^2, final_dataset, 10)
 kable(lm.ess.tables[[1]], format="simple", caption="Ten most overpaid players according to the reduced model")
 ```
 
@@ -507,8 +523,6 @@ Regarding Tobias Harris, this was the last contract year with Philadelphia 76ers
 Fred Vanvleet signed a big contract with Houston Rockets last year. The team has a young core, they are in a rebuilding phase so for the moment they don't have ambitions for the title. Without being a contender, teams are less attractive for the superstars. For this reason, they signed a really good player paying him like a superstar: the fact that he results as really overpaid was quite predictable.
 
 **MOST UNDERPAID PLAYERS**
-
-*For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.*
 
 Jalen Brunson has shown this year that he is one of the best players in the NBA after being somewhat underrated in the years past. We expected the difference between his predicted and actual salary. Very similar the situation of Tyrese Maxey, in the last year of his rookie contract. He has shown by his performances that he is worth much more than his salary says.
 
@@ -555,8 +569,7 @@ ten_fold_cv <- function(X, y, a) {
   
   # This plots the cross-validation curve (red dotted line) along with upper and
   # lower standard deviation curves along the lambda sequence (error bars).
-  # Two special values along the lambda sequence are indicated by the vertical
-  # dotted lines. lambda.min is the value of lambda that gives minimum mean
+  # lambda.min is the value of lambda that gives minimum mean
   # cross-validated error.
   plot(cv.out)
   
@@ -664,8 +677,6 @@ coef(lm.las, s = best_lambda)
 plot(lm.las, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 
-plot(lm.las, xvar = "lambda", label = TRUE)
-abline(v = log(best_lambda), lty = 3, lwd = 2)
 ```
 
 We again used the cross-validation method and we chose the $\lambda$ value that guarantees the lower mean cross-validated error, as it can be seen in the Figure \ref{fig:lasso-lambda}.
@@ -733,7 +744,6 @@ The objectives are:
 
 - compare the predictions on the most overpaid and most underpaid players between position-specific and general models 
 
-We used lasso regression because it turned out to be the best model in the previous phase.
 
 In our dataset the division was somewhat different, with 5 positions (PG, SG, PF, SF, C). We considered point guards (PG) and shooting guards (SG) as guards (G), power forwards (PF) and shooting forwards (SF) as forwards (F). The centers (C) are the same.
 
@@ -747,18 +757,6 @@ recode_pos <- function(x) {
 
 final_dataset$Pos <- recode_pos(final_dataset$Pos)
 
-# split the dataset based on position
-fd_list <- split(final_dataset, final_dataset$Pos)
-fd_center <- fd_list$C
-fd_forward <- fd_list$F
-fd_guard <- fd_list$G
-rm(fd_list)
-
-# remove position
-fd_center_nopos <- fd_center[, numeric_cols]
-fd_forward_nopos <- fd_forward[, numeric_cols]
-fd_guard_nopos <- fd_guard[, numeric_cols]
-
 ```
 
 
@@ -766,16 +764,12 @@ fd_guard_nopos <- fd_guard[, numeric_cols]
 
 ```{r anova, echo=FALSE}
 
-fd_guard_df <- as.data.frame(fd_guard)
-fd_forward_df <- as.data.frame(fd_forward)
-fd_center_df <- as.data.frame(fd_center)
-fd_roles_df <- rbind(fd_guard_df, fd_forward_df, fd_center_df)
+# Is there, on average, a difference between salaries of players
+# with different positions?
+bartlett.test(Salary ~ Pos, data = final_dataset)
 
-bartlett.test(Salary ~ Pos, data = fd_roles_df)
-
-aov.roles <- aov(Salary ~ Pos, data = fd_roles_df)
+aov.roles <- aov(Salary ~ Pos, data = final_dataset)
 summary(aov.roles)
-
 ```
 
 The ANOVA is a hypothesis test of equal means in different groups in which it is assumed that the variance is the same for every group; we used it to verify if players with different roles have, on average, different salaries. The null hypothesis states that the average salary is the same for every position; on the other hand, the alternative hypothesis states that at least one average salary is different. Firstly, we tested the hypotesis of variances homogeneity with Bartlett's test in order to see if it was possible to proceed with the ANOVA. Looking at the output, the Bartlett's K-squared was 0.054132. This small value indicates that the difference between the observed variances between the groups is small, as would be expected under the null hypothesis of equality of variances. The p-value is 0.9733: considering a significance level of 0.05, we do not have sufficient evidence to reject the null hypothesis. Therefore, Bartlett's test shows no evidence of unequal variances, so we can confidently proceed to the ANOVA considering satisfied the hypothesis of homogeneity of variances. 
@@ -785,28 +779,53 @@ In conclusion, there is no significant evidence to suggest that average salaries
 
 ### Models
 
+```{r starting-position-models, include=FALSE}
+
+# split the dataset based on position
+fd_list <- split(final_dataset, final_dataset$Pos)
+fd_center <- fd_list$C
+fd_forward <- fd_list$F
+fd_guard <- fd_list$G
+rm(fd_list)
+
+nrow(fd_center)
+nrow(fd_forward)
+nrow(fd_guard)
+
+# remove position
+fd_center <- fd_center[, numeric_cols]
+fd_forward <- fd_forward[, numeric_cols]
+fd_guard <- fd_guard[, numeric_cols]
+
+```
+
+
 #### Centers
 
-We now considered only the centers, 67 players. 
+We now consider only the centers, 67 players. 
 
 ```{r lasso-centers-start, include=FALSE}
 
 #### LASSO FOR CENTER POSITION
 
-# linear model for centers
-
-lm.mod.c <- lm(Salary~+., data=fd_center_nopos)
+# linear model
+lm.mod.c <- lm(sqrt(Salary)~., data=fd_center)
 summary(lm.mod.c)
 
 ```
 
-Starting from the complete model, we found the best $\lambda$ through a cross-validation. 
+Starting from the complete model (considering again the square root transformation of Salary), we used a Lasso regression. 
 
 ```{r best-lambda-selection, echo=FALSE}
 # design matrix not considering the intercept
-X.c <- model.matrix(Salary~., data=fd_center_nopos)
+X.c <- model.matrix(sqrt(Salary)~., data=fd_center)
 X.c <- X.c[,-1]
-y.c <- fd_center_nopos$Salary
+y.c <- fd_center$Salary
+n <- nrow(X.c)
+
+set.seed(1)
+train <- sample(1:n, n/2)
+test  <- setdiff(1:n, train)
 
 ### Cross validation to select the best lambda ###
 best_lambda <- ten_fold_cv(X.c, y.c, 1)
@@ -817,17 +836,18 @@ We chose the $\lambda$ value that guarantees the lower mean cross-validated erro
 ```{r lasso-centers-coefficients-traceplot, echo=FALSE}
 
 # final model with best lambda on all data
-lm.las.c <- glmnet(X.c, y.c, alpha = 1)
+lm.las.c <- glmnet(X.c, sqrt(y.c), alpha = 1)
 coef(lm.las.c, s=best_lambda)
 
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
+# Trace plot to visualize how the coefficient estimates changed as
+# a result of increasing lambda
 plot(lm.las.c, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 
 ```
 
 Once chosen the best $\lambda$, we fitted the model on all data. The Trace plot shows how the coefficient estimates change increasing $\lambda$. 
-It is interesting that, in the particular case of centers, 9 variables are shrunk to zero: the model considers less variables compared to the general lasso model (where only 6 variables were shrunk to zero). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
+It is interesting that, in the particular case of centers, 13 features are considered: the model is more complex than the general lasso model (9 predictors). Unexpectedly, despite the fact that blocks are typically a center play, the variable BLK is excluded from the model.
 
 
 ```{r lasso-centers-performance, echo=FALSE}
@@ -837,27 +857,26 @@ lm.las.c.pred <- predict(lm.las.c, s = best_lambda, X.c)
 
 # SST and SSE
 sst <- sum((y.c - mean(y.c))^2)
-sse <- sum((lm.las.c.pred - y.c)^2)
+sse <- sum((lm.las.c.pred^2 - y.c)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
 R2
-# very high R2
+# higher R2
 
 # final MSE
-mse.lm.las.c <- mean((lm.las.c.pred - y.c)^2)
+mse.lm.las.c <- mean((lm.las.c.pred^2 - y.c)^2)
 mse.lm.las.c
-# better than before
 ```
 
-The models' performance is really good: approximately 0.8 R-squared and 2.749367e+13 MSE. By far, the best performance till now.
-It is possible to infer that the relationship between salaries and performance is very well represented from the model; however, it is important to consider that the sample here is quite small, only 67 observations. For this reason, the results must be considered carefully.
+The models' performance is really good: 0.82 R-squared and 2.423e+13 MSE. For what concerns MSE calculated on the test set, it is slightly higher with respect to the other models: 5.458e+13
+It is possible to infer that the relationship between salaries and performance is well represented from the model; however, it is important to consider that the sample here is quite small, only 67 observations. For this reason, the results must be considered carefully.
 
 
 ```{r centers-underpaid-overpaid, echo=FALSE}
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.c.tables <- create_tables(y.c, lm.las.c.pred, fd_center_nopos, 3)
+lm.las.c.tables <- create_tables(y.c, lm.las.c.pred^2, fd_center, 3)
 lm.las.c.tables[[1]]
 lm.las.c.tables[[2]]
 
@@ -867,160 +886,162 @@ Looking at the most underpaid and most overpaid centers it emerges that the diff
 
 **MOST OVERPAID CENTERS**
 
-Among the overpaid centers we found again Deandre Ayton. 
-Regarding James Wiseman, he was a great prospect but he was really unlucky with injuries. Although he was traded from Golden State Warriors to Detroit Pistons (to a weaker team), he has not yet managed to fulfil its potential. He is still in his rookie contract: like Edwards, his salary is higher compared to average rookie contracts because he was the 2nd pick in 2020 draft. But unlike Edwards, according to the model his performance did not match his salary.
+Among the overpaid centers we again find Deandre Ayton. 
 It is quite surprising to find Jaren Jackson Jr here. After good seasons with Memphis Grizzlies, probably this year he suffered the drop in performance of the entire team. He is a really good defender and an amazing blocker: as said before, the defensive aspect of basketball is difficult to grasp with stats (and consequently with models). Moreover, we saw that the variable BLK is shrunk to 0 in this model, this may partly explain why he is classified as overpaid.
+Regarding Porzingis, we didn't think we would find him in this section. He was a key piece for Boston Celtics', the team who won the title.
+
 
 **MOST UNDERPAID CENTERS**
 
-The most underpaid center results to be Alperen Sengun, makes sense for what we said above.
+The most underpaid center results to be Alperen Sengun, a young player still in a rookie contract. He is clearly overperforming considering how much he earns. 
 Al Horford is a veteran, he made an excellent contribution to the Boston Celtics' title victory performing above the expectations.
-Andre Drummond is a great rebounder, capable of consistent performance in terms of statistics. However, he is lacking in aspects of the game that are not considered by the model, such as basketball IQ: maybe that is why he results underpaid according to the model.
+For what concerns Nikola Vucevic, his stats are always more than respectable. His salary is lower than the expected probably because he seems to lack characteristics not included in the model or generally difficult to quantify such as defense, leadership and consistency at key moments of the season.
 
 
 #### Forwards
 
-For what concerns forwards, we have 145 observations in our dataset.
+For what concerns forwards, we have 145 observations in our dataset. In this case, we prefer the Lasso regression model because despite more complex, it is more accurate and makes more meaningful predictions.
 
-```{r lasso-forwards, echo=FALSE}
-
-lm.mod.f <- lm(Salary~+., data=fd_forward_nopos)
-summary(lm.mod.f)
-
-# design matrix not considering the intercept
-X.f <- model.matrix(Salary~., data=fd_forward_nopos)
+```{r lasso-forwards-a, echo=FALSE}
+X.f <- model.matrix(sqrt(Salary)~., data=fd_forward)
 X.f <- X.f[,-1]
-
-# vector of responses
-y.f <- fd_forward_nopos$Salary
-
-### Cross validation to select the best lambda ###
+n <- nrow(X.f)
+y.f <- fd_forward$Salary
 best_lambda <- ten_fold_cv(X.f, y.f, 1)
 
 ```
+Once found the best $\lambda$, the model was fitted on the whole data.
 
-As for centers, we started from the complete model and we chose the best $\lambda$. 
 
-
-```{r lasso-forwards-model, echo=FALSE}
+```{r lasso-forwards, echo=FALSE}
 
 # final model with best lambda on all data
-lm.las.f <- glmnet(X.f, y.f, alpha = 1)
+lm.las.f <- glmnet(X.f, sqrt(y.f), alpha = 1)
 coef(lm.las.f, s = best_lambda)
 
 # Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
 plot(lm.las.f, xvar = "lambda", label = TRUE)
 abline(v = log(best_lambda), lty = 3, lwd = 2)
 
-```
-
-Once chosen the best lambda, we fitted the model on all data. In this specific lasso regression 15 variables are reduced to zero, far more than in the lasso regression for centers (9) and the general lasso regression (6).
-
-```{r lasso-forward-performance, echo=FALSE}
-
 # use fitted best model to make predictions
 lm.las.f.pred <- predict(lm.las.f, s = best_lambda, X.f)
 
+```
+The model results simpler compared to the centers' one (11 vs 14 predictors). The variable USG_PCT has, by far, the biggest coefficient: according to this model, forwards who finish (with a shot, a free throw or a turnover) most of their team's possessions, on average, earn more. 
+The trace plot shows how the coefficients change increasing lambda.
+
+
+```{r lasso-forwards-performances, echo=FALSE}
+
+
 # SST and SSE
 sst <- sum((y.f - mean(y.f))^2)
-sse <- sum((lm.las.f.pred - y.f)^2)
+sse <- sum((lm.las.f.pred^2 - y.f)^2)
 
 # R-Squared
 R2 <- 1 - sse/sst
 R2
-# very high R2
 
 # final MSE
-mse.lm.las.f <- mean((lm.las.f.pred-y.f)^2)
+mse.lm.las.f <- mean((lm.las.f.pred^2-y.f)^2)
 mse.lm.las.f
-# better than before
+
 
 ```
+About performances, the estimated test MSE with the best lambda is 4.871e+13, in line with the models seen so far. 
+The R-squared is quite high, 0.76 and the MSE calculated considering every forward is 3.351e+13. We can say that the relationship between salaries and player performance is well captured by the model.
 
-The model has a 0.75 R-squared and a 3.520197e+13 MSE. The performance is very good, also considering that this model has only 13 predictors as we mentioned earlier. Also for forwards we can say that the relationship between salaries and player performance is well captured by the model.    
 
 ```{r underpaid-overpaid-forwards, echo=FALSE}
 
 ### 3 most overpaid and 3 most underpaid forwards table ###
-lm.las.f.tables <- create_tables(y.f, lm.las.f.pred, fd_forward_nopos, 3)
+lm.las.f.tables <- create_tables(y.f, lm.las.f.pred^2, fd_forward, 3)
 lm.las.f.tables[[1]]
 lm.las.f.tables[[2]]
 
 ```
 
 The 3 most overpaid forwards according to this model are Michael Porter Jr, Tobias Harris and Klay Thompson. They were also among most overpaid players in the overall lasso regression; as we said before, it is reasonable to find these players in this tier. 
-The same applies to Williams, Oubre Jr and Love in terms of the 3 most underpaid forwards.
+The same applies to Oubre Jr and Love in terms of the 3 most underpaid forwards. Regarding Williams, it is reasonable for him to be considered underpaid as seen above.
 
 
 #### Guards
 
-Regarding guards, we consider 148 observations.
+Regarding guards, we consider 148 observations. Here a model obtained through a subset selection performs better.
 
-```{r lasso-guards, echo=FALSE}
+```{r ess-guards-lm, include=FALSE}
 
-#### LASSO FOR GUARD POSITION
-
-lm.mod.g <- lm(Salary~+., data=fd_guard_nopos)
+# linear model
+lm.mod.g <- lm(sqrt(Salary)~., data=fd_guard)
 summary(lm.mod.g)
 
-# design matrix not considering the intercept
-X.g <- model.matrix(Salary~., data=fd_guard_nopos)
+```
+
+
+```{r ess-guards, echo=FALSE}
+
+### SUBSET SELECTION ###
+
+lm.ess.g = subset_selection(fd_guard)
+summary(lm.ess.g)
+
+```
+
+
+```{r ess-guards-analysis, echo=FALSE}
+
+# extract the selected parameters
+selected.parameters.ess.g <- attr(terms(lm.ess.g), "term.labels")
+
+# correlation between dependent variables
+corrplot(cor(fd_guard[c(selected.parameters.ess.g)]), method = 'color')
+
+# residual analysis
+par(mfrow=c(2,2))
+plot(lm.ess.g)
+par(mfrow=c(1,1))
+
+
+```
+```{r ess-guards-performances, echo=FALSE}
+
+# model performances
+y.g <- fd_guard$Salary
+lm.ess.g.pred <- predict(lm.ess.g)
+mse.lm.ess.g <- mean((lm.ess.g.pred)^2 - y.g)^2
+format(mse.lm.ess.g, scientific=TRUE)
+format(sqrt(mse.lm.ess.g), scientific=TRUE)
+
+# performances on the test set
+selected.formula <- as.formula(paste("sqrt(Salary)~", paste(selected.parameters.ess.g, collapse = " + ")))
+X.g <- model.matrix(sqrt(Salary)~., data=fd_guard)
 X.g <- X.g[,-1]
+n <- nrow(X.g)
 
-# vector of responses
-y.g <- fd_guard_nopos$Salary
+set.seed(1)
+train <- sample(1:n, n/2)
+test  <- setdiff(1:n, train)
 
-### Cross validation to select the best lambda ###
-best_lambda <- ten_fold_cv(X.g, y.g, 1)
-
-# final model with best lambda on all data
-lm.las.g <- glmnet(X.g, y.g, alpha = 1)
-coef(lm.las.g, s = best_lambda)
-
-# Trace plot to visualize how the coefficient estimates changed as a result of increasing lambda
-plot(lm.las.g, xvar = "lambda", label = TRUE)
-abline(v = log(best_lambda), lty = 3, lwd = 2)
+lm.ess.g.test <- glmnet(X.g[train, ], sqrt(y.g[train]), alpha = 0, lambda = 0)
+lm.ess.g.test.pred <- predict(lm.ess.g.test, s = 0, newx = X.g[test, ], exact = TRUE)
+lm.ess.g.test.mse <- mean((lm.ess.g.test.pred^2 - y.g[test])^2)
+print(paste("Estimated test MSE = ", format(lm.ess.g.test.mse, scientific = TRUE)))
+format(sqrt(lm.ess.g.test.mse), scientific = TRUE)
 
 
 ```
 
-Following the same steps as with the other roles, we obtained a lasso regression model for guards. The result in terms of coefficients is very interesting: 23 variables are shrunk to zero, the model considers only 5 predictors. Given that the guard role tends to be the most difficult to interpret as the creative component plays a major role, we expected a more complex model than those obtained for centers and forwards. Instead, we are faced with a very simple model.
-
-```{r lasso-guards-performance, echo=FALSE}
-
-# use fitted best model to make predictions
-lm.las.g.pred <- predict(lm.las.g, s = best_lambda, X.g)
-
-# SST and SSE
-sst <- sum((y.g - mean(y.g))^2)
-sse <- sum((lm.las.g.pred - y.g)^2)
-
-# R-Squared
-R2 <- 1 - sse/sst
-R2
-# worse R2 than centers and forwards
-
-# final MSE
-mse.lm.las.g <- mean((lm.las.g.pred-y.g)^2)
-mse.lm.las.g
-# worse than centers and forwards
-
-```
-
-As expected, given the low number of predictors, here we have a lower R-squared and a fairly higher MSE compared to models of the other positions.
-Probably the relationship between salaries and performance for guards is harder to grasp and it is best explained by variables not considered in our model. 
 
 ```{r lasso-guards-overpaid-underpaid, echo=FALSE}
 
 ### 3 most overpaid and 3 most underpaid centers table ###
-lm.las.g.tables <- create_tables(y.g, lm.las.g.pred, fd_guard_nopos, 3)
+lm.las.g.tables <- create_tables(y.g, lm.ess.g.pred^2, fd_guard, 3)
 lm.las.g.tables[[1]]
 lm.las.g.tables[[2]]
 
 ```
 
-We again find Beal and LaVine in the most 3 overpaid; Maxey, Bane and Gordon also here are classified among the most underpaid players. The predictions are very similar to those of the overall lasso regression model.
-The only but very interesting difference is that Stephen Curry results very overpaid in this model. Curry is one of the biggest talents in the NBA: he won 4 titles as the absolute star and 2 MVPs thanks to his unique style of play. After several years of dominance, the performance of his Golden state Warriors has been declining in recent seasons. Despite this, Curry overall performance in 23-24 was in line or even better compared to the two previous seasons. For this reason, we think that in this case the prediction of the model does not make much sense.
+We again find Beal, LaVine and Garland as the 3 most overpaid players. Maxey, Westbrook and Gordon also here are classified among the most underpaid players. The predictions are very similar to those of the overall lasso regression model.
 
 
 ## Conclusion

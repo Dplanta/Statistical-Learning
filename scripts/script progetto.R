@@ -134,7 +134,7 @@ corrplot(cor(fd_numeric), method = 'color')
 # of them and analyzing the performances.
 
 # LINEAR REGRESSION MODEL
-lm.mod <- lm(Salary~+., data=fd_numeric)
+lm.mod <- lm(Salary~., data=fd_numeric)
 summary(lm.mod)
 
 # MSE
